@@ -220,7 +220,9 @@ class BaseTemplate(Base):
 class ClusterTemplate(BaseTemplate):
     """Template for cluster deployments"""
 
-    template_type: Literal[TemplateTypeEnum.cluster] = TemplateTypeEnum.cluster
+    template_type: Literal[TemplateTypeEnum.cluster] = pydantic.Field(
+        default=TemplateTypeEnum.cluster, exclude=True
+    )
     default_node_request: list[NodeRequest] = pydantic.Field(default=[], exclude=True)
     allowed_resource_classes: list[str] | None = pydantic.Field(None, exclude=True)
 
@@ -238,7 +240,9 @@ class ClusterTemplate(BaseTemplate):
 class ComputeInstanceTemplate(BaseTemplate):
     """Template for ComputeInstance deployments"""
 
-    template_type: Literal[TemplateTypeEnum.compute_instance] = TemplateTypeEnum.compute_instance
+    template_type: Literal[TemplateTypeEnum.compute_instance] = pydantic.Field(
+        default=TemplateTypeEnum.compute_instance, exclude=True
+    )
 
 def _validate_collection_name(name: str) -> None:
     """Validate that collection name follows namespace.collection format.
