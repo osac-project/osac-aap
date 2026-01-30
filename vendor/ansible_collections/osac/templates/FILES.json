@@ -298,7 +298,7 @@
    "name": "roles/ocp_virt_vm/meta/cloudkit.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "4acf04f387f75c7df72f4b2beaa02fee600bf8de4db1a0310e800d55c0ad295e",
+   "chksum_sha256": "79d14a39bc94684699c0405a131b20b3230ed51f3efaf8aa81e99aab99e76a48",
    "format": 1
   },
   {
