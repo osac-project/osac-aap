@@ -5,7 +5,7 @@
 
   vars:
     hostpool: "{{ ansible_eda.event.payload }}"
-    cloudkit_fulfillment_service_uri: "{{ lookup('env', 'CLOUDKIT_FULFILLMENT_SERVICE_URI', default='https://fulfillment-api:8000') }}"
+    osac_fulfillment_service_uri: "{{ lookup('env', 'OSAC_FULFILLMENT_SERVICE_URI', default='https://fulfillment-api:8000') }}"
 
   pre_tasks:
     - name: Show hostpool values
@@ -25,14 +25,14 @@
 
     - name: Determine working namespace
       ansible.builtin.include_role:
-        name: cloudkit.service.hostpool_working_namespace
+        name: osac.service.hostpool_working_namespace
       vars:
         hostpool_working_namespace_hostpool_name: "{{ hostpool_name }}"
 
   tasks:
     - name: Acquire hostpool lock
       ansible.builtin.include_role:
-        name: cloudkit.service.lease
+        name: osac.service.lease
       vars:
         lease_state: present
         lease_holder: "{{ hostpool_holder_id }}"
@@ -40,7 +40,7 @@
 
     - name: Add infrastructure finalizer
       ansible.builtin.include_role:
-        name: cloudkit.service.finalizer
+        name: osac.service.finalizer
       vars:
         finalizer_state: present
         finalizer_name: "{{ hostpool_infrastructure_finalizer }}"
@@ -50,7 +50,7 @@
           namespace: "{{ item.namespace | default(omit) }}"
           name: "{{ item.name }}"
       loop:
-        - api_version: cloudkit.openshift.io/v1alpha1
+        - api_version: osac.openshift.io/v1alpha1
           kind: HostPool
           namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
           name: "{{ hostpool.metadata.name }}"
@@ -66,10 +66,10 @@
 
     - name: Create hostpool infrastructure
       ansible.builtin.import_role:
-        name: cloudkit.service.hostpool_infra
+        name: osac.service.hostpool_infra
       vars:
         hostpool_infra_state: present
         hostpool_infra_name: "{{ hostpool_name }}"
         hostpool_infra_namespace: "{{ hostpool_working_namespace }}"
         hostpool_infra_host_requests: "{{ hostpool.spec.hostSets | unique(attribute='hostClass') }}"
-        hostpool_infra_uid: "{{ hostpool.metadata.labels['cloudkit.openshift.io/hostpool-uuid'] }}"
+        hostpool_infra_uid: "{{ hostpool.metadata.labels['osac.openshift.io/hostpool-uuid'] }}"

@@ -10,7 +10,7 @@
   "tags": [
    "cloud",
    "infrastructure",
-   "innabox",
+   "osac-project",
    "osac"
   ],
   "description": "Base templates for OSAC Fulfillment Services solution",
@@ -19,16 +19,16 @@
   ],
   "license_file": "LICENSE",
   "dependencies": {},
-  "repository": "http://github.com/innabox/osac-templates",
-  "documentation": "http://github.com/innabox/osac-templates/README.md",
-  "homepage": "http://github.com/innabox/osac-templates",
-  "issues": "http://github.com/innabox/issues/issues"
+  "repository": "http://github.com/osac-project/osac-templates",
+  "documentation": "http://github.com/osac-project/osac-templates/README.md",
+  "homepage": "http://github.com/osac-project/osac-templates",
+  "issues": "http://github.com/osac-project/issues/issues"
  },
  "file_manifest_file": {
   "name": "FILES.json",
   "ftype": "file",
   "chksum_type": "sha256",
-  "chksum_sha256": "5b4f8f9e30757359527c294a51e34750bdb9237b4fc57a10caa0015c0d1722cf",
+  "chksum_sha256": "ceac49443ac912bb0173141169aa66e3527ccbc29ca260f7ee9bb343dcd8debb",
   "format": 1
  },
  "format": 1

@@ -85,7 +85,7 @@
 
 - name: Annotate VirtualMachine with floating IP address and config hash
   kubernetes.core.k8s:
-    api_version: cloudkit.openshift.io/v1alpha1
+    api_version: osac.openshift.io/v1alpha1
     kind: ComputeInstance
     name: "{{ compute_instance_name }}"
     namespace: "{{ compute_instance.metadata.namespace }}"
@@ -93,5 +93,5 @@
     definition:
       metadata:
         annotations:
-          cloudkit.openshift.io/floating-ip-address: "{{ allocate_floating_ip_result }}"
-          cloudkit.openshift.io/reconciled-config-version: "{{ compute_instance.status.desiredConfigVersion | default('unknown') }}"
+          osac.openshift.io/floating-ip-address: "{{ allocate_floating_ip_result }}"
+          osac.openshift.io/reconciled-config-version: "{{ compute_instance.status.desiredConfigVersion | default('unknown') }}"

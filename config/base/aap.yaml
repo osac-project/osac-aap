@@ -1,7 +1,7 @@
 apiVersion: aap.ansible.com/v1alpha1
 kind: AnsibleAutomationPlatform
 metadata:
-  name: innabox-aap
+  name: osac-aap
 spec:
   controller:
     disabled: false

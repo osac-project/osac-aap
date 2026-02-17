@@ -1,0 +1,52 @@
+---
+- name: Create a compute instance from a ComputeInstance
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    compute_instance: "{{ ansible_eda.event.payload }}"
+    compute_instance_name: "{{ ansible_eda.event.payload.metadata.name }}"
+
+  pre_tasks:
+    - name: Show EDA Event
+      ansible.builtin.debug:
+        var: ansible_eda.event.payload
+
+    # Brings in variables:
+    # template_id, template_parameters
+    - name: Extract compute instance template info
+      ansible.builtin.include_role:
+        name: osac.service.extract_compute_instance_template_info
+
+    # Brings in variables:
+    # compute_instance_working_namespace
+    - name: Determine working namespace
+      ansible.builtin.include_role:
+        name: osac.service.compute_instance_working_namespace
+
+  tasks:
+
+    - name: Display compute instance information
+      ansible.builtin.debug:
+        msg:
+          - "Compute instance name: {{ compute_instance_name }}"
+          - "Compute instance working namespace: {{ compute_instance_working_namespace }}"
+          - "Template ID: {{ template_id }}"
+          - "Template parameters: {{ template_parameters }}"
+
+    - name: "Set the finalizer on the OSAC compute instance {{ compute_instance_name }}"
+      ansible.builtin.include_role:
+        name: osac.service.finalizer
+      vars:
+        finalizer_state: present
+        finalizer_name: "{{ compute_instance_osac_finalizer }}"
+        finalizer_target:
+          api_version: osac.openshift.io/v1alpha1
+          kind: ComputeInstance
+          namespace: "{{ compute_instance.metadata.namespace }}"
+          name: "{{ compute_instance_name }}"
+
+    - name: Call the selected compute instance template
+      ansible.builtin.include_role:
+        name: "{{ template_id }}"
+        tasks_from: "create"

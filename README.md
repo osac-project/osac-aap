@@ -1,7 +1,7 @@
-# Cloudkit Ansible Project
+# OSAC Ansible Project
 
 This repository contains the Ansible roles, playbooks, rulebooks, and
-inventories that are used in the scope of cloudkit.
+inventories that are used in the scope of osac.
 
 ## Pre-requisites
 

@@ -404,7 +404,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cloudkit-aap"
+name = "osac-aap"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

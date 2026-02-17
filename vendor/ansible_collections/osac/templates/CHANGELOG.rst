@@ -31,7 +31,7 @@ VM Templates
 Features
 --------
 
-- Template metadata system using ``meta/cloudkit.yaml`` for OSAC integration
+- Template metadata system using ``meta/osac.yaml`` for OSAC integration
 - Parameter validation via Ansible ``argument_specs``
 - Support for floating IP assignment and port forwarding for external access
 - Cloud-init integration for VM initialization
@@ -44,4 +44,4 @@ Known Issues
 
 - Templates require OSAC fulfillment service and cannot be run directly with ansible-playbook
 - VM templates require OpenShift Virtualization operator to be installed
-- Cluster templates depend on ``cloudkit.service`` collection
+- Cluster templates depend on ``osac.service`` collection

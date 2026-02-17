@@ -126,7 +126,7 @@
 
 - name: Override the storage_class name if defined in cluster-fulfillment-ig
   ansible.builtin.set_fact:
-    storage_class: "{{ lookup('env', 'CLOUDKIT_VM_OPERATIONS_STORAGE_CLASS') | default(storage_class) }}"
+    storage_class: "{{ lookup('env', 'OSAC_VM_OPERATIONS_STORAGE_CLASS') | default(storage_class) }}"
 
 - name: Using vmaas_storage_class
   ansible.builtin.debug:
@@ -191,7 +191,7 @@
 
 - name: Annotate the reconciledConfigVerion
   kubernetes.core.k8s:
-    api_version: cloudkit.openshift.io/v1alpha1
+    api_version: osac.openshift.io/v1alpha1
     kind: ComputeInstance
     name: "{{ compute_instance_name }}"
     namespace: "{{ compute_instance.metadata.namespace }}"
@@ -199,7 +199,7 @@
     definition:
       metadata:
         annotations:
-          cloudkit.openshift.io/reconciled-config-version: "{{ compute_instance.status.desiredConfigVersion | default('unknown') }}"
+          osac.openshift.io/reconciled-config-version: "{{ compute_instance.status.desiredConfigVersion | default('unknown') }}"
 
 - name: Get VM status
   kubernetes.core.k8s_info:

@@ -13,7 +13,7 @@
       kubernetes.core.k8s:
         state: patched
         definition:
-          apiVersion: cloudkit.openshift.io/v1alpha1
+          apiVersion: osac.openshift.io/v1alpha1
           kind: ClusterOrder
           metadata:
             name: "{{ cluster_order.metadata.name }}"

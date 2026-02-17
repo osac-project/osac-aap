@@ -1,6 +1,6 @@
 schemaVersion: 2.2.2
 metadata:
-  name: cloudkit.global_config-87d43573
+  name: osac.global_config-87d43573
 components:
   - name: tooling-container
     container:

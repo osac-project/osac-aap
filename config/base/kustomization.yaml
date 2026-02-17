@@ -2,14 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 metadata:
-  name: cloudkit-aap-base
+  name: osac-aap-base
 
 resources:
   - aap.yaml
-  - cloudkit-sa.yaml
+  - osac-sa.yaml
   - job.yaml
   - template-publisher.yaml
 
 labels:
 - pairs:
-    cloudkit.openshift.io/project: cloudkit-aap
+    osac.openshift.io/project: osac-aap

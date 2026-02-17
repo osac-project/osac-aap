@@ -20,10 +20,10 @@ def extract_esi_location(v: str) -> dict[str, str]:
 
 def mac_to_agent_name(v: list[str], agents) -> str | None:
     try:
-        from ansible_collections.cloudkit.service.plugins.filter.agents \
-                import mac_to_agent_name as cloudkit_mac_to_agent_name
+        from ansible_collections.osac.service.plugins.filter.agents \
+                import mac_to_agent_name as osac_mac_to_agent_name
 
-        return cloudkit_mac_to_agent_name(v, agents)
+        return osac_mac_to_agent_name(v, agents)
     except ImportError:
         target_addresses = set(v)
         for agent in agents:

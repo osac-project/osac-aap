@@ -11,7 +11,7 @@ Virtualization.
 The `osac.templates` collection provides ready-to-use templates for deploying
 infrastructure on OpenShift through the OSAC fulfillment service system. Templates are
 defined as Ansible roles with metadata that enables self-service provisioning via the
-OSAC [fulfillment service](https://github.com/innabox/fulfillment-service).
+OSAC [fulfillment service](https://github.com/osac-project/fulfillment-service).
 
 ## Features
 
@@ -29,7 +29,7 @@ ansible-galaxy collection install osac.templates
 ### From Source
 
 ```bash
-git clone http://github.com/innabox/osac-templates
+git clone http://github.com/osac-project/osac-templates
 cd osac-templates
 ansible-galaxy collection build
 ansible-galaxy collection install osac-templates-*.tar.gz
@@ -90,7 +90,7 @@ validation, and lifecycle management.
    mkdir -p roles/my_cluster_template/{tasks,defaults,meta}
    ```
 
-2. Define template metadata in `roles/my_cluster_template/meta/cloudkit.yaml`:
+2. Define template metadata in `roles/my_cluster_template/meta/osac.yaml`:
    ```yaml
    title: My Cluster Template
    description: Description of what this template provides
@@ -120,7 +120,7 @@ validation, and lifecycle management.
 ### Creating a New VM Template
 
 1. Create role structure as above
-2. Set `template_type: vm` in `meta/cloudkit.yaml`
+2. Set `template_type: vm` in `meta/osac.yaml`
 3. Use `create.yaml` and `delete.yaml` instead of `install.yaml`
 4. Implement VM creation using `kubernetes.core.k8s` modules
 
@@ -145,7 +145,7 @@ Templates integrate with OSAC through a well-defined interface:
 ## Dependencies
 
 ### Runtime Dependencies
-- `cloudkit.service` collection (for cluster templates)
+- `osac.service` collection (for cluster templates)
 - `kubernetes.core` collection (for VM templates)
 - `massopencloud.esi` collection (for floating IP management)
 
@@ -157,7 +157,7 @@ Templates integrate with OSAC through a well-defined interface:
 ## Contributing
 
 Contributions are welcome! Please ensure all templates:
-- Include comprehensive `meta/cloudkit.yaml` metadata
+- Include comprehensive `meta/osac.yaml` metadata
 - Define all parameters in `meta/argument_specs.yaml`
 - Implement both create and delete operations
 - Follow Ansible best practices
@@ -169,9 +169,9 @@ Apache License 2.0 - See [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues**: http://github.com/innabox/issues/issues
-- **Documentation**: http://github.com/innabox/osac-templates/README.md
-- **Repository**: http://github.com/innabox/osac-templates
+- **Issues**: http://github.com/osac-project/issues/issues
+- **Documentation**: http://github.com/osac-project/osac-templates/README.md
+- **Repository**: http://github.com/osac-project/osac-templates
 
 ## Author
 

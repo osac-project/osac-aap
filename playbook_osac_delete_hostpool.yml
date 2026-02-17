@@ -5,7 +5,7 @@
 
   vars:
     hostpool: "{{ ansible_eda.event.payload }}"
-    cloudkit_fulfillment_service_uri: "{{ lookup('env', 'CLOUDKIT_FULFILLMENT_SERVICE_URI', default='https://fulfillment-api:8000') }}"
+    osac_fulfillment_service_uri: "{{ lookup('env', 'OSAC_FULFILLMENT_SERVICE_URI', default='https://fulfillment-api:8000') }}"
 
   pre_tasks:
     - name: Show hostpool values
@@ -14,14 +14,14 @@
 
     - name: Determine working namespace
       ansible.builtin.include_role:
-        name: cloudkit.service.hostpool_working_namespace
+        name: osac.service.hostpool_working_namespace
       vars:
         hostpool_working_namespace_hostpool_name: "{{ hostpool.metadata.name }}"
 
   tasks:
     - name: Delete hostpool infrastructure
       ansible.builtin.import_role:
-        name: cloudkit.service.hostpool_infra
+        name: osac.service.hostpool_infra
       vars:
         hostpool_infra_state: absent
         hostpool_infra_name: "{{ hostpool.metadata.name }}"
@@ -29,7 +29,7 @@
 
     - name: Remove infrastructure finalizer
       ansible.builtin.include_role:
-        name: cloudkit.service.finalizer
+        name: osac.service.finalizer
       vars:
         finalizer_state: absent
         finalizer_name: "{{ hostpool_infrastructure_finalizer }}"
@@ -39,7 +39,7 @@
           namespace: "{{ item.namespace | default(omit) }}"
           name: "{{ item.name }}"
       loop:
-        - api_version: cloudkit.openshift.io/v1alpha1
+        - api_version: osac.openshift.io/v1alpha1
           kind: HostPool
           namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
           name: "{{ hostpool.metadata.name }}"

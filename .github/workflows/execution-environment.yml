@@ -37,7 +37,7 @@ jobs:
         run: |
           uv tool run ansible-builder build -vvv                        \
                                             --container-runtime podman  \
-                                            --tag "cloudkit-ee"         \
+                                            --tag "osac-ee"         \
                                             -f "./execution-environment/execution-environment.yaml"
 
       - name: Log against GHCR
@@ -52,8 +52,8 @@ jobs:
           IMAGE_NAME_LATEST="${IMAGE_NAME}:latest"
           IMAGE_NAME_SHA="${IMAGE_NAME}:${{ github.sha }}"
 
-          podman tag "cloudkit-ee" "${IMAGE_NAME_LATEST}"
-          podman tag "cloudkit-ee" "${IMAGE_NAME_SHA}"
+          podman tag "osac-ee" "${IMAGE_NAME_LATEST}"
+          podman tag "osac-ee" "${IMAGE_NAME_SHA}"
 
           podman push "${IMAGE_NAME_LATEST}"
           podman push "${IMAGE_NAME_SHA}"

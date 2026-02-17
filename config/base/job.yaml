@@ -44,25 +44,25 @@ spec:
             exit 1
         env:
         - name: AAP_GATEWAY_HOSTNAME
-          value: "innabox-aap"
+          value: "osac-aap"
         - name: AAP_EDA_HOSTNAME
-          value: "innabox-aap-eda-api"
+          value: "osac-aap-eda-api"
         - name: AAP_EDA_ADMIN
           value: "admin"
         - name: AAP_EDA_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: innabox-aap-eda-admin-password
+              name: osac-aap-eda-admin-password
               key: password
         - name: AAP_CONTROLLER_GATEWAY_HOSTNAME
-          value: "innabox-aap-controller-service"
+          value: "osac-aap-controller-service"
       containers:
-      - image: cloudkit-aap
+      - image: osac-aap
         name: bootstrap
         args:
         - ansible-playbook
-        - cloudkit.config_as_code.subscription
-        - cloudkit.config_as_code.configure
+        - osac.config_as_code.subscription
+        - osac.config_as_code.configure
         envFrom:
         - secretRef:
             name: config-as-code-ig
@@ -71,7 +71,7 @@ spec:
         - name: AAP_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: innabox-aap-admin-password
+              name: osac-aap-admin-password
               key: password
         - name: NAMESPACE
           valueFrom:

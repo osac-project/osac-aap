@@ -67,21 +67,21 @@
    "name": "CHANGELOG.rst",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "f22be23d51316a0063fe30d4814cc5823c4daa34634fbbd5c5cbddc89bc1100b",
+   "chksum_sha256": "e621f14c513ad56371bf1d16c3a9151489c56327b3628bdd9489af5f2da0ca46",
    "format": 1
   },
   {
    "name": "LICENSE",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "1f6965e2598002fb0a2a96bd586d884b64d4c2bcb890d901a777418dbe143d4b",
+   "chksum_sha256": "e18d498d8a07d4abcf0979ece2608a4f38d8967aee98178ecf151ab6ca3ceaa6",
    "format": 1
   },
   {
    "name": "README.md",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "2e14173195d337decf93c6ea3fc4f3642c9143316cbfd1a8af6bf846495aad30",
+   "chksum_sha256": "b52a07df4d028dc31ab97d7abd2c55dbbec30a5a4c93a28c24bae2583de6658f",
    "format": 1
   },
   {
@@ -155,7 +155,7 @@
    "format": 1
   },
   {
-   "name": "roles/ocp_4_17_small/meta/cloudkit.yaml",
+   "name": "roles/ocp_4_17_small/meta/osac.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "c00c16ad727243a56e0dfcba1ffbdde79022a22a3145371489ef1d40584489ad",
@@ -172,14 +172,14 @@
    "name": "roles/ocp_4_17_small/tasks/delete.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "f0ec82a3210a11a2071aa5fb6206da6f5c5922d8b2d8fbf7a5b27fdc8b461bd1",
+   "chksum_sha256": "812e7438742c66116bef22117b47d76c8a8bc8d0f437cf581627f96a29468a5b",
    "format": 1
   },
   {
    "name": "roles/ocp_4_17_small/tasks/install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "4b6d464dea4200f0142c02e8f8e2a9b7925c36bae3bc0a4a280f03eb03421e67",
+   "chksum_sha256": "8d59aa47db8eb325e22210a3a7699f6e438ba7b363bae21b6494429c7cc17fde",
    "format": 1
   },
   {
@@ -225,7 +225,7 @@
    "format": 1
   },
   {
-   "name": "roles/ocp_4_17_small_github/meta/cloudkit.yaml",
+   "name": "roles/ocp_4_17_small_github/meta/osac.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "409e2811eb86063e352207c58d5f149d7d483f1b4a8d932a4df2f3234cff693d",
@@ -295,7 +295,7 @@
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/meta/cloudkit.yaml",
+   "name": "roles/ocp_virt_vm/meta/osac.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "79d14a39bc94684699c0405a131b20b3230ed51f3efaf8aa81e99aab99e76a48",
@@ -312,7 +312,7 @@
    "name": "roles/ocp_virt_vm/tasks/create.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "a0d4133163bcf93eba75728b37fb7aacea132f7211793f99ad043e1adf98b21d",
+   "chksum_sha256": "3f81cfcb728d30e784a964865d2454e33d51f9f120349b90204a674f61b61c9b",
    "format": 1
   },
   {

@@ -18,16 +18,16 @@
   ],
   "license_file": "LICENSE",
   "dependencies": {},
-  "repository": "http://github.com/innabox/osac-massopencloud-templates",
-  "documentation": "http://github.com/innabox/osac-massopencloud-templates/README.md",
-  "homepage": "http://github.com/innabox/osac-massopencloud-templates",
-  "issues": "http://github.com/innabox/issues/issues"
+  "repository": "http://github.com/osac-project/osac-massopencloud-templates",
+  "documentation": "http://github.com/osac-project/osac-massopencloud-templates/README.md",
+  "homepage": "http://github.com/osac-project/osac-massopencloud-templates",
+  "issues": "http://github.com/osac-project/issues/issues"
  },
  "file_manifest_file": {
   "name": "FILES.json",
   "ftype": "file",
   "chksum_type": "sha256",
-  "chksum_sha256": "34774984d258d20afc1d20b8fbd663d10374613a65415d36bd30de08aae03d97",
+  "chksum_sha256": "1b5e045e5aaa1fb2894892a910b0dd7ce8bc9bf815588252e23e88a035e8e8e9",
   "format": 1
  },
  "format": 1

@@ -1,4 +1,4 @@
-# Cloudkit AAP execution environment
+# OSAC AAP execution environment
 
 Tools and configuration to run playbooks that interact with both OpenStack/ESI and OpenShift.
 
@@ -13,5 +13,5 @@ Tools and configuration to run playbooks that interact with both OpenStack/ESI a
 2. Build the execution environment:
 
     ```
-    ansible-builder build --tag cloudkit-aap-ee
+    ansible-builder build --tag osac-aap-ee
     ```
