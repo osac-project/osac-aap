@@ -5,9 +5,14 @@ default_vm_labels: "{{ {compute_instance_label: compute_instance_name} }}"
 
 # Setup the defaults described in the arg_specs.
 default_arg_specs:
-  cpu_cores: 2
-  memory: 2Gi
-  disk_size: 10Gi
-  image_source: "quay.io/containerdisks/fedora:latest"
   exposed_ports: "22/tcp"
-  cloud_init_config: "{{ '#cloud-config' | b64encode }}"
+
+# Defaults for ComputeInstance spec fields.
+default_spec:
+  cores: 2
+  memoryGiB: 2
+  bootDisk:
+    sizeGiB: 10
+  image:
+    sourceRef: "quay.io/containerdisks/fedora:latest"
+  runStrategy: "Always"

@@ -67,13 +67,20 @@ Simple virtual machine template with configurable resources and cloud-init suppo
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `cpu_cores` | int | 2 | Number of CPU cores |
-| `memory` | string | "2Gi" | Memory allocation |
-| `disk_size` | string | "10Gi" | Root disk size |
-| `image_source` | string | "quay.io/containerdisks/fedora:latest" | Container disk image or PVC |
-| `cloud_init_config` | string | - | Base64-encoded cloud-init user data |
-| `ssh_public_key` | string | - | SSH public key for VM access |
 | `exposed_ports` | string | "22/tcp" | Comma-separated ports (e.g., "22/tcp,80/tcp") |
+
+The following are read from the `ComputeInstance` spec:
+
+| Spec Field | Description |
+|-----------|-------------|
+| `spec.cores` | Number of CPU cores |
+| `spec.memoryGiB` | Memory allocation in GiB |
+| `spec.bootDisk.sizeGiB` | Root disk size in GiB |
+| `spec.image.sourceRef` | Container disk image |
+| `spec.runStrategy` | VM run strategy (Always, Halted, etc.) |
+| `spec.sshKey` | SSH public key for VM access |
+| `spec.userDataSecretRef.name` | Secret containing cloud-init user data |
+| `spec.additionalDisks` | Additional data disks |
 
 ## Usage
 

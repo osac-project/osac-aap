@@ -10,36 +10,37 @@
   ansible.builtin.set_fact:
     params: "{{ default_arg_specs | combine(template_parameters) }}"
 
+- name: Extract VM configuration from ComputeInstance spec
+  ansible.builtin.set_fact:
+    vm_cpu_cores: "{{ (compute_instance.spec.cores | default(default_spec.cores)) | int }}"
+    vm_memory: "{{ (compute_instance.spec.memoryGiB | default(default_spec.memoryGiB)) | string + 'Gi' }}"
+    vm_boot_disk_size: "{{ (compute_instance.spec.bootDisk.sizeGiB | default(default_spec.bootDisk.sizeGiB)) | string + 'Gi' }}"
+    vm_image_source: "{{ compute_instance.spec.image.sourceRef | default(default_spec.image.sourceRef) }}"
+    vm_run_strategy: "{{ compute_instance.spec.runStrategy | default(default_spec.runStrategy) }}"
+    vm_ssh_key: "{{ compute_instance.spec.sshKey | default('') }}"
+    vm_user_data_secret_ref: "{{ (compute_instance.spec.userDataSecretRef | default({})).name | default('') }}"
+    vm_additional_disks: "{{ compute_instance.spec.additionalDisks | default([]) }}"
+    vm_boot_disk_storage_class: "{{ compute_instance.spec.bootDisk.storageClass | default('') }}"
+
 - name: Validate exposed_ports format
   ansible.builtin.assert:
     that:
       - params.exposed_ports is match('^([0-9]+/(tcp|udp))(,[0-9]+/(tcp|udp))*$')
     fail_msg: "exposed_ports must be in format 'port/protocol' (e.g., '22/tcp,80/tcp') where protocol is 'tcp' or 'udp'"
 
-- name: Validate cloud_init_config is base64 encoded
-  ansible.builtin.assert:
-    that:
-      - params.cloud_init_config | length > 0
-      - params.cloud_init_config | b64decode is defined
-    fail_msg: "cloud_init_config must be a valid base64 encoded string"
-
 - name: Build template spec base
   ansible.builtin.set_fact:
     vm_template_spec:
       domain:
         cpu:
-          cores: "{{ params.cpu_cores | int }}"
+          cores: "{{ vm_cpu_cores }}"
         memory:
-          guest: "{{ params.memory }}"
+          guest: "{{ vm_memory }}"
         devices:
           disks:
             - name: root-disk
               disk:
                 bus: virtio
-            - name: cloud-init-disk
-              disk:
-                bus: virtio
-              serial: cloud-init
           interfaces:
             - name: default
               masquerade: {}
@@ -61,27 +62,79 @@
         - name: root-disk
           dataVolume:
             name: "{{ compute_instance_name }}-root-disk"
+
+- name: Copy user-data secret to VM namespace and add cloud-init disk to template spec
+  when: vm_user_data_secret_ref | length > 0
+  block:
+    - name: Read user-data secret from ComputeInstance namespace
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ vm_user_data_secret_ref }}"
+        namespace: "{{ compute_instance.metadata.namespace }}"
+      register: user_data_secret
+
+    - name: Fail if user-data secret not found
+      ansible.builtin.assert:
+        that:
+          - user_data_secret.resources | length > 0
+        fail_msg: >-
+          Secret '{{ vm_user_data_secret_ref }}' not found in namespace
+          '{{ compute_instance.metadata.namespace }}'
+
+    - name: Create user-data secret in VM namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ compute_instance_name }}-user-data"
+            namespace: "{{ compute_instance_working_namespace }}"
+            labels: "{{ default_vm_labels }}"
+          type: Opaque
+          data: "{{ user_data_secret.resources[0].data }}"
+
+    - name: Add cloud-init disk to template spec
+      ansible.builtin.set_fact:
+        vm_template_spec: "{{ vm_template_spec | combine(cloud_init_patch, recursive=True, list_merge='append') }}"
+      vars:
+        cloud_init_patch:
+          domain:
+            devices:
+              disks:
+                - name: cloud-init-disk
+                  disk:
+                    bus: virtio
+                  serial: cloud-init
+          volumes:
+            - name: cloud-init-disk
+              cloudInitNoCloud:
+                secretRef:
+                  name: "{{ compute_instance_name }}-user-data"
+
+- name: Add minimal cloud-init disk for SSH key propagation
+  ansible.builtin.set_fact:
+    vm_template_spec: "{{ vm_template_spec | combine(cloud_init_patch, recursive=True, list_merge='append') }}"
+  vars:
+    cloud_init_patch:
+      domain:
+        devices:
+          disks:
+            - name: cloud-init-disk
+              disk:
+                bus: virtio
+              serial: cloud-init
+      volumes:
         - name: cloud-init-disk
           cloudInitNoCloud:
-            secretRef:
-              name: "{{ compute_instance_name }}-cloud-init"
-
-- name: Create cloud-init secret
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: "{{ compute_instance_name }}-cloud-init"
-        namespace: "{{ compute_instance_working_namespace }}"
-        labels: "{{ default_vm_labels }}"
-      type: Opaque
-      data:
-        userData: "{{ params.cloud_init_config }}"
-    state: present
+            userData: "#cloud-config"
+  when:
+    - vm_ssh_key | length > 0
+    - vm_user_data_secret_ref | length == 0
 
 - name: Create ssh public key secret and add accessCredentials to template spec
-  when: params.ssh_public_key is defined and params.ssh_public_key | length > 0
+  when: vm_ssh_key | length > 0
   block:
     - name: Create Secret resource containing ssh public key
       kubernetes.core.k8s:
@@ -94,7 +147,7 @@
             namespace: "{{ compute_instance_working_namespace }}"
             labels: "{{ default_vm_labels }}"
           data:
-            ssh-public-key: "{{ params.ssh_public_key | b64encode }}"
+            ssh-public-key: "{{ vm_ssh_key | b64encode }}"
           type: Opaque
 
     - name: Add accessCredentials to template spec
@@ -124,9 +177,14 @@
     - "'storageclass.kubernetes.io/is-default-class' in item.metadata.annotations"
     - item.metadata.annotations['storageclass.kubernetes.io/is-default-class'] | bool
 
-- name: Override the storage_class name if defined in cluster-fulfillment-ig
+- name: Override storage_class from spec, env var, or keep cluster default
   ansible.builtin.set_fact:
-    storage_class: "{{ lookup('env', 'OSAC_VM_OPERATIONS_STORAGE_CLASS') | default(storage_class) }}"
+    storage_class: >-
+      {{
+        vm_boot_disk_storage_class
+        | default(lookup('env', 'OSAC_VM_OPERATIONS_STORAGE_CLASS'), true)
+        | default(storage_class, true)
+      }}
 
 - name: Using vmaas_storage_class
   ansible.builtin.debug:
@@ -145,15 +203,61 @@
       spec:
         source:
           registry:
-            url: "docker://{{ params.image_source }}"
+            url: "docker://{{ vm_image_source }}"
         pvc:
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
-              storage: "{{ params.disk_size }}"
+              storage: "{{ vm_boot_disk_size }}"
           storageClassName: "{{ storage_class }}"
     state: present
+
+- name: Create DataVolumes for additional disks
+  kubernetes.core.k8s:
+    apply: true
+    definition:
+      apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        name: "{{ compute_instance_name }}-disk-{{ idx + 1 }}"
+        labels: "{{ default_vm_labels }}"
+        namespace: "{{ compute_instance_working_namespace }}"
+      spec:
+        source:
+          blank: {}
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ item.sizeGiB }}Gi"
+          storageClassName: "{{ item.storageClass | default(storage_class) }}"
+    state: present
+  loop: "{{ vm_additional_disks }}"
+  loop_control:
+    index_var: idx
+  when: vm_additional_disks | length > 0
+
+- name: Add additional disks to template spec
+  ansible.builtin.set_fact:
+    vm_template_spec: "{{ vm_template_spec | combine(additional_disk_patch, recursive=True, list_merge='append') }}"
+  vars:
+    additional_disk_patch:
+      domain:
+        devices:
+          disks:
+            - name: "additional-disk-{{ idx + 1 }}"
+              disk:
+                bus: virtio
+      volumes:
+        - name: "additional-disk-{{ idx + 1 }}"
+          dataVolume:
+            name: "{{ compute_instance_name }}-disk-{{ idx + 1 }}"
+  loop: "{{ vm_additional_disks }}"
+  loop_control:
+    index_var: idx
+  when: vm_additional_disks | length > 0
 
 - name: Create VirtualMachine
   kubernetes.core.k8s:
@@ -166,7 +270,7 @@
         namespace: "{{ compute_instance_working_namespace }}"
         labels: "{{ default_vm_labels }}"
       spec:
-        running: true
+        runStrategy: "{{ vm_run_strategy }}"
         template:
           metadata:
             labels: "{{ default_vm_labels }}"
@@ -214,7 +318,9 @@
     msg:
       - "Virtual Machine '{{ compute_instance_name }}' created successfully"
       - "Namespace: {{ compute_instance_working_namespace }}"
-      - "Image: {{ params.image_source }}"
-      - "CPU Cores: {{ params.cpu_cores }}/Memory: {{ params.memory }}"
-      - "Root Disk Size: {{ params.disk_size }}"
+      - "Image: {{ vm_image_source }}"
+      - "CPU Cores: {{ vm_cpu_cores }}/Memory: {{ vm_memory }}"
+      - "Root Disk Size: {{ vm_boot_disk_size }}"
+      - "Additional Disks: {{ vm_additional_disks | length }}"
+      - "RunStrategy: {{ vm_run_strategy }}"
       - "Status: {{ vm_status.resources[0].status.printableStatus | default('Unknown') }}"

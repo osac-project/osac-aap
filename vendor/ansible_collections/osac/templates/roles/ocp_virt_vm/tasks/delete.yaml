@@ -23,7 +23,7 @@
     state: present
     definition:
       spec:
-        running: false
+        runStrategy: Halted
   when: vm_exists.resources
 
 - name: Wait for VM to stop
@@ -75,18 +75,32 @@
     wait: true
     wait_timeout: 300
 
-- name: Delete cloud-init secret
+- name: Delete additional disk DataVolumes
+  kubernetes.core.k8s:
+    api_version: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    name: "{{ compute_instance_name }}-disk-{{ idx + 1 }}"
+    namespace: "{{ compute_instance_working_namespace }}"
+    state: absent
+    wait: true
+    wait_timeout: 300
+  loop: "{{ compute_instance.spec.additionalDisks | default([]) }}"
+  loop_control:
+    index_var: idx
+  when: (compute_instance.spec.additionalDisks | default([])) | length > 0
+
+- name: Delete user-data secret
   kubernetes.core.k8s:
     api_version: v1
     kind: Secret
-    name: "{{ compute_instance_name }}-cloud-init"
+    name: "{{ compute_instance_name }}-user-data"
     namespace: "{{ compute_instance_working_namespace }}"
     state: absent
-  register: delete_cloud_init_secret
+  register: delete_user_data_secret
   failed_when:
-    - delete_cloud_init_secret.failed is defined
-    - delete_cloud_init_secret.failed
-    - "'not found' not in (delete_cloud_init_secret.msg | default(''))"
+    - delete_user_data_secret.failed is defined
+    - delete_user_data_secret.failed
+    - "'not found' not in (delete_user_data_secret.msg | default(''))"
 
 - name: Delete ssh public key secret
   kubernetes.core.k8s:
