@@ -26,7 +26,7 @@
   when: finalizer_state == "absent"
   kubernetes.core.k8s:
     state: present
-    apply: true
+    merge_type: merge
     definition:
       apiVersion: "{{ finalizer_target.api_version }}"
       kind: "{{ finalizer_target.kind }}"
