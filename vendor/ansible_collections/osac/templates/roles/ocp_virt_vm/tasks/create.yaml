@@ -292,6 +292,7 @@
       type: Ready
       status: "True"
     wait_timeout: 600
+  when: vm_run_strategy != "Halted"
 
 - name: Annotate the reconciledConfigVerion
   kubernetes.core.k8s:
