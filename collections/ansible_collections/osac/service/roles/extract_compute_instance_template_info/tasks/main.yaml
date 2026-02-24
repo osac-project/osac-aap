@@ -8,4 +8,4 @@
   when: >-
     template_parameters is not defined
   ansible.builtin.set_fact:
-    template_parameters: "{{ compute_instance.spec.templateParameters | from_json }}"
+    template_parameters: "{}"
