@@ -6,17 +6,13 @@
   vars:
     compute_instance: "{{ ansible_eda.event.payload }}"
     compute_instance_name: "{{ ansible_eda.event.payload.metadata.name }}"
+    template_id: "{{ ansible_eda.event.payload.spec.templateID }}"
+    template_parameters: {}
 
   pre_tasks:
     - name: Show EDA Event
       ansible.builtin.debug:
         var: ansible_eda.event.payload
-
-    # Brings in variables:
-    # template_id, template_parameters
-    - name: Extract compute instance template info
-      ansible.builtin.include_role:
-        name: osac.service.extract_compute_instance_template_info
 
     # Brings in variables:
     # compute_instance_working_namespace
