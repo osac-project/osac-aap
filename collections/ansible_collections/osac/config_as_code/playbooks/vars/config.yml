@@ -12,3 +12,5 @@ aap_project_git_uri: "{{ lookup('env', 'AAP_PROJECT_GIT_URI', default='https://g
 aap_project_git_branch: "{{ lookup('env', 'AAP_PROJECT_GIT_BRANCH', default='main') }}"
 aap_ee_image: "{{ lookup('env', 'AAP_EE_IMAGE', default='ghcr.io/osac/osac-aap:latest') }}"
 license_manifest_path: "{{ lookup('env', 'LICENSE_MANIFEST_PATH', default='/var/secrets/config-as-code-manifest/license.zip') }}"
+remote_cluster_kubeconfig_secret_name: "{{ lookup('env', 'REMOTE_CLUSTER_KUBECONFIG_SECRET_NAME', default=Undefined) }}"
+remote_cluster_kubeconfig_secret_key: "{{ lookup('env', 'REMOTE_CLUSTER_KUBECONFIG_SECRET_KEY', default='kubeconfig') }}"
