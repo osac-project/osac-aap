@@ -26,10 +26,9 @@
       data:
         id_rsa.pub: "{{ hosted_cluster_settings.ssh_public_key | b64encode }}"
 
-- name: Create HostedCluster resource
-  kubernetes.core.k8s:
-    state: present
-    definition:
+- name: Build HostedCluster definition
+  ansible.builtin.set_fact:
+    hosted_cluster_definition:
       apiVersion: hypershift.openshift.io/v1beta1
       kind: HostedCluster
       metadata:
@@ -77,36 +76,67 @@
         infrastructureAvailabilityPolicy: HighlyAvailable
         olmCatalogPlacement: management
 
+- name: Hook - Modify HostedCluster definition
+  ansible.builtin.include_role:
+    name: "{{ hosted_cluster_modify_definition_hook.name }}"
+    tasks_from: "{{ hosted_cluster_modify_definition_hook.tasks_from }}"
+  when: hosted_cluster_modify_definition_hook is defined
+
+- name: Create HostedCluster resource
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ hosted_cluster_definition }}"
+
 - name: Set nodepool prefix
   ansible.builtin.set_fact:
     nodepool_prefix: "nodepool-{{ hosted_cluster_name }}"
 
+- name: Build NodePool definitions
+  ansible.builtin.set_fact:
+    nodepool_definitions: >-
+      {{ nodepool_definitions | default([]) + [{
+        'apiVersion': 'hypershift.openshift.io/v1beta1',
+        'kind': 'NodePool',
+        'metadata': {
+          'name': nodepool_prefix + '-' + item.resourceClass,
+          'namespace': hosted_cluster_namespace,
+          'labels': {esi_agent_resource_class_label: item.resourceClass} | combine(hosted_cluster_default_cluster_order_label)
+        },
+        'spec': {
+          'clusterName': hosted_cluster_name,
+          'replicas': item.numberOfNodes | int,
+          'management': {
+            'autoRepair': false,
+            'upgradeType': 'InPlace'
+          },
+          'platform': {
+            'type': 'Agent',
+            'agent': {
+              'agentLabelSelector': {
+                'matchLabels': {esi_agent_resource_class_label: item.resourceClass} | combine(hosted_cluster_default_cluster_order_label)
+              }
+            }
+          },
+          'release': {
+            'image': ocp_release_image
+          }
+        }
+      }] }}
+  loop: "{{ hosted_cluster_node_requests }}"
+
+- name: Hook - Modify NodePool definitions
+  ansible.builtin.include_role:
+    name: "{{ nodepool_modify_definitions_hook.name }}"
+    tasks_from: "{{ nodepool_modify_definitions_hook.tasks_from }}"
+  when: nodepool_modify_definitions_hook is defined
+
 - name: Create NodePool resources
   kubernetes.core.k8s:
     state: present
-    definition:
-      apiVersion: hypershift.openshift.io/v1beta1
-      kind: NodePool
-      metadata:
-        name: "{{ nodepool_prefix }}-{{ item.resourceClass }}"
-        namespace: "{{ hosted_cluster_namespace }}"
-        labels: "{{ {esi_agent_resource_class_label: item.resourceClass} | combine(hosted_cluster_default_cluster_order_label) }}"
-      spec:
-        clusterName: "{{ hosted_cluster_name }}"
-        replicas: "{{ item.numberOfNodes | int }}"
-        management:
-          autoRepair: false
-          upgradeType: InPlace
-        platform:
-          type: Agent
-          agent:
-            agentLabelSelector:
-              matchLabels: "{{ {esi_agent_resource_class_label: item.resourceClass} | combine(hosted_cluster_default_cluster_order_label) }}"
-        release:
-          image: "{{ ocp_release_image }}"
-  loop: "{{ hosted_cluster_node_requests }}"
+    definition: "{{ item }}"
+  loop: "{{ nodepool_definitions }}"
   loop_control:
-    label: "Create NodePool nodepool-{{ hosted_cluster_name }}-{{ item.resourceClass }}"
+    label: "Create NodePool {{ item.metadata.name }}"
 
 - name: Remove node pools matching resource classes that are no longer requested
   block:

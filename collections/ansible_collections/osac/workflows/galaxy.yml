@@ -1,0 +1,18 @@
+namespace: osac
+name: workflows
+version: 1.0.0
+readme: README.md
+authors:
+  - OSAC Project
+description: OSAC workflow playbooks with customer override support
+license:
+  - Apache-2.0
+tags:
+  - infrastructure
+  - cloud
+  - workflows
+repository: https://github.com/osac-project/osac-aap
+issues: https://github.com/osac-project/osac-aap/issues
+build_ignore: []
+dependencies:
+  osac.service: ">=1.0.0"
