@@ -20,6 +20,23 @@
       ansible.builtin.include_role:
         name: osac.service.compute_instance_working_namespace
 
+    # VM cluster kubeconfig for tenant StorageClass discovery and template.
+    # When unset or empty, the management cluster is used as the VM cluster.
+    - name: Set VM cluster kubeconfig from environment
+      ansible.builtin.set_fact:
+        remote_cluster_kubeconfig: "{{ lookup('env', 'OSAC_REMOTE_CLUSTER_KUBECONFIG') | default('', true) }}"
+
+    # Discover tenant StorageClass on VM cluster; sets tenant_storage_class_name
+    - name: Discover tenant StorageClass
+      ansible.builtin.include_role:
+        name: osac.service.tenant_storage_class
+      vars:
+        tenant_storage_class_tenant_id: "{{ compute_instance.status.tenantReference.name }}"
+        kubeconfig: "{{ remote_cluster_kubeconfig if (remote_cluster_kubeconfig | length > 0) else omit }}"
+      when:
+        - compute_instance.status.tenantReference is defined
+        - compute_instance.status.tenantReference.name is defined
+
   tasks:
 
     - name: Display compute instance information
