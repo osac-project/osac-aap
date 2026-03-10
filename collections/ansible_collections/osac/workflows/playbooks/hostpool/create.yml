@@ -1,0 +1,134 @@
+---
+# Workflow: Create Host Pool
+# This workflow creates host pool infrastructure from a HostPool CRD.
+# Generic hooks allow customization at workflow boundaries.
+#
+# Usage:
+#   - name: Create host pool
+#     ansible.builtin.import_playbook: osac.workflows.hostpool.create
+#     vars:
+#       hostpool: "{{ ansible_eda.event.payload }}"
+#
+# Hook example:
+#   - name: Create host pool with custom hooks
+#     ansible.builtin.import_playbook: osac.workflows.hostpool.create
+#     vars:
+#       hostpool: "{{ ansible_eda.event.payload }}"
+#       hook_workflow_start:
+#         name: my_custom_hooks
+#         tasks_from: validate_hosts.yml
+
+- name: Create host pool workflow
+  hosts: localhost
+  gather_facts: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG')) | default(lookup('env', 'HOME') + '/.kube/config') }}"
+
+
+  vars:
+    hostpool: "{{ ansible_eda.event.payload }}"
+    osac_fulfillment_service_uri: "{{ lookup('env', 'OSAC_FULFILLMENT_SERVICE_URI', default='https://fulfillment-api:8000') }}"
+
+    # GENERIC HOOKS - Default to noop
+    hook_workflow_start_default:
+      name: osac.workflows.workflow_helpers
+      tasks_from: noop.yml
+
+    hook_workflow_complete_default:
+      name: osac.workflows.workflow_helpers
+      tasks_from: noop.yml
+
+    # INFRASTRUCTURE STEP - Overrideable for different infrastructure providers
+    step_hostpool_infra_default:
+      name: osac.service.hostpool_infra
+      tasks_from: main.yaml
+
+  collections:
+    - osac.workflows
+    - osac.service
+
+  pre_tasks:
+    # HOOK: Workflow start
+    - name: Hook - Workflow start
+      ansible.builtin.include_role:
+        name: "{{ (hook_workflow_start | default(hook_workflow_start_default)).name }}"
+        tasks_from: "{{ (hook_workflow_start | default(hook_workflow_start_default)).tasks_from }}"
+
+    - name: Show hostpool values
+      ansible.builtin.debug:
+        var: hostpool
+
+    # CRITICAL: Extract hostpool name (NOT overrideable)
+    - name: Set hostpool name
+      ansible.builtin.set_fact:
+        hostpool_name: "{{ hostpool.metadata.name }}"
+
+    # CRITICAL: Generate lock holder ID (NOT overrideable)
+    - name: Set lock holder identity
+      ansible.builtin.set_fact:
+        hostpool_holder_id: >-
+          {{ hostpool_name }}-{{ awx_job_id | default("unknown") }}-{{
+            lookup('community.general.random_string', special=false, numbers=false, upper=false)
+          }}
+
+    # CRITICAL: Determine namespace (NOT overrideable)
+    - name: Determine working namespace
+      ansible.builtin.include_role:
+        name: osac.service.hostpool_working_namespace
+      vars:
+        hostpool_working_namespace_hostpool_name: "{{ hostpool_name }}"
+
+  tasks:
+    # CRITICAL: Acquire lock (NOT overrideable)
+    - name: Acquire hostpool lock
+      ansible.builtin.include_role:
+        name: osac.service.lease
+      vars:
+        lease_state: present
+        lease_holder: "{{ hostpool_holder_id }}"
+        lease_name: "hostpool-{{ hostpool_name }}-lock"
+
+    # CRITICAL: Add finalizer (NOT overrideable)
+    - name: Add infrastructure finalizer
+      ansible.builtin.include_role:
+        name: osac.service.finalizer
+      vars:
+        finalizer_state: present
+        finalizer_name: "{{ hostpool_infrastructure_finalizer }}"
+        finalizer_target:
+          api_version: "{{ item.api_version }}"
+          kind: "{{ item.kind }}"
+          namespace: "{{ item.namespace | default(omit) }}"
+          name: "{{ item.name }}"
+      loop:
+        - api_version: osac.openshift.io/v1alpha1
+          kind: HostPool
+          namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
+          name: "{{ hostpool.metadata.name }}"
+        - api_version: v1
+          kind: Namespace
+          name: "{{ hostpool_working_namespace }}"
+
+    - name: Display hostpool information
+      ansible.builtin.debug:
+        msg:
+          - "hostpool: {{ hostpool.metadata.name }}"
+          - "Hostpool working namespace: {{ hostpool_working_namespace }}"
+
+    # STEP: Create hostpool infrastructure (overrideable for different providers)
+    - name: Step - Create hostpool infrastructure
+      ansible.builtin.include_role:
+        name: "{{ (step_hostpool_infra_override | default(step_hostpool_infra_default)).name }}"
+        tasks_from: "{{ (step_hostpool_infra_override | default(step_hostpool_infra_default)).tasks_from }}"
+      vars:
+        hostpool_infra_state: present
+        hostpool_infra_name: "{{ hostpool_name }}"
+        hostpool_infra_namespace: "{{ hostpool_working_namespace }}"
+        hostpool_infra_host_requests: "{{ hostpool.spec.hostSets | unique(attribute='hostClass') }}"
+        hostpool_infra_uid: "{{ hostpool.metadata.labels['osac.openshift.io/hostpool-uuid'] }}"
+
+    # HOOK: Workflow complete
+    - name: Hook - Workflow complete
+      ansible.builtin.include_role:
+        name: "{{ (hook_workflow_complete | default(hook_workflow_complete_default)).name }}"
+        tasks_from: "{{ (hook_workflow_complete | default(hook_workflow_complete_default)).tasks_from }}"
