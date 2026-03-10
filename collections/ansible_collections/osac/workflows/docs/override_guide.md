@@ -121,7 +121,7 @@ Replace entire workflow phases:
 
 ## Extension Points Reference
 
-### Cluster Create Workflow
+### Cluster Create Workflow (`osac.workflows.cluster.create`)
 
 #### Generic Hooks (2)
 - `hook_workflow_start` - Very beginning (validation, logging, initialization)
@@ -146,6 +146,25 @@ These steps cannot be overridden to protect workflow integrity:
 - Lock holder ID generation
 - Template info parsing
 - All Kubernetes resource creation (but YAML can be modified via hooks)
+
+### Cluster Delete Workflow (`osac.workflows.cluster.delete`)
+
+#### Generic Hooks (2)
+- `hook_workflow_start` - Very beginning (validation, logging, pre-delete checks)
+- `hook_workflow_complete` - Very end (notifications, metrics, cleanup confirmation)
+
+#### Phase Overrides (4)
+- `step_apply_defaults_override` - Replace default settings logic
+- `step_determine_namespace_override` - Replace namespace determination
+- `step_call_template_override` - Replace template delete execution
+- `step_remove_finalizer_override` - Replace finalizer removal
+- `template_id_override` - Select different template
+
+#### Protected Critical Steps (NOT Overrideable)
+
+These steps cannot be overridden to protect workflow integrity:
+- Cluster order name extraction
+- Template info parsing
 
 ## Complete Example: MOC Integration
 

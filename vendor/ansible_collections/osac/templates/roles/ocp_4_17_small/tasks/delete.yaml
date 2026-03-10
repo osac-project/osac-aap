@@ -1,6 +1,30 @@
-- name: Destroy hosted cluster
-  ansible.builtin.import_role:
-    name: osac.service.hosted_cluster
+- name: Set delete step defaults
+  ansible.builtin.set_fact:
+    delete_step_pre_delete_hook_default:
+      name: osac.workflows.workflow_helpers
+      tasks_from: noop.yml
+    delete_step_hosted_cluster_default:
+      name: osac.service.hosted_cluster
+      tasks_from: main.yml
+    delete_step_external_access_default:
+      name: osac.service.external_access
+      tasks_from: main.yml
+    delete_step_cluster_infra_default:
+      name: osac.service.cluster_infra
+      tasks_from: main.yml
+    delete_step_post_delete_hook_default:
+      name: osac.workflows.workflow_helpers
+      tasks_from: noop.yml
+
+- name: Step - Pre-delete hook
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_pre_delete_hook_override | default(delete_step_pre_delete_hook_default)).name }}"
+    tasks_from: "{{ (delete_step_pre_delete_hook_override | default(delete_step_pre_delete_hook_default)).tasks_from }}"
+
+- name: Step - Destroy hosted cluster
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_hosted_cluster_override | default(delete_step_hosted_cluster_default)).name }}"
+    tasks_from: "{{ (delete_step_hosted_cluster_override | default(delete_step_hosted_cluster_default)).tasks_from }}"
   vars:
     hosted_cluster_state: absent
     hosted_cluster_name: "{{ cluster_order.metadata.name }}"
@@ -12,19 +36,26 @@
     hosted_cluster_node_count: >-
       {{ cluster_order.spec.nodeRequests | map(attribute="numberOfNodes") | sum }}
 
-- name: Remove port forwarding
-  ansible.builtin.import_role:
-    name: osac.service.external_access
+- name: Step - Remove port forwarding
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_external_access_override | default(delete_step_external_access_default)).name }}"
+    tasks_from: "{{ (delete_step_external_access_override | default(delete_step_external_access_default)).tasks_from }}"
   vars:
     external_access_state: absent
     external_access_name: "{{ cluster_order.metadata.name }}"
     external_access_namespace: "{{ cluster_working_namespace }}"
 
-- name: Destroy cluster infrastructure
-  ansible.builtin.import_role:
-    name: osac.service.cluster_infra
+- name: Step - Destroy cluster infrastructure
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_cluster_infra_override | default(delete_step_cluster_infra_default)).name }}"
+    tasks_from: "{{ (delete_step_cluster_infra_override | default(delete_step_cluster_infra_default)).tasks_from }}"
   vars:
     cluster_infra_state: absent
     cluster_infra_name: "{{ cluster_order.metadata.name }}"
     cluster_infra_namespace: "{{ cluster_working_namespace }}"
     cluster_infra_node_requests: []
+
+- name: Step - Post-delete hook
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_post_delete_hook_override | default(delete_step_post_delete_hook_default)).name }}"
+    tasks_from: "{{ (delete_step_post_delete_hook_override | default(delete_step_post_delete_hook_default)).tasks_from }}"
