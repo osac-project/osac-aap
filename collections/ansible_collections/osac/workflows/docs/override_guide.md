@@ -166,6 +166,28 @@ These steps cannot be overridden to protect workflow integrity:
 - Cluster order name extraction
 - Template info parsing
 
+### Cluster Post-Install Workflow (`osac.workflows.cluster.post_install`)
+
+#### Generic Hooks (2)
+- `hook_workflow_start` - Very beginning (validation, logging, pre-configuration checks)
+- `hook_workflow_complete` - Very end (notifications, metrics, verification)
+
+#### Phase Overrides (2)
+- `step_apply_defaults_override` - Replace default settings logic
+- `step_call_template_override` - Replace template post_install execution
+- `template_id_override` - Select different template
+
+#### Protected Critical Steps (NOT Overrideable)
+
+These steps cannot be overridden to protect workflow integrity:
+- Cluster order name extraction
+- Template info parsing
+
+#### Special Environment
+
+This workflow sets `KUBECONFIG` environment variable from `admin_kubeconfig` variable.
+Ensure `admin_kubeconfig` contains the cluster's admin kubeconfig content.
+
 ## Complete Example: MOC Integration
 
 Here's how Mass Open Cloud uses hooks and modifications for ESI integration:
