@@ -1,9 +1,9 @@
 ---
 # Test playbook for osac.service.tenant_storage_class role (Task 1).
 # Prerequisites: Cluster (or KUBECONFIG / OSAC_REMOTE_CLUSTER_KUBECONFIG) must have
-# exactly one StorageClass with label osac.openshift.com/tenant-id=<tenant_id> per tenant.
+# exactly one StorageClass with label osac.openshift.io/tenant=<tenant_name> per tenant.
 # Run from osac-aap repo root:
-#   ansible-playbook collections/ansible_collections/osac/service/roles/tenant_storage_class/tests/test.yml -e test_tenant_id=tenant-akshay
+#   ansible-playbook collections/ansible_collections/osac/service/roles/tenant_storage_class/tests/test.yml -e test_tenant_name=tenant-akshay
 
 - name: Test tenant_storage_class role
   hosts: localhost
@@ -14,7 +14,7 @@
       ansible.builtin.include_role:
         name: osac.service.tenant_storage_class
       vars:
-        tenant_storage_class_tenant_id: "{{ test_tenant_id | default('tenant-a') }}"
+        tenant_storage_class_tenant_name: "{{ test_tenant_name | default('tenant-a') }}"
 
     - name: Verify discovered StorageClass name is set
       ansible.builtin.assert:

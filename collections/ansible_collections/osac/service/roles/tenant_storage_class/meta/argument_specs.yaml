@@ -1,10 +1,10 @@
 argument_specs:
   main:
     options:
-      tenant_storage_class_tenant_id:
+      tenant_storage_class_tenant_name:
         type: str
         required: true
-        description: "Tenant ID (e.g. from compute_instance.status.tenantReference.name) used to discover the tenant's default StorageClass via label osac.openshift.com/tenant-id."
+        description: "Tenant name (e.g. from compute_instance.status.tenantReference.name) used to discover the tenant's default StorageClass via label osac.openshift.io/tenant."
       kubeconfig:
         type: str
         required: false

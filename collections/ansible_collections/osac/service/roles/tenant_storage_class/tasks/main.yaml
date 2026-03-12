@@ -1,6 +1,6 @@
 ---
 # Discover the tenant's StorageClass on the VM cluster.
-# Queries StorageClasses by label osac.openshift.com/tenant-id only.
+# Queries StorageClasses by label osac.openshift.io/tenant only.
 # CSP is allowed to create only one StorageClass per tenant.
 # Sets tenant_storage_class_name or fails.
 
@@ -9,7 +9,7 @@
     api_version: storage.k8s.io/v1
     kind: StorageClass
     label_selectors:
-      - "osac.openshift.com/tenant-id={{ tenant_storage_class_tenant_id }}"
+      - "osac.openshift.io/tenant={{ tenant_storage_class_tenant_name }}"
     kubeconfig: "{{ kubeconfig if (kubeconfig is defined and kubeconfig | length > 0) else omit }}"
   register: tenant_storage_classes
 
@@ -17,10 +17,10 @@
   ansible.builtin.assert:
     that: tenant_storage_classes.resources | length == 1
     fail_msg: >-
-      Expected exactly one StorageClass for tenant '{{ tenant_storage_class_tenant_id }}'
-      (label osac.openshift.com/tenant-id). Found {{ tenant_storage_classes.resources | length }}.
-      CSP should create only one StorageClass per tenant, labeled with osac.openshift.com/tenant-id, on the VM cluster.
-    success_msg: "Found tenant StorageClass for '{{ tenant_storage_class_tenant_id }}'."
+      Expected exactly one StorageClass for tenant '{{ tenant_storage_class_tenant_name }}'
+      (label osac.openshift.io/tenant). Found {{ tenant_storage_classes.resources | length }}.
+      CSP should create only one StorageClass per tenant, labeled with osac.openshift.io/tenant, on the VM cluster.
+    success_msg: "Found tenant StorageClass for '{{ tenant_storage_class_tenant_name }}'."
 
 - name: Set tenant StorageClass name
   ansible.builtin.set_fact:
