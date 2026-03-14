@@ -64,7 +64,10 @@
     loop_var: __controller_schedule_job_async_results_item
     label: "{{ __operation.verb }} Schedule {{ __controller_schedule_job_async_results_item.__controller_schedule_item.name }} | Wait for finish the Schedules {{
       __operation.action }}"
-  when: not ansible_check_mode and __controller_schedule_job_async_results_item.ansible_job_id is defined
+  when:
+    - not ansible_check_mode 
+    - __controller_schedule_job_async_results_item.ansible_job_id is defined
+    - __controller_schedule_job_async_results_item.__controller_schedule_item.state | default(platform_state) | default('present') == 'present'
   no_log: "{{ controller_configuration_schedules_secure_logging }}"
   vars:
     __operation: "{{ operation_translate[__controller_schedule_job_async_results_item.__controller_schedule_item.state | default(platform_state) | default('present')] }}"
