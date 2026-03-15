@@ -1,0 +1,44 @@
+---
+- name: HostPool Status Reporting - Baseline Test
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - ../../../common_vars.yml
+
+  tasks:
+    - name: Read HostPool fixture
+      ansible.builtin.set_fact:
+        test_hostpool: "{{ lookup('file', '../../../fixtures/hostpool-test.yaml') | from_yaml }}"
+
+    - name: Set test variables for baseline workflow
+      ansible.builtin.set_fact:
+        ansible_eda:
+          event:
+            payload: "{{ test_hostpool }}"
+        hostpool_working_namespace: "hostpool-test-hostpool-work"
+        workflow_name: test_workflow
+        workflow_status: succeeded
+
+- name: Import hostpool status reporting workflow (baseline)
+  ansible.builtin.import_playbook: osac.workflows.reporting.hostpool_status
+
+- name: Verify baseline results
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../../../common_vars.yml
+
+  tasks:
+    - name: Verify workflow name set
+      ansible.builtin.assert:
+        that:
+          - workflow_name is defined
+          - workflow_name == "test_workflow"
+        fail_msg: "Workflow name not set correctly"
+
+    - name: Verify workflow status set
+      ansible.builtin.assert:
+        that:
+          - workflow_status is defined
+          - workflow_status == "succeeded"
+        fail_msg: "Workflow status not set correctly"

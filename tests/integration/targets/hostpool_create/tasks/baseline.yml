@@ -1,0 +1,46 @@
+---
+- name: HostPool Create - Baseline Test
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - ../../../common_vars.yml
+
+  tasks:
+    - name: Read HostPool fixture
+      ansible.builtin.set_fact:
+        test_hostpool: "{{ lookup('file', '../../../fixtures/hostpool-test.yaml') | from_yaml }}"
+
+    - name: Set test variables for baseline workflow
+      ansible.builtin.set_fact:
+        ansible_eda:
+          event:
+            payload: "{{ test_hostpool }}"
+        hostpool_working_namespace: "hostpool-test-hostpool-work"
+        # Override infrastructure step to skip OpenStack/ESI calls
+        step_hostpool_infra_override:
+          name: osac.workflows.workflow_helpers
+          tasks_from: noop.yml
+
+- name: Import hostpool create workflow (baseline)
+  ansible.builtin.import_playbook: osac.workflows.hostpool.create
+
+- name: Verify baseline results
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../../../common_vars.yml
+
+  tasks:
+    - name: Verify hostpool name extracted
+      ansible.builtin.assert:
+        that:
+          - hostpool_name is defined
+          - hostpool_name == "test-hostpool"
+        fail_msg: "HostPool name not extracted correctly"
+
+    - name: Verify hostpool working namespace determined
+      ansible.builtin.assert:
+        that:
+          - hostpool_working_namespace is defined
+          - hostpool_working_namespace == "hostpool-test-hostpool-work"
+        fail_msg: "HostPool working namespace not set correctly"

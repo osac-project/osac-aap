@@ -1,0 +1,10 @@
+---
+apiVersion: osac.openshift.io/v1alpha1
+kind: HostPool
+metadata:
+  name: test-hostpool
+  namespace: osac-system
+spec:
+  hostSets:
+    - hostClass: test-class
+      size: 5
