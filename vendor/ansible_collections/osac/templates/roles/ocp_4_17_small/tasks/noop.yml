@@ -1,0 +1,4 @@
+---
+# No-op task file for default hooks
+# This file makes the template self-contained without requiring osac.workflows collection
+# TODO: This is a vendored patch; upstream fix needed in osac-templates repository

@@ -1,7 +1,7 @@
 - name: Set install step defaults
   ansible.builtin.set_fact:
     install_step_pre_install_hook_default:
-      name: osac.workflows.workflow_helpers
+      name: osac.templates.ocp_4_17_small
       tasks_from: noop.yml
     install_step_hosted_cluster_default:
       name: osac.service.hosted_cluster
@@ -16,7 +16,7 @@
       name: osac.service.retrieve_kubeconfig
       tasks_from: main.yml
     install_step_post_install_hook_default:
-      name: osac.workflows.workflow_helpers
+      name: osac.templates.ocp_4_17_small
       tasks_from: noop.yml
 
 - name: Step - Pre-install hook
