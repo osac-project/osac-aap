@@ -1,0 +1,6 @@
+---
+- name: Log hostpool infra step execution
+  ansible.builtin.lineinfile:
+    path: /tmp/osac_test_overrides.log
+    line: "{{ ansible_date_time.iso8601 }} | hostpool_infra | custom infra step executed"
+    create: true

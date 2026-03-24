@@ -38,8 +38,8 @@
 
         # Override infrastructure step to skip OpenStack/ESI calls
         step_hostpool_infra_override:
-          name: osac.workflows.workflow_helpers
-          tasks_from: noop.yml
+          name: osac.test_overrides.workflow_hooks
+          tasks_from: hostpool_infra.yml
 
         workflow_name: hostpool_delete
 
@@ -71,4 +71,5 @@
         that:
           - "'workflow_start' in override_log"
           - "'workflow_complete' in override_log"
+          - "'hostpool_infra' in override_log"
         fail_msg: "Not all override points were executed. Log: {{ override_log }}"
