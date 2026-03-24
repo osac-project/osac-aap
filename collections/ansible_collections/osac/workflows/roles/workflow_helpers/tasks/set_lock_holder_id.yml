@@ -1,8 +1,0 @@
----
-# Generate unique lock holder ID for distributed locking
-- name: Set lock holder identity
-  ansible.builtin.set_fact:
-    cluster_order_holder_id: >-
-      {{ cluster_order_name }}-{{ awx_job_id | default("unknown") }}-{{
-        lookup('community.general.random_string', special=false, numbers=false, upper=false)
-      }}

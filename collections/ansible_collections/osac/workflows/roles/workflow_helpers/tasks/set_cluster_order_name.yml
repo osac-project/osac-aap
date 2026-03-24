@@ -1,5 +1,0 @@
----
-# Extract cluster order name from cluster_order object
-- name: Set cluster order name fact
-  ansible.builtin.set_fact:
-    cluster_order_name: "{{ cluster_order.metadata.name }}"
