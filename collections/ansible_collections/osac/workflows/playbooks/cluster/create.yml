@@ -50,20 +50,6 @@
     - osac.service
 
   pre_tasks:
-    # DEBUG: Print kubeconfig path
-    - name: Debug - Show K8S_AUTH_KUBECONFIG
-      ansible.builtin.debug:
-        msg: "K8S_AUTH_KUBECONFIG={{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG')) | default(lookup('env', 'HOME') + '/.kube/config') }}"
-
-    - name: Debug - Test cluster connectivity
-      ansible.builtin.command: kubectl cluster-info
-      register: cluster_info_result
-      ignore_errors: true
-
-    - name: Debug - Show cluster info result
-      ansible.builtin.debug:
-        var: cluster_info_result
-
     # HOOK: Workflow start
     - name: Hook - Workflow start
       ansible.builtin.include_role:
@@ -83,19 +69,11 @@
             lookup('community.general.random_string', special=false, numbers=false, upper=false)
           }}
 
-    - name: Cluster order before defaults
-      ansible.builtin.debug:
-        var: cluster_order
-
     # PHASE: Apply defaults (overrideable for custom default logic)
     - name: Step - Apply default settings
       ansible.builtin.include_role:
         name: "{{ (step_apply_defaults_override | default(step_apply_defaults_default)).name }}"
         tasks_from: "{{ (step_apply_defaults_override | default(step_apply_defaults_default)).tasks_from }}"
-
-    - name: Cluster order after defaults
-      ansible.builtin.debug:
-        var: cluster_order
 
     # CRITICAL: Extract template info (NOT overrideable)
     - name: Extract template info
