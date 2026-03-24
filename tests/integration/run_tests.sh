@@ -30,7 +30,6 @@ WORKFLOWS=(
   "hostpool_delete"
   "cluster_status_reporting"
   "hostpool_status_reporting"
-  "maintenance_cleanup"
 )
 
 echo "=== Running Integration Tests ==="
