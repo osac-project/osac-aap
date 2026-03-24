@@ -89,6 +89,12 @@
           namespace: "{{ compute_instance.metadata.namespace }}"
           name: "{{ compute_instance_name }}"
 
+    # CRITICAL: Get remote cluster kubeconfig (NOT overrideable)
+    - name: Get remote cluster kubeconfig
+      ansible.builtin.include_role:
+        name: osac.service.common
+        tasks_from: get_remote_cluster_kubeconfig
+
     # CRITICAL: Call template (NOT overrideable, but template has internal override points)
     - name: Call selected template
       ansible.builtin.include_role:
