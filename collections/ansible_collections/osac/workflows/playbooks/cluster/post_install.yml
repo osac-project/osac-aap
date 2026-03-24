@@ -45,6 +45,7 @@
     # PHASE OVERRIDE - Only defaults application is overrideable
     step_apply_defaults_default:
       name: osac.service.cluster_settings
+      tasks_from: main.yml
 
   collections:
     - osac.workflows
