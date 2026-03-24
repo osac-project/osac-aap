@@ -31,12 +31,6 @@ The osac.workflows collection contains orchestration playbooks for cluster provi
 - `osac.workflows.reporting.report_cluster_status` - Report cluster status
 - `osac.workflows.reporting.report_hostpool_status` - Report hostpool status
 
-### Maintenance Workflows
-- `osac.workflows.maintenance.cleanup_stale_network_resources` - Clean up orphaned networks
-
-### Configuration
-- `osac.workflows.config_as_code` - Apply AAP configuration as code
-
 ## Usage
 
 ### Basic Usage
