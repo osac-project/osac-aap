@@ -256,14 +256,21 @@
    "name": "roles/ocp_4_17_small/tasks/delete.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "812e7438742c66116bef22117b47d76c8a8bc8d0f437cf581627f96a29468a5b",
+   "chksum_sha256": "3fe8ad13a2a7312370159c40d7fd67e95093eb31ded7f82f8ea36911cbd7f8f4",
    "format": 1
   },
   {
    "name": "roles/ocp_4_17_small/tasks/install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "8d59aa47db8eb325e22210a3a7699f6e438ba7b363bae21b6494429c7cc17fde",
+   "chksum_sha256": "f17a70954e3d5c0c9414a3a3154d241241dd9530cc5ddcfe45dc91c46a2fd0a5",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/tasks/noop.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "67cd975e39322fe372afa82c626171f8d40bf40438df348429b74f73263f71d5",
    "format": 1
   },
   {
@@ -396,14 +403,91 @@
    "name": "roles/ocp_virt_vm/tasks/create.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "14891f54b76b9c300e6d60b8576fae6f759751cdf69d37757e41da5eb4526f68",
+   "chksum_sha256": "9e2c88731f5a8e7da9cd952faf4c6694fab9efe92d50f8600012c4390e150df4",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_build_spec.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "53689d6aa01c8b940ee79aad3db44d55c87b3fe524c1bc329e84ebd9ed7e84e9",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_modify_vm_spec.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "26085d3bfa7cebb7f97f7a2b4c106dca4ed218157ae276a45cfe6eb8de5cee1e",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_post_create_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ec48d9708634bcd21b3ac8d82f3bd512cc002ec1e30407fe531edbd3d0ca2b7c",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_pre_create_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8babdf34ab0ed9fa7de05daf01f2b04b768e083b059e2d928fff7324401695c2",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_resources.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4efd48b08af3bb16ad9e8126abf5a30f54ce8fbe51ea7bd51b52c7a93cec027c",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_secrets.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "fa9c150f77430719f2b2232731789a9cf02c776c46fc4f89bf44da1ed4574e22",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_validate.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a7f129ae76b18c3c5767c059952b82d812a130592c5ccea885ed99de5e9d4dc2",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_wait_annotate.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ec695e818d23429c6e0903e32143f86364eb17a7d13f73393a9433a1099a6c5c",
    "format": 1
   },
   {
    "name": "roles/ocp_virt_vm/tasks/delete.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "677e245ecc3dfad2645a51567f3239749431a127ea94657d31c25e4ab52dd293",
+   "chksum_sha256": "77be53ef3f4f2943c57ca287fcba3d371bc2b77c1d9f682269dbb8830299b09a",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_post_delete_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2fa1632832c8ab25b8bcacbd1e9cba6c1e0507398e14630bb310abbab7a96d50",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_pre_delete_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "539d59a3fd70f56b561d35148fd7418dfbeca02480e09bb712f960da4563bde1",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_resources.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "76c4a872951e4b29789d2568e20c72914c1cba5e2b34bca64704a897d9d3411a",
    "format": 1
   }
  ],

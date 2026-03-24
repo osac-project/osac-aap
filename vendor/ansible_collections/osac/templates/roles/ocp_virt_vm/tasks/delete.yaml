@@ -1,140 +1,44 @@
+# Delete flow: each step is overridable via delete_step_*_override (default: delete_step_*_default).
+# Override points: pre_delete_hook, resources, post_delete_hook
+# Variables: compute_instance, compute_instance_name, compute_instance_working_namespace,
+# template_id, vm_target_namespace.
 ---
 - name: Include get remote cluster kubeconfig
   ansible.builtin.include_role:
     name: osac.service.common
     tasks_from: get_remote_cluster_kubeconfig
 
-- name: Get VirtualMachine info for floating IP cleanup
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: kubevirt.io/v1
-    kind: VirtualMachine
-    name: "{{ compute_instance_name }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-  register: vm_info
+- name: Determine target namespace for VM resources
+  ansible.builtin.set_fact:
+    vm_target_namespace: "{{ compute_instance.metadata.annotations['osac.openshift.io/subnet-namespace'] | default(compute_instance_working_namespace) }}"
 
-- name: Check if VM instance exists
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: kubevirt.io/v1
-    kind: VirtualMachineInstance
-    name: "{{ compute_instance_name }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-  register: vm_exists
-
-- name: Stop VirtualMachine
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: kubevirt.io/v1
-    kind: VirtualMachine
-    name: "{{ compute_instance_name }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: present
-    definition:
-      spec:
-        runStrategy: Halted
-  when: vm_exists.resources
-
-- name: Wait for VM to stop
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: kubevirt.io/v1
-    kind: VirtualMachine
-    name: "{{ compute_instance_name }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-    wait: true
-    wait_condition:
-      type: Ready
-      status: "False"
-    wait_timeout: 300
-  when: vm_exists.resources
-
-- name: Delete VirtualMachine
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: kubevirt.io/v1
-    kind: VirtualMachine
-    name: "{{ compute_instance_name }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-    wait: true
-    wait_timeout: 300
-
-- name: Delete VM service (if it exists)
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Service
-    name: "{{ compute_instance_name }}-service"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-
-- name: Delete VM load balancer service
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Service
-    name: "{{ compute_instance_name }}-load-balancer"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-
-- name: Delete root disk DataVolume
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: cdi.kubevirt.io/v1beta1
-    kind: DataVolume
-    name: "{{ compute_instance_name }}-root-disk"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-    wait: true
-    wait_timeout: 300
-
-- name: Delete additional disk DataVolumes
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: cdi.kubevirt.io/v1beta1
-    kind: DataVolume
-    name: "{{ compute_instance_name }}-disk-{{ idx + 1 }}"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-    wait: true
-    wait_timeout: 300
-  loop: "{{ compute_instance.spec.additionalDisks | default([]) }}"
-  loop_control:
-    index_var: idx
-  when: (compute_instance.spec.additionalDisks | default([])) | length > 0
-
-- name: Delete user-data secret
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Secret
-    name: "{{ compute_instance_name }}-user-data"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-  register: delete_user_data_secret
-  failed_when:
-    - delete_user_data_secret.failed is defined
-    - delete_user_data_secret.failed
-    - "'not found' not in (delete_user_data_secret.msg | default(''))"
-
-- name: Delete ssh public key secret
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Secret
-    name: "{{ compute_instance_name }}-ssh-public-key"
-    namespace: "{{ compute_instance_working_namespace }}"
-    state: absent
-  register: delete_ssh_secret
-  failed_when:
-    - delete_ssh_secret.failed is defined
-    - delete_ssh_secret.failed
-    - "'not found' not in (delete_ssh_secret.msg | default(''))"
-
-- name: Display deletion status
+- name: Log namespace selection
   ansible.builtin.debug:
-    msg:
-      - "Virtual Machine '{{ compute_instance_name }}' deletion completed"
-      - "Namespace: {{ compute_instance_working_namespace }}"
-      - "All associated resources have been removed"
+    msg: "VM will be deleted from namespace: {{ vm_target_namespace }} (tenant namespace: {{ compute_instance_working_namespace }})"
+
+- name: Set delete step defaults
+  ansible.builtin.set_fact:
+    delete_step_pre_delete_hook_default:
+      name: osac.templates.ocp_virt_vm
+      tasks_from: delete_pre_delete_hook.yaml
+    delete_step_resources_default:
+      name: osac.templates.ocp_virt_vm
+      tasks_from: delete_resources.yaml
+    delete_step_post_delete_hook_default:
+      name: osac.templates.ocp_virt_vm
+      tasks_from: delete_post_delete_hook.yaml
+
+- name: Step - Pre-delete hook (no-op by default)
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_pre_delete_hook_override | default(delete_step_pre_delete_hook_default)).name }}"
+    tasks_from: "{{ (delete_step_pre_delete_hook_override | default(delete_step_pre_delete_hook_default)).tasks_from }}"
+
+- name: Step - Delete resources (VirtualMachine, DataVolumes, Secrets)
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_resources_override | default(delete_step_resources_default)).name }}"
+    tasks_from: "{{ (delete_step_resources_override | default(delete_step_resources_default)).tasks_from }}"
+
+- name: Step - Post-delete hook (no-op by default)
+  ansible.builtin.include_role:
+    name: "{{ (delete_step_post_delete_hook_override | default(delete_step_post_delete_hook_default)).name }}"
+    tasks_from: "{{ (delete_step_post_delete_hook_override | default(delete_step_post_delete_hook_default)).tasks_from }}"
