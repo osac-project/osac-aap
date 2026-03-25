@@ -38,13 +38,9 @@
 
         # NOTE: Using real template (osac.templates.ocp_virt_vm from fixture)
         # We override the hooks below to test the override mechanism
-        # Note: build_spec is NOT overrideable - use modify_vm_spec hook instead
+        # Note: build_spec and validate are NOT overrideable (CRITICAL steps)
 
-        # Override 7 template extension points
-        create_step_validate_override:
-          name: osac.test_overrides.vm_create_hooks
-          tasks_from: validate.yml
-
+        # Override 6 template extension points
         create_step_secrets_override:
           name: osac.test_overrides.vm_create_hooks
           tasks_from: secrets.yml
@@ -99,7 +95,6 @@
         that:
           - "'workflow_start' in override_log"
           - "'workflow_complete' in override_log"
-          - "'vm_create_validate' in override_log"
           - "'vm_create_secrets' in override_log"
           - "'vm_create_modify_vm_spec' in override_log"
           - "'vm_create_pre_create_hook' in override_log"

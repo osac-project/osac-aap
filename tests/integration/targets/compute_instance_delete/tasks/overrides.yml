@@ -36,7 +36,8 @@
           name: osac.test_overrides.workflow_hooks
           tasks_from: workflow_complete.yml
 
-        template_id_override: osac.test_overrides.noop_template
+        # NOTE: Using real template (osac.templates.ocp_virt_vm from fixture)
+        # We override the hooks below to test the override mechanism
 
         # Override 3 template extension points
         delete_step_pre_delete_hook_override:
