@@ -71,12 +71,6 @@
           - "Compute instance working namespace: {{ compute_instance_working_namespace }}"
           - "Template ID: {{ template_id_override | default(template_id) }}"
 
-    # CRITICAL: Get remote cluster kubeconfig (NOT overrideable)
-    - name: Get remote cluster kubeconfig
-      ansible.builtin.include_role:
-        name: osac.service.common
-        tasks_from: get_remote_cluster_kubeconfig
-
     # CRITICAL: Call template (NOT overrideable, but template has internal override points)
     - name: Call selected template
       ansible.builtin.include_role:
