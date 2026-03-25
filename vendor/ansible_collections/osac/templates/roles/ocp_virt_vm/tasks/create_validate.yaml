@@ -1,0 +1,21 @@
+---
+- name: Merge template defaults into template_parameters
+  ansible.builtin.set_fact:
+    params: "{{ default_arg_specs | combine(template_parameters) }}"
+
+- name: Extract VM configuration from ComputeInstance spec
+  ansible.builtin.set_fact:
+    vm_cpu_cores: "{{ (compute_instance.spec.cores | default(default_spec.cores)) | int }}"
+    vm_memory: "{{ (compute_instance.spec.memoryGiB | default(default_spec.memoryGiB)) | string + 'Gi' }}"
+    vm_boot_disk_size: "{{ (compute_instance.spec.bootDisk.sizeGiB | default(default_spec.bootDisk.sizeGiB)) | string + 'Gi' }}"
+    vm_image_source: "{{ compute_instance.spec.image.sourceRef | default(default_spec.image.sourceRef) }}"
+    vm_run_strategy: "{{ compute_instance.spec.runStrategy | default(default_spec.runStrategy) }}"
+    vm_ssh_key: "{{ compute_instance.spec.sshKey | default('') }}"
+    vm_user_data_secret_ref: "{{ (compute_instance.spec.userDataSecretRef | default({})).name | default('') }}"
+    vm_additional_disks: "{{ compute_instance.spec.additionalDisks | default([]) }}"
+
+- name: Validate exposed_ports format
+  ansible.builtin.assert:
+    that:
+      - params.exposed_ports is match('^([0-9]+/(tcp|udp))(,[0-9]+/(tcp|udp))*$')
+    fail_msg: "exposed_ports must be in format 'port/protocol' (e.g., '22/tcp,80/tcp') where protocol is 'tcp' or 'udp'"

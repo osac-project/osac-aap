@@ -8,118 +8,6 @@
    "format": 1
   },
   {
-   "name": ".ansible-lint.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e25e5e765908d6f8be2f0bc914c4caf80b7655dc25ea90c3d88b29bea43580a0",
-   "format": 1
-  },
-  {
-   "name": ".github",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": ".github/dependabot.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "791205b295a75b5470abd03c96e743113cf275c7b904eb4c95ebaa89355c3009",
-   "format": 1
-  },
-  {
-   "name": ".github/workflows",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": ".github/workflows/pre-commit.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "0670ebe1d44753f160f7768c7050f40e56053a139c49041abfb039fa2a4d5d22",
-   "format": 1
-  },
-  {
-   "name": ".gitignore",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "14645fbec1b8d42fead94337a95415c9e2342c990742f628a10f36deea811dfd",
-   "format": 1
-  },
-  {
-   "name": ".pre-commit-config.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "474c5b35af9eab443c56b30046a7b45b5db7b31cf05a9c08c665d6115392b570",
-   "format": 1
-  },
-  {
-   "name": ".yamllint.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "1838a297c5d4799fe84747649d944c19fa5324981d6d45cdbf6db8757eff0e1e",
-   "format": 1
-  },
-  {
-   "name": "CHANGELOG.rst",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e621f14c513ad56371bf1d16c3a9151489c56327b3628bdd9489af5f2da0ca46",
-   "format": 1
-  },
-  {
-   "name": "LICENSE",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e18d498d8a07d4abcf0979ece2608a4f38d8967aee98178ecf151ab6ca3ceaa6",
-   "format": 1
-  },
-  {
-   "name": "OWNERS",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "b9a5ee7826dbe472179f46d668d772f1b33371ab1bce57e1b18558b005957497",
-   "format": 1
-  },
-  {
-   "name": "README.md",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "dc25e6f5c4019a3b7eb9c36dfac5b4c01a23753f0ccef0b2eaa9d1474a951899",
-   "format": 1
-  },
-  {
-   "name": "meta",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "meta/runtime.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "92cb0e6a11e096d47a285d13f8334410cc279b914ceef36f8a02849cd2d07c65",
-   "format": 1
-  },
-  {
-   "name": "plugins",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "plugins/README.md",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "1f0c1570611f0113fdc47b71348700c2aee33ac9e744d7b9229a75fdf96c9df0",
-   "format": 1
-  },
-  {
    "name": "roles",
    "ftype": "dir",
    "chksum_type": null,
@@ -127,234 +15,129 @@
    "format": 1
   },
   {
-   "name": "roles/cudn_net",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/defaults",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/defaults/main.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "73d901ae9fbf2e6ee654db32e26acabbffd0a52ebda3b7e5efb51dd23448f229",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/meta",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/meta/argument_specs.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e808bb53ec2b4519727ca9965e36ff2d0d2913bfea9c3331c7e5728ca149c70d",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/meta/osac.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "d4cf131ff1dc56b15d2cad7d9a7c670387e93900c8d721792ab26cd5efe7d18a",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/tasks",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/tasks/create_subnet.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "062dcc85212377992333525951d913d061a7855f6c8e312ab2bbffe749f3e3ca",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/tasks/create_virtual_network.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "0f33bbeb3cdfc2a87d6ad1cbd19a91d1e99afef5e63c05d29f37c1f74cf30f53",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/tasks/delete_subnet.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "c62d49351c8a076fca3a61f549248ea94c297fa8b335ce66e869580d33993950",
-   "format": 1
-  },
-  {
-   "name": "roles/cudn_net/tasks/delete_virtual_network.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "3f9b5247a6675fcb5b205c0ba7e58d800f8b2b6ff859b7984c76a87940b298af",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/defaults",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/defaults/main.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "f6ac06f364d635ecabab51cb3ae410839b9c094260a4856bc9e2127599a96e96",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/meta",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/meta/argument_specs.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "bbb80dc412c5c02a36e5ed6574a5f49fa4aee29a82d5a4eb7c5e0fcdb7ec55ab",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/meta/osac.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "c00c16ad727243a56e0dfcba1ffbdde79022a22a3145371489ef1d40584489ad",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/tasks",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/tasks/delete.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "3fe8ad13a2a7312370159c40d7fd67e95093eb31ded7f82f8ea36911cbd7f8f4",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/tasks/install.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "f17a70954e3d5c0c9414a3a3154d241241dd9530cc5ddcfe45dc91c46a2fd0a5",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/tasks/noop.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "67cd975e39322fe372afa82c626171f8d40bf40438df348429b74f73263f71d5",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small/tasks/post_install.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e54360a3d9e22e601e223bf7cc13be21a40a6227f3ae2bd9e0c65f21f4fae345",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/defaults",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/defaults/main.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "f1365dad5c61af984ffe45b6eb344377f94faf8a2529b36f60f11b72e773d4e9",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/meta",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/meta/argument_specs.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "aa11b4a37e014db06414e8a7434bd88c35431480d6b8377050eac08db8e783dc",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/meta/osac.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "409e2811eb86063e352207c58d5f149d7d483f1b4a8d932a4df2f3234cff693d",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/tasks",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/tasks/delete.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "047343ff07c6b21dda00820d1df598c5240405424a5b55d84055d6855f167c7f",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/tasks/install.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e27a1e3513245d7fbf6067dc92fa7e80cdc6af21dccfea5f8412e7bae7adf3af",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_4_17_small_github/tasks/post_install.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "cb6f7b708d5bc7b243142766b950261106a79e703cdbf4f63dc2d9fdd797acf9",
-   "format": 1
-  },
-  {
    "name": "roles/ocp_virt_vm",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_resources.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "76c4a872951e4b29789d2568e20c72914c1cba5e2b34bca64704a897d9d3411a",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_pre_delete_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "539d59a3fd70f56b561d35148fd7418dfbeca02480e09bb712f960da4563bde1",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete_post_delete_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2fa1632832c8ab25b8bcacbd1e9cba6c1e0507398e14630bb310abbab7a96d50",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/delete.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "77be53ef3f4f2943c57ca287fcba3d371bc2b77c1d9f682269dbb8830299b09a",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_wait_annotate.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ec695e818d23429c6e0903e32143f86364eb17a7d13f73393a9433a1099a6c5c",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_validate.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a7f129ae76b18c3c5767c059952b82d812a130592c5ccea885ed99de5e9d4dc2",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_secrets.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "fa9c150f77430719f2b2232731789a9cf02c776c46fc4f89bf44da1ed4574e22",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_resources.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4efd48b08af3bb16ad9e8126abf5a30f54ce8fbe51ea7bd51b52c7a93cec027c",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_pre_create_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8babdf34ab0ed9fa7de05daf01f2b04b768e083b059e2d928fff7324401695c2",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_post_create_hook.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ec48d9708634bcd21b3ac8d82f3bd512cc002ec1e30407fe531edbd3d0ca2b7c",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_modify_vm_spec.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "26085d3bfa7cebb7f97f7a2b4c106dca4ed218157ae276a45cfe6eb8de5cee1e",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create_build_spec.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "53689d6aa01c8b940ee79aad3db44d55c87b3fe524c1bc329e84ebd9ed7e84e9",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/tasks/create.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9e2c88731f5a8e7da9cd952faf4c6694fab9efe92d50f8600012c4390e150df4",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/meta/osac.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "79d14a39bc94684699c0405a131b20b3230ed51f3efaf8aa81e99aab99e76a48",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_virt_vm/meta/argument_specs.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "53d313f604b459cc70e7ac9754ea957a5e407c6ed0f224a63e74ea04af2f0b97",
    "format": 1
   },
   {
@@ -372,122 +155,339 @@
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/meta",
+   "name": "roles/ocp_4_17_small_github",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/meta/argument_specs.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "53d313f604b459cc70e7ac9754ea957a5e407c6ed0f224a63e74ea04af2f0b97",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_virt_vm/meta/osac.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "79d14a39bc94684699c0405a131b20b3230ed51f3efaf8aa81e99aab99e76a48",
-   "format": 1
-  },
-  {
-   "name": "roles/ocp_virt_vm/tasks",
+   "name": "roles/ocp_4_17_small_github/tasks",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create.yaml",
+   "name": "roles/ocp_4_17_small_github/tasks/post_install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "9e2c88731f5a8e7da9cd952faf4c6694fab9efe92d50f8600012c4390e150df4",
+   "chksum_sha256": "cb6f7b708d5bc7b243142766b950261106a79e703cdbf4f63dc2d9fdd797acf9",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_build_spec.yaml",
+   "name": "roles/ocp_4_17_small_github/tasks/install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "53689d6aa01c8b940ee79aad3db44d55c87b3fe524c1bc329e84ebd9ed7e84e9",
+   "chksum_sha256": "e27a1e3513245d7fbf6067dc92fa7e80cdc6af21dccfea5f8412e7bae7adf3af",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_modify_vm_spec.yaml",
+   "name": "roles/ocp_4_17_small_github/tasks/delete.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "26085d3bfa7cebb7f97f7a2b4c106dca4ed218157ae276a45cfe6eb8de5cee1e",
+   "chksum_sha256": "047343ff07c6b21dda00820d1df598c5240405424a5b55d84055d6855f167c7f",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_post_create_hook.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "ec48d9708634bcd21b3ac8d82f3bd512cc002ec1e30407fe531edbd3d0ca2b7c",
+   "name": "roles/ocp_4_17_small_github/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_pre_create_hook.yaml",
+   "name": "roles/ocp_4_17_small_github/meta/osac.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "8babdf34ab0ed9fa7de05daf01f2b04b768e083b059e2d928fff7324401695c2",
+   "chksum_sha256": "409e2811eb86063e352207c58d5f149d7d483f1b4a8d932a4df2f3234cff693d",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_resources.yaml",
+   "name": "roles/ocp_4_17_small_github/meta/argument_specs.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "4efd48b08af3bb16ad9e8126abf5a30f54ce8fbe51ea7bd51b52c7a93cec027c",
+   "chksum_sha256": "aa11b4a37e014db06414e8a7434bd88c35431480d6b8377050eac08db8e783dc",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_secrets.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "fa9c150f77430719f2b2232731789a9cf02c776c46fc4f89bf44da1ed4574e22",
+   "name": "roles/ocp_4_17_small_github/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_validate.yaml",
+   "name": "roles/ocp_4_17_small_github/defaults/main.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "a7f129ae76b18c3c5767c059952b82d812a130592c5ccea885ed99de5e9d4dc2",
+   "chksum_sha256": "f1365dad5c61af984ffe45b6eb344377f94faf8a2529b36f60f11b72e773d4e9",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/create_wait_annotate.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "ec695e818d23429c6e0903e32143f86364eb17a7d13f73393a9433a1099a6c5c",
+   "name": "roles/ocp_4_17_small",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/delete.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "77be53ef3f4f2943c57ca287fcba3d371bc2b77c1d9f682269dbb8830299b09a",
+   "name": "roles/ocp_4_17_small/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/delete_post_delete_hook.yaml",
+   "name": "roles/ocp_4_17_small/tasks/post_install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "2fa1632832c8ab25b8bcacbd1e9cba6c1e0507398e14630bb310abbab7a96d50",
+   "chksum_sha256": "e54360a3d9e22e601e223bf7cc13be21a40a6227f3ae2bd9e0c65f21f4fae345",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/delete_pre_delete_hook.yaml",
+   "name": "roles/ocp_4_17_small/tasks/noop.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "539d59a3fd70f56b561d35148fd7418dfbeca02480e09bb712f960da4563bde1",
+   "chksum_sha256": "67cd975e39322fe372afa82c626171f8d40bf40438df348429b74f73263f71d5",
    "format": 1
   },
   {
-   "name": "roles/ocp_virt_vm/tasks/delete_resources.yaml",
+   "name": "roles/ocp_4_17_small/tasks/install.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "76c4a872951e4b29789d2568e20c72914c1cba5e2b34bca64704a897d9d3411a",
+   "chksum_sha256": "f17a70954e3d5c0c9414a3a3154d241241dd9530cc5ddcfe45dc91c46a2fd0a5",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/tasks/delete.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3fe8ad13a2a7312370159c40d7fd67e95093eb31ded7f82f8ea36911cbd7f8f4",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/meta/osac.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c00c16ad727243a56e0dfcba1ffbdde79022a22a3145371489ef1d40584489ad",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/meta/argument_specs.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "bbb80dc412c5c02a36e5ed6574a5f49fa4aee29a82d5a4eb7c5e0fcdb7ec55ab",
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/ocp_4_17_small/defaults/main.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f6ac06f364d635ecabab51cb3ae410839b9c094260a4856bc9e2127599a96e96",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/tasks/delete_virtual_network.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3f9b5247a6675fcb5b205c0ba7e58d800f8b2b6ff859b7984c76a87940b298af",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/tasks/delete_subnet.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c62d49351c8a076fca3a61f549248ea94c297fa8b335ce66e869580d33993950",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/tasks/create_virtual_network.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0f33bbeb3cdfc2a87d6ad1cbd19a91d1e99afef5e63c05d29f37c1f74cf30f53",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/tasks/create_subnet.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "062dcc85212377992333525951d913d061a7855f6c8e312ab2bbffe749f3e3ca",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/meta/osac.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d4cf131ff1dc56b15d2cad7d9a7c670387e93900c8d721792ab26cd5efe7d18a",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/meta/argument_specs.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e808bb53ec2b4519727ca9965e36ff2d0d2913bfea9c3331c7e5728ca149c70d",
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/cudn_net/defaults/main.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "73d901ae9fbf2e6ee654db32e26acabbffd0a52ebda3b7e5efb51dd23448f229",
+   "format": 1
+  },
+  {
+   "name": "plugins",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1f0c1570611f0113fdc47b71348700c2aee33ac9e744d7b9229a75fdf96c9df0",
+   "format": 1
+  },
+  {
+   "name": "meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "meta/runtime.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "92cb0e6a11e096d47a285d13f8334410cc279b914ceef36f8a02849cd2d07c65",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "dc25e6f5c4019a3b7eb9c36dfac5b4c01a23753f0ccef0b2eaa9d1474a951899",
+   "format": 1
+  },
+  {
+   "name": "OWNERS",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b9a5ee7826dbe472179f46d668d772f1b33371ab1bce57e1b18558b005957497",
+   "format": 1
+  },
+  {
+   "name": "LICENSE",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e18d498d8a07d4abcf0979ece2608a4f38d8967aee98178ecf151ab6ca3ceaa6",
+   "format": 1
+  },
+  {
+   "name": "CHANGELOG.rst",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e621f14c513ad56371bf1d16c3a9151489c56327b3628bdd9489af5f2da0ca46",
+   "format": 1
+  },
+  {
+   "name": ".yamllint.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1838a297c5d4799fe84747649d944c19fa5324981d6d45cdbf6db8757eff0e1e",
+   "format": 1
+  },
+  {
+   "name": ".pre-commit-config.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "474c5b35af9eab443c56b30046a7b45b5db7b31cf05a9c08c665d6115392b570",
+   "format": 1
+  },
+  {
+   "name": ".gitignore",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "14645fbec1b8d42fead94337a95415c9e2342c990742f628a10f36deea811dfd",
+   "format": 1
+  },
+  {
+   "name": ".github",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".github/workflows",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".github/workflows/pre-commit.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0670ebe1d44753f160f7768c7050f40e56053a139c49041abfb039fa2a4d5d22",
+   "format": 1
+  },
+  {
+   "name": ".github/dependabot.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "791205b295a75b5470abd03c96e743113cf275c7b904eb4c95ebaa89355c3009",
+   "format": 1
+  },
+  {
+   "name": ".ansible-lint.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e25e5e765908d6f8be2f0bc914c4caf80b7655dc25ea90c3d88b29bea43580a0",
    "format": 1
   }
  ],
