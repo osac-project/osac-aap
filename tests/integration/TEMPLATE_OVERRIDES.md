@@ -215,9 +215,7 @@ The following tasks **cannot be tested without real infrastructure**:
 - Used by: hostpool_create, hostpool_delete
 
 ### AAP Resources
-- `ansible.controller.license` - Manages AAP license
-- Requires AAP controller_host and credentials
-- Used by: config_as_code
+- Not currently used by any workflows in the collection
 
 ### Hosted Cluster Resources
 - Post-install tasks that run on the hosted cluster (not management cluster)
@@ -245,4 +243,3 @@ The following tasks **cannot be tested without real infrastructure**:
 ### Require External Infrastructure
 - ❌ hostpool_create (requires OpenStack)
 - ❌ hostpool_delete (requires OpenStack)
-- ❌ config_as_code (requires AAP)

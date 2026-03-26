@@ -22,7 +22,7 @@
   hosts: localhost
   gather_facts: false
   environment:
-    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG')) | default(lookup('env', 'HOME') + '/.kube/config') }}"
+    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG'), true) | default(lookup('env', 'HOME') + '/.kube/config', true) }}"
 
 
   vars:
@@ -54,9 +54,11 @@
         name: "{{ (hook_workflow_start | default(hook_workflow_start_default)).name }}"
         tasks_from: "{{ (hook_workflow_start | default(hook_workflow_start_default)).tasks_from }}"
 
-    - name: Show hostpool values
+    - name: Show hostpool identifiers
       ansible.builtin.debug:
-        var: hostpool
+        msg:
+          - "HostPool: {{ hostpool.metadata.name }}"
+          - "Namespace: {{ hostpool.metadata.namespace | default('unknown') }}"
 
     # CRITICAL: Extract hostpool name (NOT overrideable)
     - name: Set hostpool name
@@ -103,7 +105,7 @@
       loop:
         - api_version: osac.openshift.io/v1alpha1
           kind: HostPool
-          namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
+          namespace: "{{ lookup('env', 'POD_NAMESPACE') | default(hostpool.metadata.namespace, true) }}"
           name: "{{ hostpool.metadata.name }}"
         - api_version: v1
           kind: Namespace

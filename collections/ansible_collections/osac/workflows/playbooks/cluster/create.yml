@@ -26,7 +26,7 @@
   gather_facts: false
 
   environment:
-    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG')) | default(lookup('env', 'HOME') + '/.kube/config') }}"
+    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') | default(lookup('env', 'KUBECONFIG'), true) | default(lookup('env', 'HOME') + '/.kube/config', true) }}"
 
   vars:
     cluster_order: "{{ ansible_eda.event.payload }}"
@@ -112,7 +112,7 @@
       loop:
         - api_version: osac.openshift.io/v1alpha1
           kind: ClusterOrder
-          namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
+          namespace: "{{ lookup('env', 'POD_NAMESPACE') | default(cluster_order.metadata.namespace, true) }}"
           name: "{{ cluster_order.metadata.name }}"
         - api_version: v1
           kind: Namespace
