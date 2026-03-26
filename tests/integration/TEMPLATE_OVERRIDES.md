@@ -140,18 +140,15 @@ template_id_override: osac.test_overrides.noop_template
 **Compute Instance Create**:
 ```yaml
 # Use real template from fixture: osac.templates.ocp_virt_vm
-# Override all 8 steps with test hooks that:
+# Override 7 steps with test hooks that:
 # - Log execution to /tmp/osac_test_overrides.log
-# - For validate/build_spec/modify_vm_spec/pre_create/post_create: delegate to real role
+# - For validate/modify_vm_spec/pre_create/post_create: delegate to real role
 # - For secrets/resources/wait_annotate: skip (noop)
+# Note: build_spec is not overrideable (critical step)
 
 create_step_validate_override:
   name: osac.test_overrides.vm_create_hooks
   tasks_from: validate.yml
-
-create_step_build_spec_override:
-  name: osac.test_overrides.vm_create_hooks
-  tasks_from: build_spec.yml
 
 create_step_secrets_override:
   name: osac.test_overrides.vm_create_hooks

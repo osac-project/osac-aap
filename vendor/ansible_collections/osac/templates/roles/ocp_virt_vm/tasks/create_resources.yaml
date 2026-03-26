@@ -114,7 +114,7 @@
         (
           (compute_instance.status.lastRestartedAt | default('') | length == 0)
           or
-          (compute_instance.spec.restartRequestedAt | to_datetime > compute_instance.status.lastRestartedAt | default('1970-01-01T00:00:00Z') | to_datetime)
+          (compute_instance.spec.restartRequestedAt > compute_instance.status.lastRestartedAt | default(''))
         )
       }}
 
