@@ -281,7 +281,7 @@ class NetworkClassTemplate(Base):
         return str(value)
 
     @pydantic.computed_field
-    def id(self) -> str:
+    def fqn(self) -> str:
         return f"{self.collection}.{self.name}"
 
 

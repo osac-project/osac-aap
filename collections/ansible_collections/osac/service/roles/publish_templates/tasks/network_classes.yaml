@@ -6,22 +6,23 @@
       authorization: Bearer {{ osac_fulfillment_service_token }}
   register: network_class_check
 
-- name: Create list of existing NetworkClass IDs
+- name: Build map of existing NetworkClass FQNs to IDs
   ansible.builtin.set_fact:
-    network_class_ids: >-
+    network_class_fqn_to_id: >-
       {{
-      network_class_check | json_query("json.items[].id")
+      network_class_fqn_to_id | default({}) | combine({item.fqn: item.id})
       }}
-  when: network_class_check is success and network_class_check.json.get('items', []) | length > 0
+  loop: "{{ network_class_check.json.get('items', []) }}"
+  when: network_class_check is success and item.fqn is defined
 
 - name: Update existing NetworkClass
   loop: "{{ osac_network_classes }}"
   loop_control:
-    label: "{{ network_class.id }}"
+    label: "{{ network_class.fqn }}"
     loop_var: network_class
-  when: network_class_ids is defined and network_class.id in network_class_ids
+  when: network_class_fqn_to_id is defined and network_class.fqn in network_class_fqn_to_id
   ansible.builtin.uri:
-    url: "{{ publish_templates_network_class_api_endpoint }}/{{ network_class.id }}"
+    url: "{{ publish_templates_network_class_api_endpoint }}/{{ network_class_fqn_to_id[network_class.fqn] }}"
     validate_certs: "{{ publish_templates_validate_certs | default(true) | bool }}"
     method: PATCH
     headers:
@@ -32,9 +33,9 @@
 - name: Create new NetworkClass
   loop: "{{ osac_network_classes }}"
   loop_control:
-    label: "{{ network_class.id }}"
+    label: "{{ network_class.fqn }}"
     loop_var: network_class
-  when: network_class_ids is not defined or network_class.id not in network_class_ids
+  when: network_class_fqn_to_id is not defined or network_class.fqn not in network_class_fqn_to_id
   ansible.builtin.uri:
     url: "{{ publish_templates_network_class_api_endpoint }}"
     validate_certs: "{{ publish_templates_validate_certs | default(true) | bool }}"

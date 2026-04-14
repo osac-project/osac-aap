@@ -34,7 +34,7 @@ POPULATED_RESPONSES = {
     "/api/private/v1/network_classes": {
         "size": 1,
         "total": 1,
-        "items": [{"id": "existing-network-class", "title": "Test NC"}],
+        "items": [{"id": "existing-network-class", "fqn": "osac.templates.cudn_net", "title": "Test NC"}],
     },
 }
 
