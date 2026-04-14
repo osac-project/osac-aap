@@ -74,7 +74,7 @@
           - id: "new-ci-template"
             title: "Test CI"
         osac_network_classes:
-          - id: "new-network-class"
+          - implementation_strategy: "new-network-class"
             title: "Test NC"
       when: test_empty | default(false) | bool
 
@@ -149,9 +149,9 @@
           - id: "existing-ci-template"
             title: "Updated CI"
         osac_network_classes:
-          - id: "existing-network-class"
+          - implementation_strategy: "cudn_net"
             title: "Updated NC"
-          - id: "brand-new-nc"
+          - implementation_strategy: "brand-new-nc"
             title: "New NC"
       when: test_populated | default(false) | bool
 
@@ -227,7 +227,7 @@
           - id: "edge-case-ci"
             title: "Edge CI"
         osac_network_classes:
-          - id: "edge-case-nc"
+          - implementation_strategy: "edge-case-nc"
             title: "Edge NC"
       when: test_no_items_key | default(false) | bool
 

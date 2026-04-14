@@ -280,10 +280,6 @@ class NetworkClassTemplate(Base):
     def serialize_path(self, value: Path):
         return str(value)
 
-    @pydantic.computed_field
-    def id(self) -> str:
-        return f"{self.collection}.{self.name}"
-
 
 def _validate_collection_name(name: str) -> None:
     """Validate that collection name follows namespace.collection format.

@@ -4,24 +4,27 @@
     validate_certs: "{{ publish_templates_validate_certs | default(true) | bool }}"
     headers:
       authorization: Bearer {{ osac_fulfillment_service_token }}
-  register: network_class_check
+  register: publish_templates_network_class_check
 
-- name: Create list of existing NetworkClass IDs
+- name: Build map of existing NetworkClass implementation_strategy to IDs
   ansible.builtin.set_fact:
-    network_class_ids: >-
+    publish_templates_network_class_strategy_to_id: >-
       {{
-      network_class_check | json_query("json.items[].id")
+      publish_templates_network_class_strategy_to_id | default({}) | combine({item.implementation_strategy: item.id})
       }}
-  when: network_class_check is success and network_class_check.json.get('items', []) | length > 0
+  loop: "{{ publish_templates_network_class_check.json.get('items', []) }}"
+  when: publish_templates_network_class_check is success and item.implementation_strategy is defined
 
 - name: Update existing NetworkClass
   loop: "{{ osac_network_classes }}"
   loop_control:
-    label: "{{ network_class.id }}"
+    label: "{{ network_class.implementation_strategy }}"
     loop_var: network_class
-  when: network_class_ids is defined and network_class.id in network_class_ids
+  when: >-
+    publish_templates_network_class_strategy_to_id is defined and
+    network_class.implementation_strategy in publish_templates_network_class_strategy_to_id
   ansible.builtin.uri:
-    url: "{{ publish_templates_network_class_api_endpoint }}/{{ network_class.id }}"
+    url: "{{ publish_templates_network_class_api_endpoint }}/{{ publish_templates_network_class_strategy_to_id[network_class.implementation_strategy] }}"
     validate_certs: "{{ publish_templates_validate_certs | default(true) | bool }}"
     method: PATCH
     headers:
@@ -32,9 +35,11 @@
 - name: Create new NetworkClass
   loop: "{{ osac_network_classes }}"
   loop_control:
-    label: "{{ network_class.id }}"
+    label: "{{ network_class.implementation_strategy }}"
     loop_var: network_class
-  when: network_class_ids is not defined or network_class.id not in network_class_ids
+  when: >-
+    publish_templates_network_class_strategy_to_id is not defined or
+    network_class.implementation_strategy not in publish_templates_network_class_strategy_to_id
   ansible.builtin.uri:
     url: "{{ publish_templates_network_class_api_endpoint }}"
     validate_certs: "{{ publish_templates_validate_certs | default(true) | bool }}"
