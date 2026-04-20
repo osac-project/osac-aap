@@ -4,11 +4,12 @@
     cluster_settings_template_parameters: "{{ cluster_order.spec.templateParameters | default('{}') | from_json }}"
 
 # Resolve pull_secret: explicit CR field > templateParameters > provider default Secret
+# The second argument (true) ensures empty strings and nulls also fall through.
 - name: Resolve pull_secret from explicit field or template parameters
   ansible.builtin.set_fact:
     cluster_settings_pull_secret: >-
       {{ cluster_order.spec.pullSecret
-         | default(cluster_settings_template_parameters.pull_secret | default('')) }}
+         | default(cluster_settings_template_parameters.pull_secret | default('', true), true) }}
   no_log: true
 
 # Resolve ssh_public_key: explicit CR field > templateParameters > provider default Secret
@@ -16,13 +17,17 @@
   ansible.builtin.set_fact:
     cluster_settings_ssh_public_key: >-
       {{ cluster_order.spec.sshPublicKey
-         | default(cluster_settings_template_parameters.ssh_public_key | default('')) }}
+         | default(cluster_settings_template_parameters.ssh_public_key | default('', true), true) }}
 
-# Resolve release_image: explicit CR field > template default
-- name: Resolve release_image from explicit field
-  when: cluster_order.spec.releaseImage | default('')
+# Resolve release_image: explicit CR field > templateParameters > template default
+- name: Resolve release_image from explicit field or template parameters
+  when: >-
+    cluster_order.spec.releaseImage | default('', true)
+    or cluster_settings_template_parameters.release_image | default('', true)
   ansible.builtin.set_fact:
-    ocp_release_image: "{{ cluster_order.spec.releaseImage }}"
+    ocp_release_image: >-
+      {{ cluster_order.spec.releaseImage
+         | default(cluster_settings_template_parameters.release_image | default('', true), true) }}
 
 # Resolve networking CIDRs: explicit CR field > role defaults
 - name: Resolve pod_cidr from explicit field
