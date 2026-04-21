@@ -490,6 +490,7 @@ def find_template_roles(requested: list[str]) -> Generator[BaseTemplate | Networ
                     "--format",
                     "json",
                 ],
+                stdin=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
                 timeout=30,
             )
