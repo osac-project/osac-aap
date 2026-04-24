@@ -1,5 +1,5 @@
 ---
-# Discover the StorageClass to use for a tenant by reading tenant.status.storageClass.
+# Discover the StorageClass to use for a tenant by reading tenant.status.storageClasses.
 # The osac-operator Tenant controller is the single source of truth for StorageClass
 # validation (duplicate detection, fallback to Default). This role reads the already-
 # resolved result instead of re-implementing the same logic independently.
@@ -26,13 +26,13 @@
       Check Tenant conditions for details.
   when: tenant_storage_class_tenant_result.resources[0].status.phase | default('') != "Ready"
 
-- name: Fail if tenant storageClass is empty
+- name: Fail if tenant storageClasses is empty
   ansible.builtin.fail:
     msg: >-
-      Tenant '{{ tenant_storage_class_tenant_name }}' is ready but status.storageClass is empty.
+      Tenant '{{ tenant_storage_class_tenant_name }}' is ready but status.storageClasses is empty.
       This is unexpected; check the Tenant StorageClassReady condition.
-  when: tenant_storage_class_tenant_result.resources[0].status.storageClass | default('') | length == 0
+  when: tenant_storage_class_tenant_result.resources[0].status.storageClasses | default([]) | length == 0
 
 - name: Set StorageClass name from tenant status
   ansible.builtin.set_fact:
-    tenant_storage_class_name: "{{ tenant_storage_class_tenant_result.resources[0].status.storageClass }}"
+    tenant_storage_class_name: "{{ tenant_storage_class_tenant_result.resources[0].status.storageClasses[0].name }}"

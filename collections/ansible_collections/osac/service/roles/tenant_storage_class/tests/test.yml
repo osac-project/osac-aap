@@ -11,8 +11,8 @@
 #   test_tenant_name|test_tenant_name_*:  The Tenant name to look up.
 #   test_tenant_namespace:                The namespace of the Tenant CR.
 #
-#   Test 1 (tenant Ready with storageClass set):
-#     Prerequisites: Tenant exists, phase=Ready, status.storageClass is set
+#   Test 1 (tenant Ready with storageClasses set):
+#     Prerequisites: Tenant exists, phase=Ready, status.storageClasses is set
 #     ansible-playbook ... -e test_tenant_name=tenant-akshay -e test_tenant_namespace=osac
 #
 #   Test 2 (tenant not ready -- Progressing phase):
@@ -23,15 +23,15 @@
 #     Prerequisites: Tenant with the given name does not exist in the namespace
 #     ansible-playbook ... -e test_tenant_name_missing=tenant-nonexistent -e test_tenant_namespace=osac
 #
-#   Test 4 (tenant ready but storageClass empty -- unexpected edge case):
-#     Prerequisites: Tenant phase=Ready but status.storageClass is empty (misconfigured)
+#   Test 4 (tenant ready but storageClasses empty -- unexpected edge case):
+#     Prerequisites: Tenant phase=Ready but status.storageClasses is empty (misconfigured)
 #     ansible-playbook ... -e test_tenant_name_no_sc=tenant-akshay -e test_tenant_namespace=osac
 
 # ──────────────────────────────────────────────────────────────
-# Test 1: Tenant ready with storageClass set (happy path)
+# Test 1: Tenant ready with storageClasses set (happy path)
 # Expected: role succeeds, tenant_storage_class_name set to the SC name from tenant status
 # ──────────────────────────────────────────────────────────────
-- name: Test tenant_storage_class role -- tenant ready with storageClass
+- name: Test tenant_storage_class role -- tenant ready with storageClasses
   hosts: localhost
   gather_facts: false
 
@@ -124,15 +124,15 @@
             success_msg: "Role failed as expected: {{ ansible_failed_result.msg }}"
 
 # ──────────────────────────────────────────────────────────────
-# Test 4: Tenant ready but storageClass empty -- error path
-# Expected: role fails with "storageClass is empty" message
+# Test 4: Tenant ready but storageClasses empty -- error path
+# Expected: role fails with "storageClasses is empty" message
 # ──────────────────────────────────────────────────────────────
-- name: Test tenant_storage_class role -- tenant ready but storageClass empty (should fail)
+- name: Test tenant_storage_class role -- tenant ready but storageClasses empty (should fail)
   hosts: localhost
   gather_facts: false
 
   tasks:
-    - name: Run empty-storageClass failure test
+    - name: Run empty-storageClasses failure test
       when:
         - test_tenant_name_no_sc is defined
         - test_tenant_namespace is defined
@@ -146,12 +146,12 @@
 
         - name: This task should not be reached -- role should have failed
           ansible.builtin.fail:
-            msg: "Role did not fail as expected when tenant storageClass is empty"
+            msg: "Role did not fail as expected when tenant storageClasses is empty"
 
       rescue:
-        - name: Verify role failed with expected empty-storageClass message
+        - name: Verify role failed with expected empty-storageClasses message
           ansible.builtin.assert:
             that:
-              - "'storageClass is empty' in ansible_failed_result.msg"
+              - "'storageClasses is empty' in ansible_failed_result.msg"
             fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg }}"
             success_msg: "Role failed as expected: {{ ansible_failed_result.msg }}"
