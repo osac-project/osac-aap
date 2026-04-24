@@ -1,0 +1,10 @@
+# VAST VMS credentials for live API integration tests (Tier 3)
+# Copy to integration_config.yml and fill in values, or render from CI:
+#   envsubst < integration_config.yml.template > integration_config.yml
+#
+# WARNING: NEVER commit integration_config.yml with real credentials.
+vast_endpoint: "${VAST_ENDPOINT}"
+vast_username: "${VAST_USERNAME}"
+vast_password: "${VAST_PASSWORD}"
+vast_tenant_prefix: "osac-test-"
+vast_validate_certs: true

@@ -1,0 +1,17 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vast-test
+  labels:
+    osac.openshift.io/tenant: test-tenant
+    osac.openshift.io/storage-tier: standard
+provisioner: csi.vastdata.com
+parameters:
+  vipPool: test-vip-pool
+  storagePath: /test-tenant
+  viewPolicy: default
+  secretName: vast-csi-test-tenant
+  secretNamespace: osac-system
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

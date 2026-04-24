@@ -174,5 +174,8 @@ context/
 # Integration test generated files
 tests/integration/kubeconfig-*
 
+# Storage test infrastructure
+tests/integration/integration_config.yml
+
 # CLAUDE.md
 CLAUDE.md

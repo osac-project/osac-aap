@@ -87,4 +87,15 @@ kubectl create namespace computeinstance-test-vm-work || true
 echo "Applying test fixtures..."
 kubectl apply -f "${SCRIPT_DIR}/fixtures/"
 
+# 6. Apply storage test fixtures and CRDs (conditional)
+if [ "${STORAGE_TESTS_ENABLED:-}" = "true" ]; then
+  echo "Installing VolumeSnapshot CRDs for storage tests..."
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml 2>/dev/null || echo "VolumeSnapshotClass CRD may already exist"
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml 2>/dev/null || echo "VolumeSnapshot CRD may already exist"
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml 2>/dev/null || echo "VolumeSnapshotContent CRD may already exist"
+
+  echo "Applying storage test fixtures..."
+  kubectl apply -f "${SCRIPT_DIR}/fixtures/storage/"
+fi
+
 echo "=== Test environment ready ==="
