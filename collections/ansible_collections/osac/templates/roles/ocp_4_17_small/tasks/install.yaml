@@ -36,8 +36,8 @@
     hosted_cluster_namespace: "{{ cluster_working_namespace }}"
     hosted_cluster_settings:
       ocp_release_image: "{{ ocp_release_image }}"
-      pull_secret: "{{ template_parameters.pull_secret }}"
-      ssh_public_key: "{{ template_parameters.ssh_public_key }}"
+      pull_secret: "{{ cluster_settings_pull_secret }}"
+      ssh_public_key: "{{ cluster_settings_ssh_public_key }}"
     hosted_cluster_node_requests: "{{ cluster_order.spec.nodeRequests | unique(attribute='resourceClass') }}"
     hosted_cluster_state: present
 
