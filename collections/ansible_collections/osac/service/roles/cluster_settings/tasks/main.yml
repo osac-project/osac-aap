@@ -22,8 +22,8 @@
 # Resolve release_image: explicit CR field > templateParameters > template default
 - name: Resolve release_image from explicit field or template parameters
   when: >-
-    cluster_order.spec.releaseImage | default('', true)
-    or cluster_settings_template_parameters.release_image | default('', true)
+    (cluster_order.spec.releaseImage | default('', true) | length > 0)
+    or (cluster_settings_template_parameters.release_image | default('', true) | length > 0)
   ansible.builtin.set_fact:
     ocp_release_image: >-
       {{ cluster_order.spec.releaseImage
@@ -31,12 +31,12 @@
 
 # Resolve networking CIDRs: explicit CR field > role defaults
 - name: Resolve pod_cidr from explicit field
-  when: (cluster_order.spec.network | default({})).podCIDR | default('')
+  when: ((cluster_order.spec.network | default({})).podCIDR | default('') | length > 0)
   ansible.builtin.set_fact:
     cluster_settings_pod_cidr: "{{ cluster_order.spec.network.podCIDR }}"
 
 - name: Resolve service_cidr from explicit field
-  when: (cluster_order.spec.network | default({})).serviceCIDR | default('')
+  when: ((cluster_order.spec.network | default({})).serviceCIDR | default('') | length > 0)
   ansible.builtin.set_fact:
     cluster_settings_service_cidr: "{{ cluster_order.spec.network.serviceCIDR }}"
 
