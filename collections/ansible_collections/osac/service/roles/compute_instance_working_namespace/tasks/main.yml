@@ -2,19 +2,30 @@
 - name: Retrieve working compute instance namespace unless it is already set
   when: compute_instance_working_namespace is not defined
   block:
-  - name: Retrieve tenant
-    kubernetes.core.k8s_info:
-      api_version: osac.openshift.io/v1alpha1
-      kind: Tenant
-      name: "{{ compute_instance.status.tenantReference.name }}"
-      namespace: "{{ compute_instance.status.tenantReference.namespace }}"
-    register: compute_instance_working_namespace_tenant
-
-  - name: Check if the tenant is found
-    ansible.builtin.fail:
-      msg: "Tenant namespace was not found. ({{ compute_instance_working_namespace_tenant.resources | length }} were found.)"
-    when: compute_instance_working_namespace_tenant.resources | length != 1
-
-  - name: Set working compute instance namespace as result
+  - name: Use subnet namespace from annotation when available
     ansible.builtin.set_fact:
-      compute_instance_working_namespace: "{{ compute_instance_working_namespace_tenant.resources[0].status.namespace }}"
+      compute_instance_working_namespace: "{{ compute_instance.metadata.annotations['osac.openshift.io/subnet-namespace'] }}"
+    when: >-
+      compute_instance.metadata.annotations is defined and
+      'osac.openshift.io/subnet-namespace' in compute_instance.metadata.annotations and
+      compute_instance.metadata.annotations['osac.openshift.io/subnet-namespace'] | length > 0
+
+  - name: Fall back to tenant namespace when subnet namespace annotation is absent
+    when: compute_instance_working_namespace is not defined
+    block:
+    - name: Retrieve tenant
+      kubernetes.core.k8s_info:
+        api_version: osac.openshift.io/v1alpha1
+        kind: Tenant
+        name: "{{ compute_instance.status.tenantReference.name }}"
+        namespace: "{{ compute_instance.status.tenantReference.namespace }}"
+      register: compute_instance_working_namespace_tenant
+
+    - name: Check if the tenant is found
+      ansible.builtin.fail:
+        msg: "Tenant namespace was not found. ({{ compute_instance_working_namespace_tenant.resources | length }} were found.)"
+      when: compute_instance_working_namespace_tenant.resources | length != 1
+
+    - name: Set working compute instance namespace as result
+      ansible.builtin.set_fact:
+        compute_instance_working_namespace: "{{ compute_instance_working_namespace_tenant.resources[0].status.namespace }}"
