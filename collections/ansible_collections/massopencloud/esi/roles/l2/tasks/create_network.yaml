@@ -4,12 +4,12 @@
   register: networks
 
 - name: Set create_network_result to found network
-  when: networks.networks
+  when: (networks.networks | length > 0)
   ansible.builtin.set_fact:
     create_network_result: "{{ networks.networks[0].id }}"
 
 - name: Create a new network
-  when: not networks.networks
+  when: (networks.networks | length == 0)
   block:
   - name: Create network  # noqa:no-changed-when
     ansible.builtin.command: >-

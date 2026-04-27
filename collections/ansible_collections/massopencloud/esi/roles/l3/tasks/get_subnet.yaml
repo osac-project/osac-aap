@@ -4,6 +4,6 @@
   register: subnets
 
 - name: Set subnet_info to found subnet
-  when: subnets.subnets
+  when: (subnets.subnets | length > 0)
   ansible.builtin.set_fact:
     subnet_info: "{{ subnets.subnets[0] }}"
