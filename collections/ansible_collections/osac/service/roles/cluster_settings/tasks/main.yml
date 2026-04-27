@@ -31,12 +31,12 @@
 
 # Resolve networking CIDRs: explicit CR field > role defaults
 - name: Resolve pod_cidr from explicit field
-  when: ((cluster_order.spec.network | default({})).podCIDR | default('') | length > 0)
+  when: ((cluster_order.spec.network | default({}, true)).podCIDR | default('') | length > 0)
   ansible.builtin.set_fact:
     cluster_settings_pod_cidr: "{{ cluster_order.spec.network.podCIDR }}"
 
 - name: Resolve service_cidr from explicit field
-  when: ((cluster_order.spec.network | default({})).serviceCIDR | default('') | length > 0)
+  when: ((cluster_order.spec.network | default({}, true)).serviceCIDR | default('') | length > 0)
   ansible.builtin.set_fact:
     cluster_settings_service_cidr: "{{ cluster_order.spec.network.serviceCIDR }}"
 
