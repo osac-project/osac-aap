@@ -54,7 +54,7 @@
   register: default_cluster_credentials
 
 - name: Apply provider defaults for missing credentials
-  when: default_cluster_credentials.resources | default(false)
+  when: (default_cluster_credentials.resources | default([]) | length > 0)
   block:
     - name: Set pull_secret from provider default
       when: not cluster_settings_pull_secret
