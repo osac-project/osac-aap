@@ -10,12 +10,12 @@
   register: fips
 
 - name: Set allocate_floating_ip_result to found ip
-  when: fips.floating_ips
+  when: (fips.floating_ips | length > 0)
   ansible.builtin.set_fact:
     allocate_floating_ip_result: "{{ fips.floating_ips[0].floating_ip_address }}"
 
 - name: Allocate a new floating ip
-  when: not fips.floating_ips
+  when: (fips.floating_ips | length == 0)
   block:
   - name: Allocate floating ip  # noqa:no-changed-when
     ansible.builtin.command: >-

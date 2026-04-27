@@ -5,7 +5,7 @@
   changed_when: purge_port_fwd_result.stdout | from_json | length > 0
 
 - name: Create port forwarding  # noqa:no-changed-when
-  when: ports
+  when: (ports | length > 0)
   ansible.builtin.command: >-
     openstack esi port forwarding create {{ internal_ip }} {{ floating_ip }}
       --internal-ip-network "{{ internal_network }}"

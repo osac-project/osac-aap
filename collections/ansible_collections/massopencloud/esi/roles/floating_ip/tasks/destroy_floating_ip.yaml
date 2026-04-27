@@ -4,7 +4,7 @@
   register: fips
 
 - name: Destroy floating floating_ip_address
-  when: fips.floating_ips
+  when: (fips.floating_ips | length > 0)
   block:
   - name: Extract ip address to destroy
     ansible.builtin.set_fact:
