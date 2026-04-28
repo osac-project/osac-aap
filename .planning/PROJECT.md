@@ -8,6 +8,17 @@ An Ansible Automation Platform template that provisions Windows virtual machines
 
 Boot a Windows VM from an OCI registry image, connect it to the network, and verify it's accessible via RDP and VNC console.
 
+## Current Milestone: v1.0 Windows VM Provisioning
+
+**Goal:** Ship a working Windows VM provisioning template for OpenShift Virtualization using the osac-aap component.
+
+**Target features:**
+- Boot Windows VMs from OCI container images (DataVolume registry source)
+- Apply sizing and network configuration from ComputeInstance spec  
+- Verify VM is running and accessible (network, RDP, guest agent, VNC)
+
+**Scope:** osac-aap template role (`osac.templates.windows_oci_vm`) implementation only - reuses existing fulfillment-service API, operator, and installer components.
+
 ## Requirements
 
 ### Validated
@@ -107,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after initialization*
+*Last updated: 2026-04-28 - milestone v1.0 started*
