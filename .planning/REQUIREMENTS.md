@@ -56,7 +56,16 @@ Explicitly excluded from all versions:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _Populated by roadmapper_ | | |
+| PROV-01 | Phase 1 | Pending |
+| PROV-02 | Phase 1 | Pending |
+| PROV-03 | Phase 1 | Pending |
+| PROV-04 | Phase 1 | Pending |
+| PROV-05 | Phase 1 | Pending |
+| VERIFY-01 | Phase 2 | Pending |
+| VERIFY-02 | Phase 2 | Pending |
+| VERIFY-03 | Phase 2 | Pending |
+| VERIFY-04 | Phase 2 | Pending |
+| VERIFY-05 | Phase 2 | Pending |
 
 ---
 
