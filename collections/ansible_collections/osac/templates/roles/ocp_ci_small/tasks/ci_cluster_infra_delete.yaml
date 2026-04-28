@@ -9,3 +9,4 @@
     tasks_from: detach_and_unlabel_all_removed_agents
   vars:
     manage_agents_cluster_order_name: "{{ cluster_infra_name }}"
+    manage_agents_idle_agents_network: "unused-in-ci"

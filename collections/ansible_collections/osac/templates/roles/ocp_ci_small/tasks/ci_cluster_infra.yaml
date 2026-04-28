@@ -19,6 +19,7 @@
     tasks_from: attach_and_approve_all_new_agents
   vars:
     manage_agents_cluster_order_name: "{{ cluster_infra_name }}"
+    manage_agents_cluster_network: "unused-in-ci"
 
 - name: Set cluster_infra_network_name
   ansible.builtin.set_fact:
