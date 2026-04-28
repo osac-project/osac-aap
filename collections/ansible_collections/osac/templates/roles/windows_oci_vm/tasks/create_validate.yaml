@@ -16,7 +16,7 @@
 
 - name: Extract VM hostname from ComputeInstance metadata
   ansible.builtin.set_fact:
-    vm_hostname: "{{ compute_instance.metadata.name | truncate(15, True, '') }}"
+    vm_hostname: "{{ compute_instance.metadata.name[:15] }}"
 
 - name: Log hostname truncation warning
   ansible.builtin.debug:
