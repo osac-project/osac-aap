@@ -27,14 +27,14 @@ Boot a Windows VM from an OCI registry image, connect it to the network, and ver
 - ✓ ComputeInstance CRD integration with AAP workflows — existing
 - ✓ DataVolume from registry source support — existing
 - ✓ Hyper-V enlightenments in VM spec — existing
+- ✓ Boot Windows VM from OCI container image (DataVolume registry source) — Validated in Phase 1
+- ✓ Apply CPU/memory/disk sizing from ComputeInstance spec — Validated in Phase 1
+- ✓ Connect VM to VirtualNetwork/Subnet specified in spec — Validated in Phase 1
+- ✓ Set Windows hostname from ComputeInstance metadata — Validated in Phase 1
+- ✓ Create VirtualMachine CR with Windows-optimized configuration — Validated in Phase 1
 
 ### Active
 
-- [ ] Boot Windows VM from OCI container image (DataVolume registry source)
-- [ ] Apply CPU/memory/disk sizing from ComputeInstance spec
-- [ ] Connect VM to VirtualNetwork/Subnet specified in spec
-- [ ] Set Windows hostname from ComputeInstance metadata
-- [ ] Create VirtualMachine CR with Windows-optimized configuration
 - [ ] Wait for VM to reach Running state (VirtualMachine.status.ready = True)
 - [ ] Verify network reachability (ping assigned IP address)
 - [ ] Verify RDP accessibility (port 3389 reachable)
@@ -94,11 +94,11 @@ Development cluster with pre-built Windows OCI images available for validation. 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| implementationStrategy: windows_oci_vm | Clear, descriptive name distinguishing Windows VMs from Linux; indicates OCI image source | — Pending |
-| Follow ocp_virt_vm pattern | Proven architecture for VM provisioning; reduces implementation risk and maintains consistency | — Pending |
-| Defer advanced customization to v2+ | Ship basic functionality fast to validate approach; iterate based on real usage feedback | — Pending |
-| Hybrid Windows setup approach | V1 focuses on boot and connectivity; domain join, licensing, scripts come later as separate phases | — Pending |
-| Reuse existing Hyper-V enlightenments | ocp_virt_vm already configures hyperv features (relaxed, vapic, spinlocks) optimal for Windows | — Pending |
+| implementationStrategy: windows_oci_vm | Clear, descriptive name distinguishing Windows VMs from Linux; indicates OCI image source | Implemented in Phase 1 |
+| Follow ocp_virt_vm pattern | Proven architecture for VM provisioning; reduces implementation risk and maintains consistency | Implemented in Phase 1 |
+| Defer advanced customization to v2+ | Ship basic functionality fast to validate approach; iterate based on real usage feedback | Active |
+| Hybrid Windows setup approach | V1 focuses on boot and connectivity; domain join, licensing, scripts come later as separate phases | Active |
+| Reuse existing Hyper-V enlightenments | ocp_virt_vm already configures hyperv features (relaxed, vapic, spinlocks) optimal for Windows | Implemented in Phase 1, plus 7 additional enlightenments |
 
 ## Evolution
 
@@ -118,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 - milestone v1.0 started*
+*Last updated: 2026-04-28 - Phase 1 complete: windows_oci_vm role created (16 files, all PROV-01 through PROV-05 validated)*
