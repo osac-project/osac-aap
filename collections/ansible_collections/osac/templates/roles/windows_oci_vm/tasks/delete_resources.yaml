@@ -140,11 +140,6 @@
     name: "{{ compute_instance_name }}-sysprep"
     namespace: "{{ compute_instance_target_namespace }}"
     state: absent
-  register: delete_sysprep_configmap
-  failed_when:
-    - delete_sysprep_configmap.failed is defined
-    - delete_sysprep_configmap.failed
-    - "'not found' not in (delete_sysprep_configmap.msg | default(''))"
 
 - name: Display deletion status
   ansible.builtin.debug:
