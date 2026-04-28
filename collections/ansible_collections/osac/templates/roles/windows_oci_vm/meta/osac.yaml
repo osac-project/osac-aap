@@ -1,0 +1,8 @@
+# Define the display name and description of the template
+title: Windows OCI VM ComputeInstance Template
+description: >
+  Provisions Windows virtual machines from OCI container images
+  with CloudBase-Init configuration and Hyper-V enlightenments.
+
+# Specify this is a ComputeInstance template (not a cluster template)
+template_type: compute_instance

@@ -1,0 +1,44 @@
+argument_specs:
+  main:
+    options:
+      compute_instance:
+        type: dict
+        required: true
+        description: ComputeInstance configuration
+      gpu_device_name:
+        type: str
+        required: false
+        default: ""
+        description: |
+          The resource name of the GPU device to pass through to the virtual machine. When
+          set, the virtual machine will be configured with GPU passthrough support via the
+          `hostDevices` field in the KubeVirt domain devices spec.
+
+          This must match a `resourceName` defined in the KubeVirt CR under
+          `spec.configuration.permittedHostDevices.pciHostDevices`. For example, to pass
+          through an NVIDIA A100 PCIe 80GB (PCI ID `10DE:20B5`), the KubeVirt CR should
+          contain:
+
+              configuration:
+                permittedHostDevices:
+                  pciHostDevices:
+                    - pciVendorSelector: "10DE:20B5"
+                      resourceName: "nvidia.com/GA100"
+                      externalResourceProvider: false
+
+          And the value of this parameter would be `nvidia.com/GA100`.
+
+          The PCI vendor and product ID for a given GPU can be found by running
+          `lspci -nn | grep -i nvidia` on a node that has the device.
+      template_parameters:
+        type: dict
+        description: VM configuration parameters
+        options:
+          exposed_ports:
+            description: >
+              Ports to expose on the VM for ingress traffic.
+              The syntax is a comma-separated list of `<port>/<protocol>` pairs, where `<protocol>` is either `tcp` or `udp`.
+              For example, `3389/tcp,80/tcp` will expose tcp ports 3389 and 80 on the VM.
+            type: str
+            required: false
+            default: "3389/tcp"
