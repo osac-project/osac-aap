@@ -9,7 +9,7 @@
         namespace: "{{ hosted_cluster_namespace }}"
         labels: "{{ hosted_cluster_default_cluster_order_label }}"
       data:
-        .dockerconfigjson: "{{ hosted_cluster_settings.pull_secret | to_json | b64encode }}"
+        .dockerconfigjson: "{{ hosted_cluster_settings.pull_secret | b64encode }}"
       type: kubernetes.io/dockerconfigjson
   no_log: true
 
