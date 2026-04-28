@@ -1,0 +1,18 @@
+---
+apiVersion: osac.openshift.io/v1alpha1
+kind: ComputeInstance
+metadata:
+  name: test-windows-vm
+  namespace: osac-system
+spec:
+  templateID: osac.templates.windows_oci_vm
+  cores: 2
+  memoryGiB: 4
+  bootDisk:
+    sizeGiB: 40
+  image:
+    sourceType: registry
+    sourceRef: "quay.io/containerdisks/windows:ltsc2022"
+  runStrategy: "Always"
+status:
+  desiredConfigVersion: "1"
