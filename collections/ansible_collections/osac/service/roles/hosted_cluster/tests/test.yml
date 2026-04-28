@@ -1,0 +1,96 @@
+---
+# Unit tests for osac.service.hosted_cluster role -- pull-secret formatting.
+# Each play is guarded by a `when` condition -- only the play whose controlling
+# variable is defined will run. Pass exactly one variable per invocation.
+#
+# No cluster or external service required -- tests only verify the Jinja2
+# expression that formats .dockerconfigjson, ensuring both string and dict
+# inputs produce a valid base64-encoded JSON object.
+#
+#   Test 1 (pull_secret is a JSON string):
+#     ansible-playbook test.yml -e test_pull_secret_string=true
+#
+#   Test 2 (pull_secret is a dict -- Jinja2 native type coercion):
+#     ansible-playbook test.yml -e test_pull_secret_dict=true
+
+# ──────────────────────────────────────────────────────────────
+# Preflight: require at least one test selector
+# ──────────────────────────────────────────────────────────────
+- name: "Validate test selector"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Require at least one test selector
+      ansible.builtin.assert:
+        that:
+          - (test_pull_secret_string | default(false) | bool) or (test_pull_secret_dict | default(false) | bool)
+        fail_msg: "Set at least one of test_pull_secret_string=true or test_pull_secret_dict=true."
+
+# ──────────────────────────────────────────────────────────────
+# Test 1: pull_secret arrives as a JSON string (default behavior)
+# Expected: base64 decodes to a valid JSON object with "auths" key
+# ──────────────────────────────────────────────────────────────
+- name: "Test hosted_cluster/create -- pull secret as JSON string"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Set pull_secret as a JSON string
+      ansible.builtin.set_fact:
+        hosted_cluster_settings:
+          pull_secret: '{"auths":{"registry.example.com":{"auth":"dGVzdDp0ZXN0"}}}'
+      when: test_pull_secret_string | default(false) | bool
+
+    - name: Compute dockerconfigjson value using the same expression as create_hosted_cluster
+      ansible.builtin.set_fact:
+        dockerconfigjson_b64: >-
+          {{ (hosted_cluster_settings.pull_secret | to_json
+              if hosted_cluster_settings.pull_secret is mapping
+              else hosted_cluster_settings.pull_secret) | b64encode }}
+      when: test_pull_secret_string | default(false) | bool
+
+    - name: Verify base64 decodes to a valid JSON object
+      ansible.builtin.assert:
+        that:
+          - dockerconfigjson_b64 is defined
+          - (dockerconfigjson_b64 | b64decode | from_json) is mapping
+          - (dockerconfigjson_b64 | b64decode | from_json).auths is defined
+        fail_msg: "dockerconfigjson should decode to a JSON object, got: {{ dockerconfigjson_b64 | b64decode }}"
+        success_msg: "String pull_secret correctly encoded as dockerconfigjson"
+      when: test_pull_secret_string | default(false) | bool
+
+# ──────────────────────────────────────────────────────────────
+# Test 2: pull_secret arrives as a dict (Jinja2 native type coercion)
+# Expected: to_json converts it back; base64 decodes to a valid JSON object
+# ──────────────────────────────────────────────────────────────
+- name: "Test hosted_cluster/create -- pull secret as dict (native types)"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Set pull_secret as a dict (simulates Jinja2 native coercion)
+      ansible.builtin.set_fact:
+        hosted_cluster_settings:
+          pull_secret:
+            auths:
+              registry.example.com:
+                auth: "dGVzdDp0ZXN0"
+      when: test_pull_secret_dict | default(false) | bool
+
+    - name: Compute dockerconfigjson value using the same expression as create_hosted_cluster
+      ansible.builtin.set_fact:
+        dockerconfigjson_b64: >-
+          {{ (hosted_cluster_settings.pull_secret | to_json
+              if hosted_cluster_settings.pull_secret is mapping
+              else hosted_cluster_settings.pull_secret) | b64encode }}
+      when: test_pull_secret_dict | default(false) | bool
+
+    - name: Verify base64 decodes to a valid JSON object
+      ansible.builtin.assert:
+        that:
+          - dockerconfigjson_b64 is defined
+          - (dockerconfigjson_b64 | b64decode | from_json) is mapping
+          - (dockerconfigjson_b64 | b64decode | from_json).auths is defined
+        fail_msg: "dockerconfigjson should decode to a JSON object, got: {{ dockerconfigjson_b64 | b64decode }}"
+        success_msg: "Dict pull_secret correctly converted and encoded as dockerconfigjson"
+      when: test_pull_secret_dict | default(false) | bool
