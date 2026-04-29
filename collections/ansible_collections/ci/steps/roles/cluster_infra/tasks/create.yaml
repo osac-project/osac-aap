@@ -1,3 +1,48 @@
+- name: Wait for control plane namespace
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: "{{ cluster_infra_namespace }}-{{ cluster_infra_name }}"
+  register: cp_ns
+  until: cp_ns.resources | length > 0
+  retries: 30
+  delay: 10
+
+- name: Create CAPI provider RBAC for agent access
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: capi-provider-role
+        namespace: "{{ hosted_cluster_default_agent_namespace | default('hardware-inventory') }}"
+      rules:
+      - apiGroups: ["agent-install.openshift.io"]
+        resources: ["agents"]
+        verbs: ["*"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch"]
+
+- name: Bind CAPI provider to agent namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: capi-provider-role
+        namespace: "{{ hosted_cluster_default_agent_namespace | default('hardware-inventory') }}"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: capi-provider-role
+      subjects:
+      - kind: ServiceAccount
+        name: capi-provider
+        namespace: "{{ cluster_infra_namespace }}-{{ cluster_infra_name }}"
+
 - name: Set skip network flags for CI
   ansible.builtin.set_fact:
     manage_agents_skip_network_detach: true
