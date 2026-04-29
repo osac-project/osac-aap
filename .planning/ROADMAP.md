@@ -12,8 +12,7 @@ This roadmap delivers Windows VM provisioning capability to the OSAC platform. W
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Windows VM Provisioning** - Create Ansible template role for Windows VM creation
-- [ ] **Phase 2: VM Verification** - Add verification tasks for VM accessibility
+- [x] **Phase 1: Windows VM Provisioning** - Create Ansible template role for Windows VM creation
 
 ## Phase Details
 
@@ -27,26 +26,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. VM receives specified CPU, memory, and disk sizing from ComputeInstance spec
   4. VM connects to specified VirtualNetwork and Subnet
   5. Windows hostname is set from ComputeInstance metadata
-**Plans**: TBD
+**Plans**: 3 (complete)
 
-### Phase 2: VM Verification
-**Goal**: System can verify Windows VMs are running and accessible through all expected channels
-**Depends on**: Phase 1
-**Requirements**: VERIFY-01, VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05
-**Success Criteria** (what must be TRUE):
-  1. Template waits for VM to reach Running state (VirtualMachine.status.ready = True)
-  2. Template verifies network reachability by pinging assigned IP address
-  3. Template verifies RDP port 3389 is reachable
-  4. Template verifies QEMU guest agent is responding
-  5. Template verifies VNC console is accessible
-**Plans**: TBD
+### ~~Phase 2: VM Verification~~ (REMOVED)
+**Reason**: Basic VM verification (Ready state wait, ComputeInstance annotation) is already implemented in Phase 1's `create_wait_annotate.yaml`, matching the Linux `ocp_virt_vm` pattern. Deeper checks (ping, RDP port, guest agent, VNC console) deferred to v2 milestone.
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2
+Phase 1 only (milestone complete)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Windows VM Provisioning | 0/TBD | Not started | - |
-| 2. VM Verification | 0/TBD | Not started | - |
+| 1. Windows VM Provisioning | 3/3 | Complete | 2026-04-28 |

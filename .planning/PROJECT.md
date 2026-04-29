@@ -32,17 +32,18 @@ Boot a Windows VM from an OCI registry image, connect it to the network, and ver
 - ✓ Connect VM to VirtualNetwork/Subnet specified in spec — Validated in Phase 1
 - ✓ Set Windows hostname from ComputeInstance metadata — Validated in Phase 1
 - ✓ Create VirtualMachine CR with Windows-optimized configuration — Validated in Phase 1
+- ✓ Wait for VM to reach Running state (VirtualMachine.status.ready = True) — Implemented in Phase 1 (create_wait_annotate.yaml)
 
 ### Active
 
-- [ ] Wait for VM to reach Running state (VirtualMachine.status.ready = True)
-- [ ] Verify network reachability (ping assigned IP address)
-- [ ] Verify RDP accessibility (port 3389 reachable)
-- [ ] Verify QEMU guest agent responding
-- [ ] Verify VNC console accessible
+None — all v1.0 requirements validated.
 
 ### Out of Scope
 
+- Verify network reachability (ping assigned IP address) — deferred to v2
+- Verify RDP accessibility (port 3389 reachable) — deferred to v2
+- Verify QEMU guest agent responding — deferred to v2
+- Verify VNC console accessible — deferred to v2
 - Active Directory domain join workflows — deferred to v2
 - Windows license activation automation — deferred to v2
 - Custom PowerShell script execution during provisioning — deferred to v2
@@ -99,6 +100,7 @@ Development cluster with pre-built Windows OCI images available for validation. 
 | Defer advanced customization to v2+ | Ship basic functionality fast to validate approach; iterate based on real usage feedback | Active |
 | Hybrid Windows setup approach | V1 focuses on boot and connectivity; domain join, licensing, scripts come later as separate phases | Active |
 | Reuse existing Hyper-V enlightenments | ocp_virt_vm already configures hyperv features (relaxed, vapic, spinlocks) optimal for Windows | Implemented in Phase 1, plus 7 additional enlightenments |
+| Remove Phase 2 (deeper VM verification) | Basic Ready state verification already in Phase 1's create_wait_annotate.yaml matches Linux pattern; deeper checks (ping, RDP, guest agent, VNC) are net-new capability | Deferred to v2 |
 
 ## Evolution
 
@@ -118,4 +120,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 - Phase 1 complete: windows_oci_vm role created (16 files, all PROV-01 through PROV-05 validated)*
+*Last updated: 2026-04-29 - Milestone v1.0 complete: Phase 2 removed (deeper verification deferred to v2), Phase 1 delivers full Windows VM provisioning with basic Ready state verification*
