@@ -104,33 +104,6 @@
     - delete_user_data_secret.failed
     - "'not found' not in (delete_user_data_secret.msg | default(''))"
 
-- name: Delete cloud-init secret
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Secret
-    name: "{{ compute_instance_name }}-cloud-init"
-    namespace: "{{ compute_instance_target_namespace }}"
-    state: absent
-  register: delete_cloud_init_secret
-  failed_when:
-    - delete_cloud_init_secret.failed is defined
-    - delete_cloud_init_secret.failed
-    - "'not found' not in (delete_cloud_init_secret.msg | default(''))"
-
-- name: Delete ssh public key secret
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Secret
-    name: "{{ compute_instance_name }}-ssh-public-key"
-    namespace: "{{ compute_instance_target_namespace }}"
-    state: absent
-  register: delete_ssh_secret
-  failed_when:
-    - delete_ssh_secret.failed is defined
-    - delete_ssh_secret.failed
-    - "'not found' not in (delete_ssh_secret.msg | default(''))"
 
 - name: Delete sysprep ConfigMap
   kubernetes.core.k8s:
