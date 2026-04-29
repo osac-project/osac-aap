@@ -1,0 +1,10 @@
+title: CI OpenShift Cluster
+description: >
+  OpenShift 4.17 cluster for CI testing. Uses ci.steps network backend.
+  Same as ocp_4_17_small but with 1 worker of class ci-worker.
+
+default_node_request:
+- resourceClass: ci-worker
+  numberOfNodes: 1
+
+allowed_resource_classes: []
