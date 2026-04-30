@@ -15,12 +15,12 @@
       apiVersion: rbac.authorization.k8s.io/v1
       kind: Role
       metadata:
-        name: capi-provider-role
+        name: "capi-provider-{{ cluster_infra_name }}"
         namespace: "{{ hosted_cluster_default_agent_namespace | default('hardware-inventory') }}"
       rules:
       - apiGroups: ["agent-install.openshift.io"]
         resources: ["agents"]
-        verbs: ["*"]
+        verbs: ["get", "list", "watch", "update", "patch"]
       - apiGroups: [""]
         resources: ["secrets"]
         verbs: ["get", "list", "watch"]
@@ -32,12 +32,12 @@
       apiVersion: rbac.authorization.k8s.io/v1
       kind: RoleBinding
       metadata:
-        name: capi-provider-role
+        name: "capi-provider-{{ cluster_infra_name }}"
         namespace: "{{ hosted_cluster_default_agent_namespace | default('hardware-inventory') }}"
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: Role
-        name: capi-provider-role
+        name: "capi-provider-{{ cluster_infra_name }}"
       subjects:
       - kind: ServiceAccount
         name: capi-provider
