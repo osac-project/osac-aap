@@ -25,13 +25,13 @@ Consolidate the shipped `windows_oci_vm` role into `ocp_virt_vm`, making `ocp_vi
 ### ansible-lint compliance
 - **D-04:** Verify lint compliance before committing. Run `ansible-lint` and `yamllint` against the modified files as part of the plan. Block commit on lint failure. Pre-commit hooks are already configured in the project.
 
-### Carried forward from Phase 1 LEARNINGS.md (locked decisions)
-- **D-05:** Windows hostname truncated to 15 characters, no uppercase forcing (Windows normalizes case internally).
-- **D-06:** Sysprep disk uses `cdrom` bus `sata` — required by Windows Setup; virtio bus not supported for sysprep media.
-- **D-07:** Windows VM ready wait timeout is 900s (Windows first boot + sysprep takes significantly longer than Linux).
-- **D-08:** SSH key injection is Linux-only; Windows uses RDP (port 3389).
-- **D-09:** CloudBase-Init user-data delivered via `cloudInitNoCloud` volume — same as Linux cloud-init, no separate volume type needed.
-- **D-10:** Soft-fail deletion pattern: `failed_when` with "not found" string check on all optional Kubernetes resource deletes.
+### Carried forward from Phase 1 LEARNINGS.md (locked decisions) [informational]
+- **D-05 [informational]:** Windows hostname truncated to 15 characters, no uppercase forcing (Windows normalizes case internally). Already implemented — verified by research.
+- **D-06 [informational]:** Sysprep disk uses `cdrom` bus `sata` — required by Windows Setup; virtio bus not supported for sysprep media. Already implemented — verified by research.
+- **D-07 [informational]:** Windows VM ready wait timeout is 900s (Windows first boot + sysprep takes significantly longer than Linux). Already implemented — verified by research.
+- **D-08 [informational]:** SSH key injection is Linux-only; Windows uses RDP (port 3389). Already implemented — verified by research.
+- **D-09 [informational]:** CloudBase-Init user-data delivered via `cloudInitNoCloud` volume — same as Linux cloud-init, no separate volume type needed. Already implemented — verified by research.
+- **D-10 [informational]:** Soft-fail deletion pattern: `failed_when` with "not found" string check on all optional Kubernetes resource deletes. Already implemented — verified by research.
 
 </decisions>
 
