@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Windows VM Provisioning
 status: executing
-last_updated: "2026-05-02T18:51:53.536Z"
+last_updated: "2026-05-02T19:47:19.871Z"
 progress:
   total_phases: 1
   completed_phases: 0
