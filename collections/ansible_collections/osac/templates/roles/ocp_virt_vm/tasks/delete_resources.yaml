@@ -30,18 +30,17 @@
         runStrategy: Halted
   when: vm_exists.resources | length > 0
 
-- name: Wait for VM to stop
+- name: Wait for VirtualMachineInstance to stop
   kubernetes.core.k8s_info:
     kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
     api_version: kubevirt.io/v1
-    kind: VirtualMachine
+    kind: VirtualMachineInstance
     name: "{{ compute_instance_name }}"
     namespace: "{{ compute_instance_target_namespace }}"
-    wait: true
-    wait_condition:
-      type: Ready
-      status: "False"
-    wait_timeout: 300
+  register: vmi_stopped
+  until: vmi_stopped.resources | length == 0
+  retries: 60
+  delay: 5
   when: vm_exists.resources | length > 0
 
 - name: Delete VirtualMachine
