@@ -56,6 +56,10 @@
     wait_timeout: 300
 
 - name: Delete VM load balancer service
+  # This Service is created only when a post-create hook provisions a load-balancer
+  # Service for the VM. It is not created by the default create flow, so it may not
+  # exist on every delete run. The failed_when guard below is consistent with other
+  # delete tasks in this file and prevents spurious failures when the resource is absent.
   kubernetes.core.k8s:
     kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
     api_version: v1
@@ -63,6 +67,11 @@
     name: "{{ compute_instance_name }}-load-balancer"
     namespace: "{{ compute_instance_target_namespace }}"
     state: absent
+  register: delete_lb_service
+  failed_when:
+    - delete_lb_service.failed is defined
+    - delete_lb_service.failed
+    - "'not found' not in (delete_lb_service.msg | default(''))"
 
 - name: Delete root disk DataVolume
   kubernetes.core.k8s:
