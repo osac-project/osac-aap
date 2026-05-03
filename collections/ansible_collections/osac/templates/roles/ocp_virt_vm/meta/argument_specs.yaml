@@ -54,4 +54,9 @@ argument_specs:
               Default is `22/tcp` for Linux and `3389/tcp` for Windows (applied at runtime via `guest_os_family`).
             type: str
             required: false
+            # NOTE: This spec default (22/tcp) is intentionally the Linux static fallback.
+            # For Windows, create_validate.yaml merges default_arg_specs (from defaults/main.yaml)
+            # into template_parameters before this argument-spec default is ever consulted,
+            # overriding exposed_ports to 3389/tcp. Never change this default to 3389/tcp
+            # without also auditing that the Windows runtime override still runs first.
             default: "22/tcp"
