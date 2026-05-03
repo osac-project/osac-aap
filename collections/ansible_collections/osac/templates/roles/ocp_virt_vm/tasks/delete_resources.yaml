@@ -104,21 +104,7 @@
     - delete_user_data_secret.failed
     - "'not found' not in (delete_user_data_secret.msg | default(''))"
 
-- name: Delete cloud-init secret
-  kubernetes.core.k8s:
-    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
-    api_version: v1
-    kind: Secret
-    name: "{{ compute_instance_name }}-cloud-init"
-    namespace: "{{ compute_instance_target_namespace }}"
-    state: absent
-  register: delete_cloud_init_secret
-  failed_when:
-    - delete_cloud_init_secret.failed is defined
-    - delete_cloud_init_secret.failed
-    - "'not found' not in (delete_cloud_init_secret.msg | default(''))"
-
-- name: Delete ssh public key secret
+- name: Delete ssh public key secret (Linux)
   kubernetes.core.k8s:
     kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
     api_version: v1
@@ -131,6 +117,22 @@
     - delete_ssh_secret.failed is defined
     - delete_ssh_secret.failed
     - "'not found' not in (delete_ssh_secret.msg | default(''))"
+  when: guest_os_family == 'linux'
+
+- name: Delete sysprep ConfigMap (Windows)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
+    api_version: v1
+    kind: ConfigMap
+    name: "{{ compute_instance_name }}-sysprep"
+    namespace: "{{ compute_instance_target_namespace }}"
+    state: absent
+  register: delete_sysprep_configmap
+  failed_when:
+    - delete_sysprep_configmap.failed is defined
+    - delete_sysprep_configmap.failed
+    - "'not found' not in (delete_sysprep_configmap.msg | default(''))"
+  when: guest_os_family == 'windows'
 
 - name: Display deletion status
   ansible.builtin.debug:
