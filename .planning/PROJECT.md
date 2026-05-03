@@ -1,8 +1,8 @@
-# Windows VM Provisioning for OpenShift Virtualization
+# Linux and Windows VM Provisioning for OpenShift Virtualization
 
 ## What This Is
 
-An Ansible Automation Platform template that provisions Windows virtual machines in OpenShift Virtualization from pre-built Windows container images stored in OCI-compliant registries. The template integrates with OSAC's fulfillment workflow to handle ComputeInstance resources with implementationStrategy `windows_oci_vm`.
+An Ansible Automation Platform template that provisions Linux and Windows virtual machines in OpenShift Virtualization from pre-built container images stored in OCI-compliant registries. The `ocp_virt_vm` template handles both OS families via `guest_os_family` branching — a single template, a single OSAC catalog registration. OS family is inferred automatically from the `osac.openshift.io/guest-os-family` annotation on the ComputeInstance or from the `containerdisks/windows` image path heuristic.
 
 ## Core Value
 
@@ -10,10 +10,10 @@ Boot a Windows VM from an OCI registry image, connect it to the network, and ver
 
 ## Current State
 
-**Shipped:** v1.0 (2026-04-29)
-**Codebase:** 16-file Ansible role (`osac.templates.windows_oci_vm`) + 1 test fixture, ~732 lines YAML
+**Shipped:** v1.1 (2026-05-02)
+**Codebase:** `ocp_virt_vm` Ansible role (unified Linux+Windows) + integration test fixtures
 
-The `windows_oci_vm` role follows the `ocp_virt_vm` pattern with Windows-specific adaptations: sysprep hostname configuration (15-char NetBIOS truncation), enhanced Hyper-V enlightenments (10 features), Windows clock config, CloudBase-Init user-data via cloudInitNoCloud, and SATA CD-ROM bus for sysprep disk.
+The `ocp_virt_vm` role handles OS-specific behavior through guest_os_family branching: sysprep hostname configuration (15-char NetBIOS truncation), enhanced Hyper-V enlightenments, Windows clock config, CloudBase-Init user-data via cloudInitNoCloud, and SATA CD-ROM bus for sysprep disk (Windows); cloud-init and SSH key injection (Linux).
 
 ## Requirements
 
@@ -45,12 +45,12 @@ None — planning next milestone.
 ## Context
 
 **Existing Architecture:**
-This is a brownfield addition to the osac-aap repository. The codebase already supports Linux VM provisioning through the `ocp_virt_vm` template role. The `windows_oci_vm` role mirrors this structure exactly (16 files, same directory layout) to maintain consistency.
+This is a brownfield addition to the osac-aap repository. The `ocp_virt_vm` template handles both Linux and Windows VM provisioning. OS family is determined at runtime by `infer_guest_os_family.yaml`, which checks the `osac.openshift.io/guest-os-family` annotation on the ComputeInstance, then falls back to the `containerdisks/windows` image path heuristic, then defaults to `linux`.
 
 **Integration Points:**
 - Triggered by ComputeInstance CRD creation in fulfillment-service
 - Receives resource definition via ansible_eda.event.payload
-- Uses `implementationStrategy: windows_oci_vm` to route to this template
+- Uses `template_id: osac.templates.ocp_virt_vm` in ComputeInstance spec to route to this template (both Linux and Windows)
 - Follows existing compute_instance/create workflow orchestration
 - Registered with osac.templates collection alongside other infrastructure templates
 
@@ -72,7 +72,7 @@ This is a brownfield addition to the osac-aap repository. The codebase already s
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| implementationStrategy: windows_oci_vm | Clear, descriptive name distinguishing Windows VMs from Linux; indicates OCI image source | ✓ Implemented |
+| ocp_virt_vm as unified Linux+Windows template | Single template, single OSAC catalog registration; OS family inferred from annotation or image path; eliminates role duplication | ✓ Implemented (v1.1) |
 | Follow ocp_virt_vm pattern | Proven architecture for VM provisioning; reduces implementation risk and maintains consistency | ✓ Implemented — 16 files, identical structure |
 | Defer advanced customization to v2+ | Ship basic functionality fast to validate approach; iterate based on real usage feedback | ✓ Active |
 | Reuse existing Hyper-V enlightenments | ocp_virt_vm already configures hyperv features optimal for Windows | ✓ Implemented — plus 7 additional enlightenments |
@@ -99,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-29 after v1.0 milestone*
+*Last updated: 2026-05-02 after v1.1 consolidation (windows_oci_vm merged into ocp_virt_vm)*
