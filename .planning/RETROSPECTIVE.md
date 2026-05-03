@@ -37,6 +37,36 @@
 
 ---
 
+## Milestone: v1.1 — ocp_virt_vm Consolidation
+
+**Shipped:** 2026-05-02
+**Phases:** 1 | **Plans:** 3
+
+### What Was Built
+- Unified `ocp_virt_vm` Ansible template role: handles both Linux and Windows VMs via `guest_os_family` branching
+- `infer_guest_os_family.yaml` task: infers OS family from `osac.openshift.io/guest-os-family` annotation or `containerdisks/windows` image path heuristic
+- Deleted `windows_oci_vm` role directory (16 files) — single unified template replaces it
+- Removed orphaned "Delete cloud-init secret" task: create/delete symmetry established for all resources
+- Updated `exposed_ports` argument_specs description with OS-dependent default note
+
+### What Worked
+- **Research-first approach** — RESEARCH.md verified exactly which decisions were done vs. missing before any code was touched; no guessing about implementation state
+- **PATTERNS.md specificity** — exact line numbers and target text in each pattern assignment meant executor tasks needed zero codebase exploration
+
+### What Was Inefficient
+- None identified — phase scope was well-defined from the start
+
+### Patterns Established
+- `infer_guest_os_family.yaml` as the standard entry point for OS-conditional branching in compute templates — always include before any task that checks `guest_os_family`
+- Create/delete resource symmetry rule: grep every resource name in delete_resources.yaml against all create_*.yaml files before adding a delete task
+- argument_specs.yaml description convention: runtime-conditional behavior belongs in the `description:` folded scalar, not in additional default fields
+
+### Key Lessons
+1. **Verify implementation state before planning** — the research phase showed D-05 through D-10 were already done; planning only covered the gaps
+2. **Orphaned delete tasks are invisible at runtime** — the soft-fail pattern silences them; systematic create/delete audits are the only way to catch them
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -44,6 +74,7 @@
 | Milestone | Phases | Plans | Key Change |
 |-----------|--------|-------|------------|
 | v1.0 | 1 | 3 | Established Windows VM provisioning pattern; scoped verification to existing Linux parity |
+| v1.1 | 1 | 3 | Consolidated windows_oci_vm into ocp_virt_vm; established unified Linux+Windows compute template pattern |
 
 ### Top Lessons (Verified Across Milestones)
 

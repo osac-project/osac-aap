@@ -27,3 +27,21 @@ Release history for Windows VM Provisioning for OpenShift Virtualization.
 - Phase 2 (deeper VM verification) removed — basic Ready state wait matches Linux pattern, deeper checks deferred to v2
 
 **Archive:** [v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) | [v1.0-REQUIREMENTS.md](milestones/v1.0-REQUIREMENTS.md)
+
+### v1.1 — ocp_virt_vm Consolidation (Shipped: 2026-05-02)
+
+**Started:** 2026-05-02
+**Shipped:** 2026-05-02
+**Phases:** 1 | **Plans:** 3 | **Tasks:** 5
+
+**Key accomplishments:**
+
+1. Consolidated `windows_oci_vm` into `ocp_virt_vm` — unified Linux+Windows compute template via `guest_os_family` branching; single catalog registration, OS family inferred automatically from annotation or image path
+2. Removed orphaned "Delete cloud-init secret" task from `delete_resources.yaml` — create/delete symmetry now holds for all resources
+3. Updated `exposed_ports` description in `argument_specs.yaml` with OS-dependent default note (D-01)
+4. Deleted `windows_oci_vm` role directory (16 files) — no longer needed
+
+**Key decisions:**
+
+- `ocp_virt_vm` as unified template — single OSAC catalog registration handles both Linux and Windows; OS family inferred from `osac.openshift.io/guest-os-family` annotation or `containerdisks/windows` image path heuristic
+- `guest_os_family` branching over separate roles — reduces duplication, keeps orchestration layer unchanged (template_id dispatch still works)
