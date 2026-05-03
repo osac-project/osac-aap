@@ -1,6 +1,18 @@
 argument_specs:
   main:
     options:
+      guest_os_family:
+        type: str
+        required: false
+        default: "linux"
+        choices:
+          - linux
+          - windows
+        description: >
+          OS family for the guest VM. If not supplied, the role infers from ComputeInstance
+          annotation osac.openshift.io/guest-os-family (linux|windows) or from spec.image.sourceRef
+          containing containerdisks/windows. "linux" uses cloud-init / SSH defaults; "windows"
+          applies Windows sizing defaults, sysprep, Hyper-V / clock domain spec, and matching delete cleanup.
       compute_instance:
         type: dict
         required: true
@@ -32,5 +44,14 @@ argument_specs:
           `lspci -nn | grep -i nvidia` on a node that has the device.
       template_parameters:
         type: dict
-        required: false
-        description: Template parameters for the VM.
+        description: VM configuration parameters
+        options:
+          exposed_ports:
+            description: >
+              Ports to expose on the VM for ingress traffic.
+              The syntax is a comma-separated list of `<port>/<protocol>` pairs, where `<protocol>` is either `tcp` or `udp`.
+              For example, `22/tcp,80/tcp` will expose tcp ports 22 and 80 on the VM.
+              Default is `22/tcp` for Linux and `3389/tcp` for Windows (applied at runtime via `guest_os_family`).
+            type: str
+            required: false
+            default: "22/tcp"
