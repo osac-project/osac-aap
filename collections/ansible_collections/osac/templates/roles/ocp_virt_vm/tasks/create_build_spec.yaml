@@ -1,5 +1,5 @@
 ---
-- name: Build template spec base
+- name: Build template spec base (Linux)
   ansible.builtin.set_fact:
     vm_template_spec:
       domain:
@@ -33,6 +33,60 @@
         - name: root-disk
           dataVolume:
             name: "{{ compute_instance_name }}-root-disk"
+  when: guest_os_family != 'windows'
+
+- name: Build template spec base (Windows)
+  ansible.builtin.set_fact:
+    vm_template_spec:
+      domain:
+        cpu:
+          cores: "{{ vm_cpu_cores }}"
+        memory:
+          guest: "{{ vm_memory }}"
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        devices:
+          disks:
+            - name: root-disk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+          rng: {}
+        features:
+          smm:
+            enabled: true
+          acpi: {}
+          apic: {}
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+            synic: {}
+            vpindex: {}
+            frequencies: {}
+            reenlightenment: {}
+            tlbflush: {}
+            reset: {}
+            runtime: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: root-disk
+          dataVolume:
+            name: "{{ compute_instance_name }}-root-disk"
+  when: guest_os_family == 'windows'
 
 - name: Add GPU passthrough device to template spec if required
   ansible.builtin.set_fact:

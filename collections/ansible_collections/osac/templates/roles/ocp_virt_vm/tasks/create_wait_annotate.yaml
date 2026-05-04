@@ -14,7 +14,7 @@
     wait_condition:
       type: Ready
       status: "True"
-    wait_timeout: 600
+    wait_timeout: "{{ 900 if guest_os_family == 'windows' else 600 }}"
   when: vm_run_strategy != "Halted"
 
 - name: Annotate the reconciledConfigVerion
@@ -38,7 +38,22 @@
     namespace: "{{ compute_instance_target_namespace }}"
   register: vm_status
 
-- name: Display VM information
+- name: Display VM information (Windows)
+  ansible.builtin.debug:
+    msg:
+      - "Virtual Machine '{{ compute_instance_name }}' created successfully"
+      - "OS: Windows"
+      - "Namespace: {{ compute_instance_target_namespace }}"
+      - "Image: {{ vm_image_source }}"
+      - "CPU Cores: {{ vm_cpu_cores }}/Memory: {{ vm_memory }}"
+      - "Root Disk Size: {{ vm_boot_disk_size }}"
+      - "Additional Disks: {{ vm_additional_disks | length }}"
+      - "RunStrategy: {{ vm_run_strategy }}"
+      - "Hostname: {{ vm_hostname }}"
+      - "Status: {{ vm_status.resources[0].status.printableStatus | default('Unknown') }}"
+  when: guest_os_family == 'windows'
+
+- name: Display VM information (Linux)
   ansible.builtin.debug:
     msg:
       - "Virtual Machine '{{ compute_instance_name }}' created successfully"
@@ -49,3 +64,4 @@
       - "Additional Disks: {{ vm_additional_disks | length }}"
       - "RunStrategy: {{ vm_run_strategy }}"
       - "Status: {{ vm_status.resources[0].status.printableStatus | default('Unknown') }}"
+  when: guest_os_family != 'windows'

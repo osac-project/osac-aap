@@ -5,7 +5,7 @@ metadata:
   name: test-windows-vm
   namespace: osac-system
 spec:
-  templateID: osac.templates.windows_oci_vm
+  templateID: osac.templates.ocp_virt_vm
   cores: 2
   memoryGiB: 4
   bootDisk:

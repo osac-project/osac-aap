@@ -2,12 +2,16 @@
 # Override points: secrets, modify_vm_spec, pre_create_hook, resources, post_create_hook, wait_annotate
 # NOT overrideable: validate, build_spec (CRITICAL steps for correct operation)
 # Variables: compute_instance, compute_instance_name, tenant_target_namespace,
-# template_id, template_parameters, default_vm_labels.
+# template_id, template_parameters, default_arg_specs, default_vm_labels, default_spec,
+# guest_os_family (linux | windows).
 ---
 - name: Include get remote cluster kubeconfig
   ansible.builtin.include_role:
     name: osac.service.common
     tasks_from: get_remote_cluster_kubeconfig
+
+- name: Infer guest_os_family (annotation or Windows container disk image)
+  ansible.builtin.include_tasks: infer_guest_os_family.yaml
 
 - name: Determine target namespace for VM resources
   ansible.builtin.set_fact:
@@ -16,6 +20,12 @@
 - name: Log namespace selection
   ansible.builtin.debug:
     msg: "VM will be created in namespace: {{ compute_instance_target_namespace }} (tenant namespace: {{ tenant_target_namespace }})"
+
+- name: Apply Windows default resource profile when guest_os_family is windows
+  ansible.builtin.set_fact:
+    default_arg_specs: "{{ _guest_os_windows_default_arg_specs }}"
+    default_spec: "{{ _guest_os_windows_default_spec }}"
+  when: guest_os_family == 'windows'
 
 - name: Set create step defaults
   ansible.builtin.set_fact:

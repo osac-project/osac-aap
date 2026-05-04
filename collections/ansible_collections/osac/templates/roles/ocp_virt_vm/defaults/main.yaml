@@ -1,4 +1,35 @@
 ---
+# guest_os_family: linux (default) or windows — drives validation, domain spec,
+# initialization (cloud-init vs sysprep), delete cleanup, and ready timeouts.
+guest_os_family: linux
+
 default_vm_internal_network: "hypershift"
 default_vm_storage_class: "nfs-client"
 default_vm_labels: "{{ {compute_instance_label: compute_instance_name} }}"
+
+# Setup the defaults described in the arg_specs (Linux profile).
+default_arg_specs:
+  exposed_ports: "22/tcp"
+
+# Defaults for ComputeInstance spec fields (Linux profile).
+default_spec:
+  cores: 2
+  memoryGiB: 2
+  bootDisk:
+    sizeGiB: 10
+  image:
+    sourceRef: "quay.io/containerdisks/fedora:latest"
+  runStrategy: "Always"
+
+# Applied in create.yaml when guest_os_family is windows (overrides the maps above).
+_guest_os_windows_default_arg_specs:
+  exposed_ports: "3389/tcp"
+
+_guest_os_windows_default_spec:
+  cores: 2
+  memoryGiB: 4
+  bootDisk:
+    sizeGiB: 40
+  image:
+    sourceRef: "quay.io/containerdisks/windows:ltsc2022"
+  runStrategy: "Always"

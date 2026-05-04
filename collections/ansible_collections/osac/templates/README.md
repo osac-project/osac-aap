@@ -63,13 +63,14 @@ OpenShift 4.17 cluster with GitHub OAuth authentication pre-configured.
 ### VM Templates
 
 #### `ocp_virt_vm`
-Simple virtual machine template with configurable resources and cloud-init support.
+Virtual machine template for OpenShift Virtualization: **Linux and Windows** guests use the same template ID. Linux is the default. Windows is selected when any of the following is true (in order): role var `guest_os_family: windows` (e.g. extra vars), annotation `osac.openshift.io/guest-os-family: windows` on the `ComputeInstance`, or `spec.image.sourceRef` contains the KubeVirt Windows container disk path `containerdisks/windows` (for example `quay.io/containerdisks/windows:ltsc2022`). Windows uses sysprep / CloudBase-Init paths, Hyper-V domain defaults, and matching delete cleanup.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `exposed_ports` | string | "22/tcp" | Comma-separated ports (e.g., "22/tcp,80/tcp") |
+| `guest_os_family` | string | `linux` | `linux` or `windows` — overrides inference when set before the role runs |
+| `exposed_ports` | string | "22/tcp" (linux) / "3389/tcp" (windows) | Comma-separated ports (e.g., "22/tcp,80/tcp") |
 
 The following are read from the `ComputeInstance` spec:
 
@@ -83,6 +84,8 @@ The following are read from the `ComputeInstance` spec:
 | `spec.sshKey` | SSH public key for VM access |
 | `spec.userDataSecretRef.name` | Secret containing cloud-init user data |
 | `spec.additionalDisks` | Additional data disks |
+
+**Windows-specific behavior** (when guest OS resolves to `windows`): hostname via sysprep unattend.xml (15-character NetBIOS limit), enhanced Hyper-V enlightenments and clock policy, SATA sysprep CD-ROM, optional CloudBase-Init user-data secret, 900s ready wait.
 
 ## Usage
 
@@ -126,47 +129,12 @@ validation, and lifecycle management.
 4. Implement provisioning tasks in `roles/my_cluster_template/tasks/install.yaml`
 5. Implement cleanup tasks in `roles/my_cluster_template/tasks/delete.yaml`
 
-### Creating a New ComputeInstance Template
+### Creating a New VM Template
 
-ComputeInstance templates define all metadata, spec defaults, and parameters in a
-single file: `meta/osac.yaml`.
-
-1. Create a new role directory under `roles/`:
-   ```bash
-   mkdir -p roles/my_vm_template/{tasks,meta}
-   ```
-
-2. Define template metadata, spec defaults, and parameters in `roles/my_vm_template/meta/osac.yaml`:
-   ```yaml
-   title: My VM Template
-   description: Description of what this template provides
-   template_type: compute_instance
-
-   spec_defaults:
-     cores: 2
-     memory_gib: 2
-     boot_disk:
-       size_gib: 10
-     image:
-       source_type: registry
-       source_ref: "quay.io/containerdisks/fedora:latest"
-     run_strategy: "Always"
-
-   parameters:
-     - name: my_param
-       title: My Parameter
-       description: What this parameter controls
-       type: string
-       required: false
-       default: "some_default"
-       validation:
-         pattern: '^[a-z]+$'
-   ```
-
-3. Implement provisioning tasks in `roles/my_vm_template/tasks/create.yaml`
-4. Implement cleanup tasks in `roles/my_vm_template/tasks/delete.yaml`
-
-See `roles/ocp_virt_vm` for a complete example.
+1. Create role structure as above
+2. Set `template_type: compute_instance` in `meta/osac.yaml`
+3. Use `create.yaml` and `delete.yaml` instead of `install.yaml`
+4. Implement VM creation using `kubernetes.core.k8s` modules
 
 ## Architecture
 
@@ -202,7 +170,7 @@ Templates integrate with OSAC through a well-defined interface:
 
 Contributions are welcome! Please ensure all templates:
 - Include comprehensive `meta/osac.yaml` metadata
-- Define parameters in `meta/osac.yaml` (ComputeInstance templates) or `meta/argument_specs.yaml` (cluster templates)
+- Define all parameters in `meta/argument_specs.yaml`
 - Implement both create and delete operations
 - Follow Ansible best practices
 - Include descriptive variable names and comments
