@@ -9,10 +9,12 @@ argument_specs:
           - linux
           - windows
         description: >
-          OS family for the guest VM. If not supplied, the role infers from ComputeInstance
-          annotation osac.openshift.io/guest-os-family (linux|windows) or from spec.image.sourceRef
-          containing containerdisks/windows. "linux" uses cloud-init / SSH defaults; "windows"
-          applies Windows sizing defaults, sysprep, Hyper-V / clock domain spec, and matching delete cleanup.
+          OS family for the guest VM. Defaults to 'linux'. The role always runs inference at startup
+          and applies the highest-priority match: (1) ComputeInstance annotation
+          osac.openshift.io/guest-os-family (linux|windows), or (2) spec.image.sourceRef containing
+          'containerdisks/windows'. If neither matches, the default 'linux' is used. The 'linux'
+          profile uses cloud-init / SSH defaults; 'windows' applies Windows sizing defaults, sysprep,
+          Hyper-V / clock domain spec, and matching delete cleanup.
       compute_instance:
         type: dict
         required: true
@@ -51,12 +53,7 @@ argument_specs:
               Ports to expose on the VM for ingress traffic.
               The syntax is a comma-separated list of `<port>/<protocol>` pairs, where `<protocol>` is either `tcp` or `udp`.
               For example, `22/tcp,80/tcp` will expose tcp ports 22 and 80 on the VM.
-              Default is `22/tcp` for Linux and `3389/tcp` for Windows (applied at runtime via `guest_os_family`).
+              Default is OS-dependent: `22/tcp` for Linux, `3389/tcp` for Windows. The role applies
+              the appropriate default at runtime based on the inferred or specified `guest_os_family`.
             type: str
             required: false
-            # NOTE: This spec default (22/tcp) is intentionally the Linux static fallback.
-            # For Windows, create_validate.yaml merges default_arg_specs (from defaults/main.yaml)
-            # into template_parameters before this argument-spec default is ever consulted,
-            # overriding exposed_ports to 3389/tcp. Never change this default to 3389/tcp
-            # without also auditing that the Windows runtime override still runs first.
-            default: "22/tcp"

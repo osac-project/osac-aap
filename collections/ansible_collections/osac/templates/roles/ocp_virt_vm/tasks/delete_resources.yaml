@@ -31,6 +31,17 @@
   when: vm_exists.resources | length > 0
 
 - name: Wait for VirtualMachineInstance to stop
+  # CRITICAL: Must wait for the VirtualMachineInstance (VMI) to fully disappear before
+  # deleting the VirtualMachine (VM) definition. A VM with runStrategy=Halted can report
+  # Ready=False while its VMI is still terminating, creating a race condition where
+  # KubeVirt rejects the VM delete operation with "Virtual machine is still running".
+  #
+  # KubeVirt architecture: VM (desired state) -> VMI (running instance)
+  # Per KubeVirt API design, the VMI must be absent before VM deletion succeeds.
+  # Reference: https://kubevirt.io/api-reference/v1.3.1/definitions.html#_v1_virtualmachine
+  #            https://github.com/kubevirt/kubevirt/blob/main/docs/devel/deletion.md
+  #
+  # This task polls for VMI absence (resources | length == 0) with 60 retries × 5s = 5 min timeout.
   kubernetes.core.k8s_info:
     kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
     api_version: kubevirt.io/v1
