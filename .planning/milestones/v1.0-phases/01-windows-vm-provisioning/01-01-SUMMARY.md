@@ -86,7 +86,7 @@ None. The no-op hook files are intentional placeholders for the override pattern
 
 All verification criteria passed:
 
-```
+```text
 Complete directory structure: 10 files created
 Zero ocp_virt_vm references: 0 occurrences
 Windows defaults confirmed:

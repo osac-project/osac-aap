@@ -211,7 +211,7 @@
 - Priority: Medium - baseline tests provide coverage but override mechanism is key differentiator
 
 **No infrastructure integration tests**
-- What's not tested: OpenStack/ESI resource creation; actual VM provisioning; bare metal host management
+- What's not tested: OpenStack/ESI resource creation; actual VM provisioning; bare-metal host management
 - Files: All `osac.service.cluster_infra` and `osac.service.external_access` roles
 - Risk: Breaking changes in OpenStack API or ESI client may not be caught until production deployment
 - Priority: High - core functionality has no automated validation

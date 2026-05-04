@@ -300,6 +300,13 @@ This is a role consolidation (rename/refactor category).
 
 **Existing live Windows VMs:** Any VMs created by the old `windows_oci_vm` role will still exist in the cluster. Their delete flow was triggered by `windows_oci_vm` previously. After consolidation, if they are deleted via OSAC, the ComputeInstance `templateID` must be `osac.templates.ocp_virt_vm` for the new delete path to execute. VMs created with `templateID: osac.templates.windows_oci_vm` would fail deletion unless the ComputeInstance spec is updated. This is a production concern but is **out of scope** for this phase (no live clusters in dev/test).
 
+**Migration action required before production rollout:** Before deploying this consolidation to any cluster that has ComputeInstance resources with `templateID: osac.templates.windows_oci_vm`, one of the following must be completed:
+
+1. **Field migration (recommended):** Run a one-time migration job that patches all existing ComputeInstance resources: `kubectl get computeinstance -A -o json | jq '... | select(.spec.templateID=="osac.templates.windows_oci_vm")' | kubectl patch ...` — update `spec.templateID` to `osac.templates.ocp_virt_vm`. Validate by re-running `get computeinstance -A` and confirming zero `windows_oci_vm` templateID values remain before enabling deletion.
+2. **Compatibility shim (alternative):** Add a lookup in the OSAC delete flow that remaps `osac.templates.windows_oci_vm` → `osac.templates.ocp_virt_vm` at dispatch time, allowing in-flight ComputeInstance deletions to succeed without a field migration.
+
+Track this as a pre-production migration task before the `run-windows-vm` branch is deployed to any live cluster.
+
 [VERIFIED: No `windows_oci_vm` references in YAML files outside .planning; playbook dispatch via template_id variable]
 
 ---

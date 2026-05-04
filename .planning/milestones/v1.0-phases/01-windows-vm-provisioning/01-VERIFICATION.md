@@ -9,6 +9,8 @@ re_verification: false
 
 # Phase 1: Windows VM Provisioning Verification Report
 
+> **Historical snapshot — v1.0 (2026-04-28).** The `windows_oci_vm` artifacts verified below were superseded by the v1.1 consolidation (2026-05-02), which merged `windows_oci_vm` into `ocp_virt_vm`. The verification status "VERIFIED" reflects the state at v1.0 shipment, not the current codebase.
+
 **Phase Goal:** Create a complete windows_oci_vm Ansible role for Windows VM provisioning on OpenShift Virtualization, following the existing ocp_virt_vm role pattern with Windows-specific modifications.
 
 **Verified:** 2026-04-28T00:00:00Z

@@ -6,7 +6,7 @@ An Ansible Automation Platform template that provisions Linux and Windows virtua
 
 ## Core Value
 
-Boot a Windows VM from an OCI registry image, connect it to the network, and verify it's accessible via RDP and VNC console.
+Boot a Windows VM from an OCI registry image, connect it to the network, and confirm it reaches Running state (RDP/VNC verification deferred to v2).
 
 ## Current State
 
@@ -73,7 +73,7 @@ This is a brownfield addition to the osac-aap repository. The `ocp_virt_vm` temp
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | ocp_virt_vm as unified Linux+Windows template | Single template, single OSAC catalog registration; OS family inferred from annotation or image path; eliminates role duplication | ✓ Implemented (v1.1) |
-| Follow ocp_virt_vm pattern | Proven architecture for VM provisioning; reduces implementation risk and maintains consistency | ✓ Implemented — 16 files, identical structure |
+| Follow ocp_virt_vm pattern | Proven architecture for VM provisioning; reduces implementation risk and maintains consistency | ✓ Implemented in unified `ocp_virt_vm` role |
 | Defer advanced customization to v2+ | Ship basic functionality fast to validate approach; iterate based on real usage feedback | ✓ Active |
 | Reuse existing Hyper-V enlightenments | ocp_virt_vm already configures hyperv features optimal for Windows | ✓ Implemented — plus 7 additional enlightenments |
 | Remove Phase 2 (deeper VM verification) | Basic Ready state verification already in Phase 1 matches Linux pattern; deeper checks are net-new capability | ✓ Deferred to v2 |

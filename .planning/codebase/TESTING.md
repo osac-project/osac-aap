@@ -51,6 +51,7 @@ tests/integration/
 ├── fixtures/                    # Test fixtures (Kubernetes manifests)
 │   ├── clusterorder-test.yaml
 │   ├── computeinstance-test.yaml
+│   ├── computeinstance-windows-test.yaml
 │   └── computeinstance-with-gpu-test.yaml
 └── targets/                     # Test targets
     ├── cluster_create/
@@ -453,7 +454,7 @@ install_step_cluster_infra_override:
 - Workflow baseline tests: 7 workflows
 - Workflow override tests: 7 workflows (implementation in progress)
 - Role integration tests: 8 role/scenario combinations
-- Fixture-based tests: 3 fixtures (ClusterOrder, ComputeInstance, ComputeInstance with GPU)
+- Fixture-based tests: 4 fixtures (ClusterOrder, ComputeInstance, ComputeInstance Windows, ComputeInstance with GPU)
 
 **View Coverage:**
 - No automated coverage reporting

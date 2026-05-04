@@ -92,7 +92,7 @@ The plan explicitly anticipated that uv might not be present and provided the in
 
 ## Lint Results (Task 1 - D-04 Gate)
 
-```
+```text
 yamllint --strict:
   argument_specs.yaml: exit 0 (no output)
   delete_resources.yaml: exit 0 (no output)
@@ -105,7 +105,7 @@ ansible-lint collections/ansible_collections/osac/templates/roles/ocp_virt_vm/:
 
 ## Integration Test Results (Task 2 - D-03 Gate)
 
-```
+```text
 compute_instance_create:baseline:
   PLAY RECAP: localhost ok=42 changed=1 unreachable=0 failed=0 skipped=13 rescued=0 ignored=0
   Exit code: 0

@@ -28,7 +28,7 @@ expected: meta/osac.yaml has template_type: compute_instance, allowing the role 
 result: pass
 
 ### 4. Override pattern orchestration
-expected: create.yaml has 6 overrideable steps (secrets, modify_vm_spec, pre_create_hook, resources, post_create_hook, wait_annotate) plus 2 non-overrideable steps (validate, build_spec). Each overrideable step checks for a *_override variable and falls back to *_default.
+expected: create.yaml has 6 overrideable steps (secrets, modify_vm_spec, pre_create_hook, resources, post_create_hook, wait_annotate) plus 2 non-overrideable steps (validate, build_spec). Each overrideable step checks for a `*_override` variable and falls back to `*_default`.
 result: pass
 
 ### 5. Windows hostname truncation
