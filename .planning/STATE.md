@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Windows VM Provisioning
-status: milestone_complete
-last_updated: "2026-05-03T09:03:17.063Z"
+status: "Phase 01 shipped — PR #281"
+last_updated: "2026-05-04T08:19:21.386Z"
 progress:
   total_phases: 1
   completed_phases: 1
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 3
   percent: 100
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-29)
 Milestone: v1.0 shipped (2026-04-29)
 Phase: 01
 Plan: Not started
-Status: Milestone complete
+Status: Phase 01 shipped — PR #281
 
 Progress: [██████████] 100%
 
