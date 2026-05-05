@@ -25,7 +25,7 @@
         cores: 4
         memoryGiB: 8
         bootDisk:
-          sizeGiB: 60
+          sizeGiB: 80
         image:
           sourceRef: "{{ golden_image_ref }}"
         runStrategy: "Always"
@@ -44,12 +44,16 @@
     - name: Deploy Windows golden image VM
       ansible.builtin.include_role:
         name: osac.templates.ocp_virt_vm
-        tasks_from: create_compute_instance
+        tasks_from: create
       vars:
         vm_enable_sysprep: false  # CRITICAL: disable sysprep for golden images
         guest_os_family: windows
         compute_instance_name: "{{ test_vm_name }}"
-        compute_instance_target_namespace: "{{ test_namespace }}"
+        tenant_target_namespace: "{{ test_namespace }}"
+        tenant_storage_class_name: "lvms-vg1"
+        template_parameters: {}
+        template_id: "ocp_virt_vm"
+        compute_instance_label: "osac.openshift.io/compute-instance"
 
     - name: Wait for VM to reach Running state
       kubernetes.core.k8s_info:
