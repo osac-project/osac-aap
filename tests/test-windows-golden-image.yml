@@ -1,0 +1,95 @@
+---
+# Test playbook for Windows golden image boot verification
+# Usage: ansible-playbook tests/test-windows-golden-image.yml -e @tests/golden-image-vars.yml
+
+- name: Test Windows Golden Image Boot
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    # Override these in golden-image-vars.yml or via -e
+    test_vm_name: "test-golden-windows-vm"
+    test_namespace: "default"
+    golden_image_ref: "quay.io/jhernand/ci:latest"
+    remote_cluster_kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
+
+    # ComputeInstance spec for golden image testing
+    compute_instance:
+      metadata:
+        name: "{{ test_vm_name }}"
+        namespace: "{{ test_namespace }}"
+        annotations:
+          osac.openshift.io/tenant: "{{ test_namespace }}"
+          osac.openshift.io/guest-os-family: "windows"
+      spec:
+        cores: 4
+        memoryGiB: 8
+        bootDisk:
+          sizeGiB: 60
+        image:
+          sourceRef: "{{ golden_image_ref }}"
+        runStrategy: "Always"
+
+  tasks:
+    - name: Create test namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ test_namespace }}"
+
+    - name: Deploy Windows golden image VM
+      ansible.builtin.include_role:
+        name: osac.templates.ocp_virt_vm
+        tasks_from: create_compute_instance
+      vars:
+        vm_enable_sysprep: false  # CRITICAL: disable sysprep for golden images
+        guest_os_family: windows
+        compute_instance_name: "{{ test_vm_name }}"
+        compute_instance_target_namespace: "{{ test_namespace }}"
+
+    - name: Wait for VM to reach Running state
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ remote_cluster_kubeconfig | default(omit) }}"
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        name: "{{ test_vm_name }}"
+        namespace: "{{ test_namespace }}"
+      register: vm_status
+      until:
+        - vm_status.resources | length > 0
+        - vm_status.resources[0].status.ready | default(false) | bool
+      retries: 30
+      delay: 10
+
+    - name: Display VM status
+      ansible.builtin.debug:
+        msg: |
+          VM Status: {{ vm_status.resources[0].status.ready }}
+
+          Next steps:
+          1. Connect to VNC console:
+             virtctl vnc {{ test_vm_name }} -n {{ test_namespace }}
+
+          2. Verify Windows boots to desktop (not stuck at "Booting from hard disk")
+
+          3. Check VM instance status:
+             kubectl get vmi {{ test_vm_name }} -n {{ test_namespace }} -o yaml
+
+          4. If boot still fails, check sysprep disk was NOT created:
+             kubectl get vm {{ test_vm_name }} -n {{ test_namespace }} -o json | jq '.spec.template.spec.volumes[] | select(.name == "sysprep-disk")'
+             (should return empty - no sysprep disk for golden images)
+
+    - name: Verify no sysprep disk attached (golden image check)
+      ansible.builtin.set_fact:
+        vm_volumes: "{{ vm_status.resources[0].spec.template.spec.volumes }}"
+
+    - name: Assert sysprep disk NOT present for golden image
+      ansible.builtin.assert:
+        that:
+          - vm_volumes | selectattr('name', 'equalto', 'sysprep-disk') | list | length == 0
+        success_msg: "✓ No sysprep disk attached - correct for golden image"
+        fail_msg: "✗ Sysprep disk found - vm_enable_sysprep flag may not be working"
