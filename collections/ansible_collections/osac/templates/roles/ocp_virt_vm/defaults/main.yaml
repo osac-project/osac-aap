@@ -3,6 +3,11 @@
 # initialization (cloud-init vs sysprep), delete cleanup, and ready timeouts.
 guest_os_family: linux
 
+# vm_enable_sysprep: Controls whether to create sysprep disk for Windows VMs.
+# Set to false when using pre-configured golden images that are already sysprepped.
+# Default: true (create sysprep disk for fresh Windows installation images)
+vm_enable_sysprep: true
+
 default_vm_internal_network: "hypershift"
 default_vm_storage_class: "nfs-client"
 default_vm_labels: "{{ {compute_instance_label: compute_instance_name} }}"
