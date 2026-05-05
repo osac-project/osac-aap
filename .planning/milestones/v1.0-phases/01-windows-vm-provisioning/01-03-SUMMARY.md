@@ -78,7 +78,7 @@ Verified the complete `windows_oci_vm` role structure created by plans 01 and 02
 ## Task Breakdown
 
 ### Task 1: Create Windows test fixture ✓
-**Duration:** 2 minutes  
+**Duration:** 2 minutes
 **Files created:** 1
 
 Created `tests/integration/fixtures/computeinstance-windows-test.yaml` with Windows-appropriate sizing and OCI image reference. The fixture enables integration tests to exercise the Windows template using the same override-based testing pattern as existing Linux tests.
@@ -86,7 +86,7 @@ Created `tests/integration/fixtures/computeinstance-windows-test.yaml` with Wind
 **Commit:** 2209f91 - `feat(01-03): add Windows ComputeInstance test fixture`
 
 ### Task 2: Final role verification ✓
-**Duration:** 2 minutes  
+**Duration:** 2 minutes
 **Files created:** 0 (verification only)
 
 Ran comprehensive verification of the complete windows_oci_vm role created by prior plans:

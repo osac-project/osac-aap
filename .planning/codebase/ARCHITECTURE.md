@@ -174,7 +174,7 @@ implementation_strategy: "{{ ansible_eda.event.payload.spec.implementationStrate
 
 **Logging:** Ansible native logging via `ansible.builtin.debug` with verbosity levels
 
-**Validation:** 
+**Validation:**
 - Template parameters validated by fulfillment-service before webhook
 - CRD schemas enforce field constraints
 - Workflow playbooks use `ansible.builtin.assert` for critical invariants

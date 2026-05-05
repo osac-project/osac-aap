@@ -53,7 +53,7 @@ The role is now discoverable by osac.service.enumerate_templates via the templat
 ## Tasks Completed
 
 ### Task 1: Create role config files (defaults, meta)
-**Commit:** 9f6cb9c  
+**Commit:** 9f6cb9c
 **Files:** defaults/main.yaml, meta/argument_specs.yaml, meta/osac.yaml
 
 Created three configuration files with Windows-specific defaults:
@@ -64,7 +64,7 @@ Created three configuration files with Windows-specific defaults:
 All other fields (cores: 2, default_vm_internal_network: "hypershift", default_vm_storage_class: "nfs-client", runStrategy: "Always") remain identical to ocp_virt_vm.
 
 ### Task 2: Create orchestration files (create.yaml, delete.yaml) and no-op hooks
-**Commit:** 04afe16  
+**Commit:** 04afe16
 **Files:** tasks/create.yaml, tasks/delete.yaml, tasks/create_modify_vm_spec.yaml, tasks/create_pre_create_hook.yaml, tasks/create_post_create_hook.yaml, tasks/delete_pre_delete_hook.yaml, tasks/delete_post_delete_hook.yaml
 
 Created 7 task files:
