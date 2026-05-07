@@ -98,7 +98,7 @@ resolution: Partial - vm_enable_sysprep fix working, but golden image has bootlo
     The VM reaches "Booting from hard disk" which means BIOS/UEFI successfully accessed the
     boot disk using VirtIO. Driver issues would manifest as "No bootable device" or similar
     BIOS error before reaching the OS boot phase.
-  
+
 - hypothesis: "Sysprep unattend.xml misconfiguration breaking boot"
   eliminated_because: |
     The unattend.xml only sets ComputerName in the "specialize" pass (line 20). This is a

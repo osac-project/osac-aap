@@ -124,7 +124,7 @@ Role automatically:
 
 ---
 
-**Created:** 2026-05-05  
-**Tested on:** edge-16.edge.lab.eng.rdu2.redhat.com (OpenShift SNO)  
-**Branch:** run-windows-vm  
+**Created:** 2026-05-05
+**Tested on:** edge-16.edge.lab.eng.rdu2.redhat.com (OpenShift SNO)
+**Branch:** run-windows-vm
 **PR:** #281
