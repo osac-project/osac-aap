@@ -194,7 +194,7 @@ Templates integrate with OSAC through a well-defined interface:
 ### Runtime Dependencies
 - `osac.service` collection (for cluster templates)
 - `kubernetes.core` collection (for VM templates)
-- `massopencloud.esi` collection (for floating IP management)
+- `osac.esi` collection (for floating IP management)
 
 ### Environment Requirements
 - OpenShift 4.x cluster with cluster-admin access

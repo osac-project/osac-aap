@@ -27,7 +27,7 @@ network_class: "{{ lookup('env', 'NETWORK_CLASS', default='esi') }}"
 # Ansible collection that provides the network-class-specific steps
 # (cluster_infra and external_access roles). Override this to use a
 # different network backend without changing osac.service.
-network_steps_collection: "{{ lookup('env', 'NETWORK_STEPS_COLLECTION', default='massopencloud.steps') }}"
+network_steps_collection: "{{ lookup('env', 'NETWORK_STEPS_COLLECTION', default='osac.steps') }}"
 
 # Netris controller connection
 netris_controller_url: "{{ lookup('env', 'NETRIS_CONTROLLER_URL') }}"

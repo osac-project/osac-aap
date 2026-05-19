@@ -7,7 +7,6 @@ warn_list:
 exclude_paths:
   - vendor/
   - .github/
-  - collections/ansible_collections/massopencloud/  # Third-party collection
   - execution-environment/  # Built artifacts, not source
 kinds:
   # Integration test files are playbooks (multi-play), not task files

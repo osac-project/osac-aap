@@ -22,7 +22,7 @@
 # Networks
 - name: Get all networks with purpose_o-sac and instance tags
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: list_networks
   vars:
     l2_network_properties:
@@ -40,7 +40,7 @@
 # Floating IPs
 - name: Get all floating IPs with o-sac and instance tags
   ansible.builtin.include_role:
-    name: massopencloud.esi.floating_ip
+    name: osac.esi.floating_ip
     tasks_from: list_floating_ips
   vars:
     floating_ip_properties:
@@ -58,7 +58,7 @@
 # Routers
 - name: Get all routers with o-sac and instance tags
   ansible.builtin.include_role:
-    name: massopencloud.esi.l3
+    name: osac.esi.l3
     tasks_from: list_routers
   vars:
     l3_network_properties:
@@ -76,7 +76,7 @@
 # Subnets
 - name: Get all subnets with o-sac and instance tags
   ansible.builtin.include_role:
-    name: massopencloud.esi.l3
+    name: osac.esi.l3
     tasks_from: list_subnets
   vars:
     l3_network_properties:
@@ -127,7 +127,7 @@
 
 - name: Delete stale routers
   ansible.builtin.include_role:
-    name: massopencloud.esi.l3
+    name: osac.esi.l3
     tasks_from: destroy_router
   vars:
     router_name: "{{ item.Name }}"
@@ -137,7 +137,7 @@
 
 - name: Delete stale subnets
   ansible.builtin.include_role:
-    name: massopencloud.esi.l3
+    name: osac.esi.l3
     tasks_from: destroy_subnet
   vars:
     subnet_name: "{{ item.Name }}"
@@ -147,7 +147,7 @@
 
 - name: Delete stale networks
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: destroy_network
   vars:
     network_name: "{{ item.Name }}"
@@ -157,7 +157,7 @@
 
 - name: Delete stale floating IPs
   ansible.builtin.include_role:
-    name: massopencloud.esi.floating_ip
+    name: osac.esi.floating_ip
     tasks_from: destroy_floating_ip
   vars:
     floating_ip_name: "{{ item.Description }}"

@@ -285,7 +285,7 @@ ansible.builtin.include_role:
   tasks_from: create.yaml
 ```
 
-This pattern allows multiple backends to coexist (ESI via `massopencloud.steps`, NICo via `nico.steps`, Netris via `netris.steps`).
+This pattern allows multiple backends to coexist (ESI via `osac.steps`, NICo via `nico.steps`, Netris via `netris.steps`).
 
 ### Collection Structure
 

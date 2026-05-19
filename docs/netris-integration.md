@@ -19,8 +19,8 @@ networking through the Netris controller API. It manages:
 - **MetalLB** — configures ingress load balancing on the managed cluster
 
 The project also supports an ESI network class (`network_class: esi`,
-`network_steps_collection: massopencloud.steps`) as an alternative backend
-using the `massopencloud.esi` collection.
+`network_steps_collection: osac.steps`) as an alternative backend
+using the `osac.esi` collection.
 
 ## Architecture
 
@@ -32,7 +32,7 @@ vars):
 | Variable | Netris value | Default (ESI) |
 |----------|-------------|---------------|
 | `network_class` | `netris` | `esi` |
-| `network_steps_collection` | `netris.steps` | `massopencloud.steps` |
+| `network_steps_collection` | `netris.steps` | `osac.steps` |
 
 The generic `osac.service` roles delegate to the network-specific
 implementation at runtime:
@@ -269,7 +269,7 @@ Each key is a resource class name (e.g., `fc430`); the value is an object with:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NETWORK_CLASS` | Network backend to use | `esi` |
-| `NETWORK_STEPS_COLLECTION` | Ansible collection for network steps | `massopencloud.steps` |
+| `NETWORK_STEPS_COLLECTION` | Ansible collection for network steps | `osac.steps` |
 | `EXTERNAL_ACCESS_BASE_DOMAIN` | Base domain for DNS records | `box.massopen.cloud` |
 | `EXTERNAL_ACCESS_SUPPORTED_BASE_DOMAINS` | Comma-separated list of allowed domains | `box.massopen.cloud` |
 | `AWS_ACCESS_KEY_ID` | AWS credentials for Route53 | Yes (if using Route53) |

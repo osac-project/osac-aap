@@ -133,7 +133,7 @@ Templates may define their own override points:
     cluster_order: "{{ ansible_eda.event.payload }}"
 
     # Use MOC template collection
-    template_id_override: osac.massopencloud.ocp_4_17_small
+    template_id_override: osac.templates.ocp_4_17_small
 
     # Override infrastructure to use ESI
     template_step_create_infra_override:
@@ -150,7 +150,7 @@ Templates may define their own override points:
 
 - `osac.service` - Service orchestration roles
 - `osac.templates` - Base cluster and VM templates (optional)
-- Customer-specific collections (e.g., `massopencloud.esi` for MOC)
+- `osac.esi` - ESI bare metal API wrapper
 
 ## License
 

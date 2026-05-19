@@ -33,4 +33,4 @@ argument_specs:
       network_steps_collection:
         type: str
         required: true
-        description: "Ansible collection providing network-class-specific steps (e.g. 'netris.steps', 'massopencloud.steps')"
+        description: "Ansible collection providing network-class-specific steps (e.g. 'netris.steps', 'osac.steps')"

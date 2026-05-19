@@ -28,7 +28,7 @@
 
 - name: Get combined node and port info
   ansible.builtin.include_role:
-    name: massopencloud.esi.node
+    name: osac.esi.node
     tasks_from: get_nodes
   vars:
     node_filter_names: "{{ manage_agents_node_names }}"
@@ -53,7 +53,7 @@
     map(attribute='address') |
     osac.service.mac_to_agent_name(initial_agents) is none
   ansible.builtin.include_role:
-    name: massopencloud.esi.node
+    name: osac.esi.node
     tasks_from: provision_node
   vars:
     node_name: "{{ node_info.name }}"
@@ -111,7 +111,7 @@
   loop: >-
     {{
       node_info_list |
-      massopencloud.esi.get_agent_metadata(final_agents)
+      osac.esi.get_agent_metadata(final_agents)
     }}
   loop_control:
     loop_var: agent_metadata
@@ -119,7 +119,7 @@
 
 - name: Move agents to idle agents network
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: set_networks_for_node
   vars:
     node: "{{ node_info.name }}"

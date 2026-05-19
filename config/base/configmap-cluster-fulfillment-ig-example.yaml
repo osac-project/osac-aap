@@ -17,7 +17,7 @@ data:
   # Which network backend to use (netris / esi). Templates like
   # ocp_hosted_netris override this automatically.
   NETWORK_CLASS: "esi"
-  NETWORK_STEPS_COLLECTION: "massopencloud.steps"
+  NETWORK_STEPS_COLLECTION: "osac.steps"
 
   # -- Netris controller connection --
   NETRIS_CONTROLLER_URL: "https://redhat-ctl.netris.io"

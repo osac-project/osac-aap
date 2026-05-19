@@ -26,7 +26,7 @@
 
 - name: Move agents to idle agents network
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: set_networks_for_node
   vars:
     node: "{{ agent.metadata.annotations[agent_host_uuid_label] }}"
