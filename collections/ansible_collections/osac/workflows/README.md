@@ -150,7 +150,7 @@ Templates may define their own override points:
 
 - `osac.service` - Service orchestration roles
 - `osac.templates` - Base cluster and VM templates (optional)
-- `osac.esi` - ESI bare metal API wrapper
+- `osac.esi` - ESI bare-metal API wrapper
 
 ## License
 
