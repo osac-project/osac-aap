@@ -1,0 +1,10 @@
+title: OpenShift 4.17 Demo Base
+description: >
+  Base template for catalog items demo. Supports sandbox and production
+  configurations via catalog item field definitions.
+
+default_node_request:
+- resourceClass: fc430
+  numberOfNodes: 3
+
+allowed_resource_classes: []
