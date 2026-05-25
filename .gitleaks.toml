@@ -1,9 +1,0 @@
-[allowlist]
-  description = "Global Allowlist"
-
-  # Ignore based on any subset of the file path
-  paths = [
-    # Ignore all example certs
-    ''''tests/test-windows-golden-image-sysprep\.yml$'',
-
-  ]
