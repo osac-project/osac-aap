@@ -1,7 +1,7 @@
 - name: Set delete step defaults
   ansible.builtin.set_fact:
     delete_step_pre_delete_hook_default:
-      name: osac.templates.ocp_4_17_small
+      name: osac.templates.demo_ocp_4_17
       tasks_from: noop.yaml
     delete_step_hosted_cluster_default:
       name: osac.service.hosted_cluster
@@ -13,7 +13,7 @@
       name: osac.service.cluster_infra
       tasks_from: main.yaml
     delete_step_post_delete_hook_default:
-      name: osac.templates.ocp_4_17_small
+      name: osac.templates.demo_ocp_4_17
       tasks_from: noop.yaml
 
 - name: Step - Pre-delete hook

@@ -1,7 +1,7 @@
 - name: Set install step defaults
   ansible.builtin.set_fact:
     install_step_pre_install_hook_default:
-      name: osac.templates.ocp_4_17_small
+      name: osac.templates.demo_ocp_4_17
       tasks_from: noop.yaml
     install_step_hosted_cluster_default:
       name: osac.service.hosted_cluster
@@ -22,7 +22,7 @@
       name: osac.service.wait_for
       tasks_from: wait_for_cluster_operators.yaml
     install_step_post_install_hook_default:
-      name: osac.templates.ocp_4_17_small
+      name: osac.templates.demo_ocp_4_17
       tasks_from: noop.yaml
 
 - name: Step - Pre-install hook
