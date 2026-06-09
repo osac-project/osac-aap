@@ -61,25 +61,31 @@
     namespace: "{{ detach_vm_namespace }}"
   register: lb_service_info
 
-- name: Fail if VM namespace LB Service not found or IP not assigned
-  ansible.builtin.fail:
+- name: Check if VM namespace LB Service exists
+  ansible.builtin.set_fact:
+    detach_lb_service_found: >-
+      {{ lb_service_info.resources | length > 0 and
+         lb_service_info.resources[0].status.loadBalancer.ingress | default([]) | length > 0 }}
+
+- name: Log that LB Service was not found (VM namespace may already be deleted)
+  ansible.builtin.debug:
     msg: >-
-      LoadBalancer Service 'osac-pip-{{ public_ip_name }}-ingress' not found in '{{ detach_vm_namespace }}'
-      or MetalLB has not assigned an IP. Run attach_public_ip first.
-  when: >-
-    lb_service_info.resources | length == 0 or
-    lb_service_info.resources[0].status.loadBalancer.ingress | default([]) | length == 0
+      LoadBalancer Service 'osac-pip-{{ public_ip_name }}-ingress' not found in '{{ detach_vm_namespace }}'.
+      The VM namespace may have been deleted. Skipping service swap.
+  when: not (detach_lb_service_found | bool)
 
 - name: Extract IP address and VM name from VM namespace LB Service
   ansible.builtin.set_fact:
     detach_ip_address: "{{ lb_service_info.resources[0].status.loadBalancer.ingress[0].ip }}"
     detach_vm_name_from_svc: >-
       {{ (lb_service_info.resources[0].spec.selector | default({}))['vm.kubevirt.io/name'] | default('') }}
+  when: detach_lb_service_found | bool
 
 - name: Set ComputeInstance name from LB Service selector if not already known
   ansible.builtin.set_fact:
     detach_compute_instance_name: "{{ detach_vm_name_from_svc }}"
   when:
+    - detach_lb_service_found | bool
     - detach_compute_instance_name is not defined
     - detach_vm_name_from_svc | length > 0
 
@@ -87,15 +93,18 @@
   ansible.builtin.debug:
     msg:
       - "Detaching PublicIP '{{ public_ip_name }}'"
-      - "IP address: {{ detach_ip_address }} (read from VM namespace LB Service)"
+      - "IP address: {{ detach_ip_address | default('not available') }}"
       - "Pool: {{ detach_pool_name }}"
       - "VM namespace: {{ detach_vm_namespace }}"
       - "ComputeInstance: {{ detach_compute_instance_name | default('not available') }}"
+      - "LB Service found: {{ detach_lb_service_found }}"
 
 # Delete the LB Service, clear the annotation, and restore the placeholder atomically.
 # The rescue restores the LB Service if placeholder re-creation fails so the IP
 # is never left unparked without a reservation in metallb-system.
+# Skipped entirely when the LB Service was not found (VM namespace already deleted).
 - name: Detach PublicIP - remove LB Service, clear annotation, restore placeholder
+  when: detach_lb_service_found | bool
   block:
     - name: Delete LoadBalancer Service from VM namespace
       kubernetes.core.k8s:
