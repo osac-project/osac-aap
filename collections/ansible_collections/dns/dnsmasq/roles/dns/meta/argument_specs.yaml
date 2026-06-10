@@ -1,0 +1,102 @@
+---
+argument_specs:
+  create:
+    short_description: Create a DNS record via dnsmasq
+    description: >
+      Adds an address= entry to a per-zone dnsmasq config file and reloads the
+      service. Wildcard records (e.g., *.apps.example.com) are supported
+      natively because dnsmasq address= directives match all subdomains.
+      Per-record TTL is not supported by dnsmasq; use local-ttl in the main
+      dnsmasq configuration for global TTL control.
+    options:
+      dns_zone:
+        type: str
+        required: true
+        description: The DNS zone name (e.g., "example.com").
+      dns_record_name:
+        type: str
+        required: true
+        description: Fully qualified domain name for the record.
+      dns_record_type:
+        type: str
+        required: false
+        default: A
+        choices: [A, AAAA]
+        description: >
+          DNS record type. Accepted for API compatibility; dnsmasq
+          auto-detects the type from the IP address format.
+      dns_record_value:
+        type: str
+        required: true
+        description: The value for the record (IPv4 or IPv6 address).
+      dns_record_ttl:
+        type: int
+        required: false
+        default: 1800
+        description: >
+          TTL in seconds. Accepted for API compatibility but has no effect;
+          dnsmasq does not support per-record TTL via address= directives.
+          Use local-ttl in the main dnsmasq configuration instead.
+      dns_record_overwrite:
+        type: bool
+        required: false
+        default: true
+        description: Whether to overwrite an existing record for the same name.
+      dns_dnsmasq_host:
+        type: str
+        required: false
+        default: localhost
+        description: >
+          Host running the dnsmasq service. Tasks are delegated to this host.
+          Set to a remote hostname or IP for managing dnsmasq on a remote server.
+      dns_dnsmasq_config_dir:
+        type: str
+        required: false
+        default: /etc/dnsmasq.d
+        description: Directory where per-zone dnsmasq config files are managed.
+      dns_dnsmasq_file_prefix:
+        type: str
+        required: false
+        default: osac-dns
+        description: >
+          Prefix for managed zone config files. The resulting file name is
+          {{ dns_dnsmasq_config_dir }}/{{ dns_dnsmasq_file_prefix }}-{{ dns_zone }}.conf.
+  delete:
+    short_description: Delete a DNS record via dnsmasq
+    description: >
+      Removes an address= entry from the per-zone dnsmasq config file and
+      reloads the service.
+    options:
+      dns_zone:
+        type: str
+        required: true
+        description: The DNS zone name (e.g., "example.com").
+      dns_record_name:
+        type: str
+        required: true
+        description: Fully qualified domain name for the record.
+      dns_record_type:
+        type: str
+        required: false
+        default: A
+        choices: [A, AAAA]
+        description: >
+          DNS record type. Accepted for API compatibility; dnsmasq
+          auto-detects the type from the IP address format.
+      dns_dnsmasq_host:
+        type: str
+        required: false
+        default: localhost
+        description: >
+          Host running the dnsmasq service. Tasks are delegated to this host.
+      dns_dnsmasq_config_dir:
+        type: str
+        required: false
+        default: /etc/dnsmasq.d
+        description: Directory where per-zone dnsmasq config files are managed.
+      dns_dnsmasq_file_prefix:
+        type: str
+        required: false
+        default: osac-dns
+        description: >
+          Prefix for managed zone config files.

@@ -1,0 +1,18 @@
+---
+- name: "Compute effective record name for dnsmasq - {{ dns_record_name }}"
+  ansible.builtin.set_fact:
+    _dnsmasq_effective_name: "{{ dns_record_name | regex_replace('^\\*\\.', '') }}"
+    _dnsmasq_zone_file: "{{ dns_dnsmasq_config_dir }}/{{ dns_dnsmasq_file_prefix }}-{{ dns_zone }}.conf"
+
+- name: "Delete DNS record via dnsmasq - {{ dns_record_name }}"
+  ansible.builtin.lineinfile:
+    path: "{{ _dnsmasq_zone_file }}"
+    regexp: "^address=/{{ _dnsmasq_effective_name }}/"
+    state: absent
+  delegate_to: "{{ dns_dnsmasq_host }}"
+
+- name: "Reload dnsmasq after record delete - {{ dns_record_name }}"
+  ansible.builtin.systemd_service:
+    name: dnsmasq
+    state: reloaded
+  delegate_to: "{{ dns_dnsmasq_host }}"

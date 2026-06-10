@@ -1,0 +1,4 @@
+---
+dns_dnsmasq_host: localhost
+dns_dnsmasq_config_dir: /etc/dnsmasq.d
+dns_dnsmasq_file_prefix: osac-dns
