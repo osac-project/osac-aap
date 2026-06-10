@@ -1,0 +1,4 @@
+---
+- name: "Create DNS record via kcli - {{ dns_record_name }}"
+  ansible.builtin.shell: "kcli create dns -d {{ dns_zone }} -i {{ dns_record_value }} {{ dns_record_name }} "
+  no_log: true
