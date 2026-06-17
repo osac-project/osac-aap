@@ -35,6 +35,10 @@
       ansible.builtin.debug:
         var: osac_compute_instance_templates
 
+    - name: Print BareMetalInstance templates found.
+      ansible.builtin.debug:
+        var: osac_bare_metal_instance_templates
+
     - name: Print NetworkClass definitions found.
       ansible.builtin.debug:
         var: osac_network_classes
