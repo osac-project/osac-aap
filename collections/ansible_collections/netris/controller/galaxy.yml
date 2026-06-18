@@ -5,3 +5,8 @@ description: Ansible collection for Netris controller API
 authors:
   - Netris
 readme: README.md
+license:
+  - Apache-2.0
+repository: https://github.com/osac-project/osac-aap
+tags:
+  - networking
