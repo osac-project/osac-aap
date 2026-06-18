@@ -3,7 +3,7 @@ name: controller
 version: 1.0.0
 description: Ansible collection for Netris controller API
 authors:
-  - Netris
+  - Dan Manor
 readme: README.md
 license:
   - Apache-2.0
