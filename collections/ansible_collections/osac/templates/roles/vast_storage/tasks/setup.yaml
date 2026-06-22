@@ -103,27 +103,61 @@
           {{ vast_storage_vip_pool_ip_ranges if (vast_storage_vip_pool_ip_ranges is not string)
              else (vast_storage_vip_pool_ip_ranges | from_json) }}
 
-    - name: Ensure shared VIP pool exists
-      vastdata.vms.vippools:
-        vms:
-          host: "{{ vast_endpoint }}"
-          username: "{{ vast_username }}"
-          password: "{{ vast_password }}"
-          validate_certs: "{{ vast_storage_validate_certs }}"
-          timeout: "{{ vast_storage_api_timeout }}"
-        name: "{{ vast_storage_vip_pool_name }}"
-        ip_ranges: "{{ _vast_vip_pool_ip_ranges }}"
-        subnet_cidr: "{{ vast_storage_vip_pool_subnet_cidr | int }}"
-        gw_ip: "{{ vast_storage_vip_pool_gw_ip if (vast_storage_vip_pool_gw_ip | default('') | length > 0) else omit }}"
-        gw_ipv6: "{{ vast_storage_vip_pool_gw_ipv6 if (vast_storage_vip_pool_gw_ipv6 | default('') | length > 0) else omit }}"
-        role: PROTOCOLS
-        state: present
-      register: _vast_vip_pool_result
+    - name: Look up existing VIP pools to find one matching the configured IP ranges
+      ansible.builtin.uri:
+        url: "https://{{ vast_endpoint }}/api/latest/vippools/"
+        method: GET
+        url_username: "{{ vast_username }}"
+        url_password: "{{ vast_password }}"
+        force_basic_auth: true
+        validate_certs: "{{ vast_storage_validate_certs }}"
+        timeout: "{{ vast_storage_api_timeout | int }}"
+        status_code: [200]
+      register: _vast_vip_pool_lookup
       no_log: true
 
-    - name: Log shared VIP pool status
-      ansible.builtin.debug:
-        msg: "Shared VIP pool '{{ vast_storage_vip_pool_name }}' ensured (id: {{ _vast_vip_pool_result.vippools.id | default('existing') }})"
+    - name: Check if any existing pool matches the configured IP ranges
+      ansible.builtin.set_fact:
+        _vast_vip_pool_match: >-
+          {{ _vast_vip_pool_lookup.json
+             | selectattr('ip_ranges', 'equalto', _vast_vip_pool_ip_ranges)
+             | list | first | default({}) }}
+
+    - name: Use existing VIP pool when IP ranges match
+      when: _vast_vip_pool_match | length > 0
+      block:
+        - name: Override VIP pool name to match existing pool
+          ansible.builtin.set_fact:
+            vast_storage_vip_pool_name: "{{ _vast_vip_pool_match.name }}"
+
+        - name: Log existing VIP pool reuse
+          ansible.builtin.debug:
+            msg: "Found existing VIP pool '{{ vast_storage_vip_pool_name }}' (id: {{ _vast_vip_pool_match.id }}) with matching IP ranges — reusing."
+
+    - name: Create shared VIP pool when no match exists
+      when: _vast_vip_pool_match | length == 0
+      block:
+        - name: Create VIP pool with configured name and ranges
+          vastdata.vms.vippools:
+            vms:
+              host: "{{ vast_endpoint }}"
+              username: "{{ vast_username }}"
+              password: "{{ vast_password }}"
+              validate_certs: "{{ vast_storage_validate_certs }}"
+              timeout: "{{ vast_storage_api_timeout }}"
+            name: "{{ vast_storage_vip_pool_name }}"
+            ip_ranges: "{{ _vast_vip_pool_ip_ranges }}"
+            subnet_cidr: "{{ vast_storage_vip_pool_subnet_cidr | int }}"
+            gw_ip: "{{ vast_storage_vip_pool_gw_ip if (vast_storage_vip_pool_gw_ip | default('') | length > 0) else omit }}"
+            gw_ipv6: "{{ vast_storage_vip_pool_gw_ipv6 if (vast_storage_vip_pool_gw_ipv6 | default('') | length > 0) else omit }}"
+            role: PROTOCOLS
+            state: present
+          register: _vast_vip_pool_result
+          no_log: true
+
+        - name: Log VIP pool creation
+          ansible.builtin.debug:
+            msg: "Created VIP pool '{{ vast_storage_vip_pool_name }}' (id: {{ _vast_vip_pool_result.vippools.id | default('unknown') }})"
 
     - name: Ensure VAST CSI Operator is installed
       ansible.builtin.include_tasks: ensure_csi_operator.yaml
@@ -284,6 +318,8 @@
         _vast_tenant_role_id: ""
         _vast_tenant_realm_id: ""
         _vast_local_provider_id: ""
+        _vast_vip_pool_lookup: {}
+        _vast_vip_pool_match: {}
       no_log: true
 
 - name: Set storage_provider_tenant_config output fact
