@@ -125,18 +125,16 @@
       no_log: true
 
     # CSI Secret uses per-tenant Manager username/password — NEVER admin creds.
-    # The 'tenant' field is intentionally OMITTED. Including it causes the CSI
-    # driver to set X-Tenant-Name on the /api/v1/token/ login call, which
-    # tenant-scopes the JWT and blocks GET /api/v1/versions/ — a prerequisite
-    # check the driver makes before every storage operation. Tenant scoping is
-    # handled by the tenant_name StorageClass parameter and the role permissions.
+    # The 'tenant' field is REQUIRED — TENANT_ADMIN users must authenticate
+    # with X-Tenant-Name, and the CSI driver sets this header from the Secret's
+    # tenant field on /api/v1/token/ login calls.
     - name: Build CSI Secret data
       ansible.builtin.set_fact:
         _vast_csi_secret_data:
           username: "{{ _vast_tenant_csi_username }}"
           password: "{{ _vast_tenant_csi_password }}"
           endpoint: "{{ _vast_tenant_endpoint }}"
-          # tenant: "{{ tenant_name }}"
+          tenant: "{{ tenant_name }}"
       no_log: true
 
     - name: Add passphrase to CSI Secret data for block encryption
