@@ -145,7 +145,6 @@
             - snapshot
             - userquota
             - volume
-            - tenant
           tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
         headers:
           Authorization: "Bearer {{ _vast_admin_auth.json.access }}"
