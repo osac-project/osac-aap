@@ -164,10 +164,77 @@
 
     - name: Provision VAST VMS resources
       block:
-        - name: Create VAST tenant
+        # ── Local provider: explicit lifecycle ──
+        # VAST auto-creates a local provider per tenant, but we create it
+        # explicitly for naming control and clean teardown without force_remove.
+
+        - name: Authenticate to VAST VMS as admin for local provider setup
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/token/"
+            method: POST
+            body_format: json
+            body:
+              username: "{{ vast_username }}"
+              password: "{{ vast_password }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200, 201]
+          register: _vast_setup_auth
+          no_log: true
+
+        - name: Set local provider name
+          ansible.builtin.set_fact:
+            _vast_local_provider_name: "{{ vast_storage_local_provider_prefix }}{{ tenant_name }}"
+
+        - name: Check if local provider already exists
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/localproviders/?name={{ _vast_local_provider_name }}"
+            method: GET
+            headers:
+              Authorization: "Bearer {{ _vast_setup_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200]
+          register: _vast_lp_check
+          no_log: true
+
+        - name: Create local provider for tenant
+          when: _vast_lp_check.json | length == 0
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/localproviders/"
+            method: POST
+            body_format: json
+            body:
+              name: "{{ _vast_local_provider_name }}"
+            headers:
+              Authorization: "Bearer {{ _vast_setup_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200, 201]
+          register: _vast_lp_create_result
+          no_log: true
+
+        - name: Set local provider ID from creation or existing lookup
+          ansible.builtin.set_fact:
+            _vast_local_provider_id: >-
+              {{ (_vast_lp_create_result.json.id | string)
+                 if (_vast_lp_check.json | length == 0)
+                 else (_vast_lp_check.json[0].id | string) }}
+
+        - name: Log local provider status
+          ansible.builtin.debug:
+            msg: >-
+              Local provider '{{ _vast_local_provider_name }}'
+              {{ 'created' if (_vast_lp_check.json | length == 0) else 'already exists' }}
+              (id: {{ _vast_local_provider_id }})
+
+        # ── Tenant creation with explicit local provider ──
+
+        - name: Create VAST tenant with explicit local provider
           vastdata.vms.tenants:
             vms: "{{ _vast_vms_conn }}"
             name: "{{ tenant_name }}"
+            local_provider_id: "{{ _vast_local_provider_id | int }}"
             state: present
           register: _vast_tenant_result
           no_log: true
@@ -183,15 +250,11 @@
 
         - name: Log VAST tenant creation result
           ansible.builtin.debug:
-            msg: "VAST tenant '{{ tenant_name }}' provisioned with ID: {{ _vast_tenant_result.tenants.id }}"
+            msg: "VAST tenant '{{ tenant_name }}' provisioned with ID: {{ _vast_tenant_result.tenants.id }}, local provider: {{ _vast_local_provider_name }}"
 
         - name: Set tenant ID for downstream tasks
           ansible.builtin.set_fact:
             _vast_tenant_id: "{{ _vast_tenant_result.tenants.id | string }}"
-
-        - name: Resolve local_provider_id from VAST tenant result
-          ansible.builtin.set_fact:
-            _vast_local_provider_id: "{{ _vast_tenant_result.tenants.local_provider_id }}"
 
         - name: Create per-tenant VMS manager with CSI role
           ansible.builtin.include_tasks: create_tenant_manager.yaml
@@ -276,12 +339,11 @@
             _vast_cleanup_tenant_id: "{{ _vast_tenant_result.tenants.id }}"
           ignore_errors: true  # noqa: ignore-errors
 
-        - name: Rollback - delete VAST tenant (retry for async cleanup)
+        - name: Rollback - delete VAST tenant
           vastdata.vms.tenants:
             vms: "{{ _vast_vms_conn }}"
             name: "{{ tenant_name }}"
             state: absent
-            force_remove: true
           retries: 3
           delay: 10
           until: _vast_rollback_tenant_result is not failed
@@ -289,6 +351,23 @@
           ignore_errors: true  # noqa: ignore-errors
           no_log: true
           when: _vast_vms_conn is defined
+
+        - name: Rollback - delete local provider
+          when:
+            - _vast_local_provider_id is defined
+            - _vast_local_provider_id | string | length > 0
+            - _vast_setup_auth is defined
+            - _vast_setup_auth is not failed
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/localproviders/{{ _vast_local_provider_id }}/"
+            method: DELETE
+            headers:
+              Authorization: "Bearer {{ _vast_setup_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200, 204, 404]
+          ignore_errors: true  # noqa: ignore-errors
+          no_log: true
 
         - name: Report VAST API failure with tenant context
           ansible.builtin.fail:
@@ -317,6 +396,10 @@
         _vast_tenant_manager_id: ""
         _vast_tenant_role_id: ""
         _vast_local_provider_id: ""
+        _vast_local_provider_name: ""
+        _vast_setup_auth: {}
+        _vast_lp_check: {}
+        _vast_lp_create_result: {}
         _vast_vip_pool_lookup: {}
         _vast_vip_pool_match: {}
       no_log: true

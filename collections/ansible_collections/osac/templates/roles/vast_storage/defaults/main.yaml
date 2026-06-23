@@ -31,6 +31,9 @@ vast_storage_vip_pool_subnet_cidr: "{{ lookup('env', 'VAST_VIP_POOL_SUBNET_CIDR'
 vast_storage_vip_pool_gw_ip: "{{ lookup('env', 'VAST_VIP_POOL_GW_IP') | default('', true) }}"
 vast_storage_vip_pool_gw_ipv6: "{{ lookup('env', 'VAST_VIP_POOL_GW_IPV6') | default('', true) }}"
 
+# Local provider naming — each tenant gets its own identity provider.
+vast_storage_local_provider_prefix: "lp-"
+
 # CSI Operator installation via OLM
 vast_storage_csi_operator_namespace: "vast-csi-system"
 vast_storage_csi_operator_channel: "stable"
