@@ -126,6 +126,7 @@
             namespace: "{{ vast_storage_csi_operator_namespace }}"
           spec:
             driverType: "{{ item }}"
+            disableUsageStats: true
       loop: "{{ _vast_required_protocols }}"
 
     - name: Wait for all required VAST CSI drivers to be registered

@@ -1,17 +1,13 @@
 ---
-# Creates a per-tenant VMS Manager as TENANT_ADMIN with a Custom Realm
-# that restricts the CSI credential from creating Views. The Realm excludes
-# 'view' from its object types — CRUD permissions (create_/edit_/delete_)
-# only apply to objects within the Realm. Read-only access to all objects
-# (including views) is granted via the built-in 'view_logical' permission.
+# Creates a per-tenant VMS Manager as TENANT_ADMIN with logical CRUD permissions.
 #
 # TENANT_ADMIN auth requires the X-Tenant-Name header on /api/token/.
 # The CSI Secret MUST include the 'tenant' field so the CSI driver sets
 # this header automatically.
 #
-# Flow: auth as admin → create realm → create role → create manager.
+# Flow: auth as admin → create role → create manager.
 # Uses ansible.builtin.uri because vastdata.vms has no modules for
-# realms/roles/managers.
+# roles/managers.
 #
 # Requires in scope (set by setup.yaml before calling this file):
 #   vast_endpoint                            — VMS API hostname
@@ -29,7 +25,6 @@
 #   _vast_tenant_manager_password
 #   _vast_tenant_manager_id
 #   _vast_tenant_role_id
-#   _vast_tenant_realm_id
 
 - name: Assert VAST tenant ID is available
   ansible.builtin.assert:
@@ -64,7 +59,6 @@
     _vast_tenant_manager_password: "{{ _vast_tenant_secret_check.resources[0].data.tenant_manager_password | b64decode }}"
     _vast_tenant_manager_id: "{{ (_vast_tenant_secret_check.resources[0].data.tenant_manager_id | default('') | b64decode) }}"
     _vast_tenant_role_id: "{{ (_vast_tenant_secret_check.resources[0].data.tenant_role_id | default('') | b64decode) }}"
-    _vast_tenant_realm_id: "{{ (_vast_tenant_secret_check.resources[0].data.tenant_realm_id | default('') | b64decode) }}"
     _vast_tenant_manager_already_exists: true
   no_log: true
 
@@ -73,7 +67,7 @@
   ansible.builtin.debug:
     msg: "Tenant manager for '{{ tenant_name }}' already exists in hub Secret — skipping creation."
 
-- name: Create per-tenant VMS Manager with Custom Realm and restricted Role
+- name: Create per-tenant VMS Manager with CSI role
   when: not (_vast_tenant_manager_already_exists | default(false))
   block:
     - name: Set tenant manager name
@@ -103,74 +97,7 @@
       register: _vast_admin_auth
       no_log: true
 
-    # --- Custom Realm ---
-    # The Realm excludes 'view' so CRUD permissions cannot create Views.
-    # Objects not in the Realm are still readable via 'view_logical'.
-
-    - name: Check if tenant CSI realm already exists
-      ansible.builtin.uri:
-        url: "https://{{ vast_endpoint }}/api/realms/?name=osac-csi-{{ tenant_name }}"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ _vast_admin_auth.json.access }}"
-        validate_certs: "{{ vast_storage_validate_certs }}"
-        timeout: "{{ vast_storage_api_timeout | int }}"
-        status_code: [200]
-      register: _vast_realm_check
-      no_log: true
-
-    - name: Create Custom Realm for per-tenant CSI credential
-      when: _vast_realm_check.json | length == 0
-      ansible.builtin.uri:
-        url: "https://{{ vast_endpoint }}/api/realms/"
-        method: POST
-        body_format: json
-        body:
-          name: "osac-csi-{{ tenant_name }}"
-          object_types:
-            - blockhost
-            - dns
-            - globalsnapstream
-            - kafkabroker
-            - nativereplicationremotetarget
-            - openfilesquery
-            - protectedpath
-            - protectionpolicy
-            - quota
-            - quotaentityinfo
-            - replicationrestorepoint
-            - replicationstream
-            - replicationtarget
-            - s3lifecyclerule
-            - snapshot
-            - userquota
-            - volume
-          tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
-        headers:
-          Authorization: "Bearer {{ _vast_admin_auth.json.access }}"
-        validate_certs: "{{ vast_storage_validate_certs }}"
-        timeout: "{{ vast_storage_api_timeout | int }}"
-        status_code: [200, 201]
-      register: _vast_realm_create_result
-      no_log: true
-
-    - name: Set realm ID from creation or existing lookup
-      ansible.builtin.set_fact:
-        _vast_tenant_realm_id: >-
-          {{ (_vast_realm_create_result.json.id | default(''))
-             if (_vast_realm_check.json | length == 0)
-             else (_vast_realm_check.json[0].id | default('')) }}
-
-    - name: Fail if realm ID is not available
-      ansible.builtin.fail:
-        msg: "Failed to create or find CSI realm 'osac-csi-{{ tenant_name }}'. Check VMS API permissions."
-      when: _vast_tenant_realm_id | string | length == 0
-
-    - name: Log CSI realm status
-      ansible.builtin.debug:
-        msg: "CSI realm 'osac-csi-{{ tenant_name }}' {{ 'created' if (_vast_realm_check.json | length == 0) else 'already exists' }} (id: {{ _vast_tenant_realm_id }})"
-
-    # --- Role with realm-scoped permissions ---
+    # --- Role with logical CRUD permissions ---
 
     - name: Check if tenant CSI role already exists
       ansible.builtin.uri:
@@ -184,7 +111,7 @@
       register: _vast_role_check
       no_log: true
 
-    - name: Create CSI role with realm-scoped permissions
+    - name: Create CSI role with logical CRUD permissions
       when: _vast_role_check.json | length == 0
       ansible.builtin.uri:
         url: "https://{{ vast_endpoint }}/api/roles/"
@@ -192,14 +119,12 @@
         body_format: json
         body:
           name: "osac-csi-{{ tenant_name }}"
-          realm_id: "{{ _vast_tenant_realm_id | int }}"
           tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
           permissions_list:
-            - "create_osac-csi-{{ tenant_name }}"
-            - "view_osac-csi-{{ tenant_name }}"
-            - "edit_osac-csi-{{ tenant_name }}"
-            - "delete_osac-csi-{{ tenant_name }}"
+            - create_logical
             - view_logical
+            - edit_logical
+            - delete_logical
         headers:
           Authorization: "Bearer {{ _vast_admin_auth.json.access }}"
         validate_certs: "{{ vast_storage_validate_certs }}"
@@ -285,8 +210,6 @@
     - name: Clear intermediate auth facts
       ansible.builtin.set_fact:
         _vast_admin_auth: {}
-        _vast_realm_check: {}
-        _vast_realm_create_result: {}
         _vast_role_check: {}
         _vast_role_create_result: {}
         _vast_manager_check: {}
@@ -295,5 +218,5 @@
 
 - name: Log tenant manager creation outcome
   ansible.builtin.debug:
-    msg: "VMS manager 'osac-{{ tenant_name }}' created as TENANT_ADMIN with realm 'osac-csi-{{ tenant_name }}'"
+    msg: "VMS manager 'osac-{{ tenant_name }}' created as TENANT_ADMIN with logical CRUD permissions"
   when: not (_vast_tenant_manager_already_exists | default(false))
