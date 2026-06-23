@@ -214,6 +214,7 @@
                 vast_tenant_id: "{{ _vast_tenant_result.tenants.id | string }}"
                 vast_local_provider_id: "{{ _vast_local_provider_id | string }}"
                 vip_pool_name: "{{ vast_storage_vip_pool_name }}"
+                vip_pool_fqdn: "{{ vast_storage_vip_pool_fqdn | default('') }}"
                 vast_endpoint: "{{ vast_endpoint }}"
                 storage_provider_type: "vast"
                 tenant_manager_name: "{{ _vast_tenant_manager_name }}"

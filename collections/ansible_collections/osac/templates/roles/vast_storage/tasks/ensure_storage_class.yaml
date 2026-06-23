@@ -165,20 +165,28 @@
           name: "{{ _vast_csi_secret_name }}"
           namespace: "{{ tenant_namespace }}"
 
+    - name: Build VIP pool parameters for StorageClass
+      ansible.builtin.set_fact:
+        _vast_sc_vip_params: >-
+          {{ {'vip_pool_fqdn': _vast_tenant_vip_pool_fqdn, 'vip_pool_fqdn_random_prefix': 'false'}
+             if (_vast_tenant_vip_pool_fqdn | default('') | length > 0)
+             else {'vip_pool_name': _vast_tenant_vip_pool} }}
+
     - name: Build base StorageClass parameters (shared by NFS and block)
       ansible.builtin.set_fact:
-        _vast_sc_base_params:
-          vip_pool_name: "{{ _vast_tenant_vip_pool }}"
-          csi.storage.k8s.io/provisioner-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/provisioner-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/controller-publish-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/controller-publish-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/node-publish-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/node-publish-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/controller-expand-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/controller-expand-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/node-expand-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/node-expand-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
+        _vast_sc_base_params: >-
+          {{ _vast_sc_vip_params | combine({
+          'csi.storage.k8s.io/provisioner-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/provisioner-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/controller-publish-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/controller-publish-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/node-publish-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/node-publish-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/controller-expand-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/controller-expand-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/node-expand-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/node-expand-secret-namespace': _vast_csi_secret_ref.namespace
+          }) }}
 
     - name: Build block host encryption JSON when passphrase is available
       ansible.builtin.set_fact:
@@ -313,6 +321,8 @@
         _vast_tenant_csi_password: ""
         _vast_tenant_endpoint: ""
         _vast_tenant_vip_pool: ""
+        _vast_tenant_vip_pool_fqdn: ""
+        _vast_sc_vip_params: {}
         _vast_tenant_config_secret: {}
         _vast_vms_conn: {}
         _vast_block_encryption_passphrase: ""
