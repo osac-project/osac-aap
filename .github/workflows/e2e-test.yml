@@ -1,0 +1,59 @@
+---
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build-pr-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set image metadata
+        id: meta
+        run: |
+          IMAGE="ghcr.io/osac-project/osac-aap:pr-${{ github.event.pull_request.number || github.run_id }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --group development
+
+      - name: Log into GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build execution environment
+        run: |
+          uv tool run ansible-builder build -vvv \
+            --container-runtime podman \
+            --tag "${{ steps.meta.outputs.image }}" \
+            -f "./execution-environment/execution-environment.yaml"
+
+      - name: Push PR image
+        run: podman push "${{ steps.meta.outputs.image }}"
+
+  e2e:
+    needs: build-pr-image
+    uses: osac-project/osac-test-infra/.github/workflows/e2e.yml@main
+    with:
+      component-image: ${{ needs.build-pr-image.outputs.image }}
+      component-image-name: osac-aap
+      aap-git-branch: ${{ github.event.pull_request.head.sha }}
+      aap-git-uri: ${{ github.event.pull_request.head.repo.clone_url }}
