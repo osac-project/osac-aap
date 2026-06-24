@@ -293,7 +293,7 @@
             - name: Set client_ip_ranges on VAST tenant
               when: _vast_client_ip_ranges | default([]) | length > 0
               ansible.builtin.uri:
-                url: "https://{{ vast_endpoint }}/api/tenants/{{ _vast_tenant_id }}/"
+                url: "https://{{ vast_endpoint }}/api/latest/tenants/{{ _vast_tenant_id }}/"
                 method: PATCH
                 body_format: json
                 body:
