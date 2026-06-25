@@ -258,12 +258,13 @@
           register: _vast_lp_create_result
           no_log: true
 
-        - name: Set local provider ID from creation or existing lookup
+        - name: Set local provider ID and creation flag
           ansible.builtin.set_fact:
             _vast_local_provider_id: >-
               {{ (_vast_lp_create_result.json.id | string)
                  if (_vast_lp_check.json | length == 0)
                  else (_vast_lp_check.json[0].id | string) }}
+            _vast_local_provider_created: "{{ _vast_lp_check.json | length == 0 }}"
 
         - name: Log local provider status
           ansible.builtin.debug:
@@ -274,6 +275,15 @@
 
         # ── Tenant creation with explicit local provider ──
 
+        - name: Check if VAST tenant already exists
+          vastdata.vms.tenants:
+            vms: "{{ _vast_vms_conn }}"
+            name: "{{ tenant_name }}"
+            state: present
+          register: _vast_tenant_check
+          ignore_errors: true
+          no_log: true
+
         - name: Create VAST tenant with explicit local provider
           vastdata.vms.tenants:
             vms: "{{ _vast_vms_conn }}"
@@ -282,6 +292,10 @@
             state: present
           register: _vast_tenant_result
           no_log: true
+
+        - name: Track whether tenant was created by this run
+          ansible.builtin.set_fact:
+            _vast_tenant_created: "{{ _vast_tenant_check is failed or _vast_tenant_check.tenants.id is not defined }}"
 
         - name: Fail if VAST tenant creation did not return an ID
           ansible.builtin.fail:
@@ -351,7 +365,7 @@
 
             - name: Log client IP ranges configuration
               ansible.builtin.debug:
-                msg: "Set client_ip_ranges on tenant '{{ tenant_name }}': {{ _vast_client_ip_ranges }}"
+                msg: "Set {{ _vast_client_ip_ranges | length }} client_ip_range(s) on tenant '{{ tenant_name }}'"
               when: _vast_client_ip_ranges | default([]) | length > 0
 
         - name: Create per-tenant VMS manager with CSI role
@@ -437,7 +451,28 @@
             _vast_cleanup_tenant_id: "{{ _vast_tenant_result.tenants.id }}"
           ignore_errors: true  # noqa: ignore-errors
 
+        - name: Rollback - delete local provider
+          when:
+            - _vast_local_provider_created | default(false) | bool
+            - _vast_local_provider_id is defined
+            - _vast_local_provider_id | string | length > 0
+            - _vast_rollback_auth is defined
+            - _vast_rollback_auth is not failed
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/localproviders/{{ _vast_local_provider_id }}/"
+            method: DELETE
+            headers:
+              Authorization: "Bearer {{ _vast_rollback_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200, 204, 404]
+          ignore_errors: true  # noqa: ignore-errors
+          no_log: true
+
         - name: Rollback - delete VAST tenant
+          when:
+            - _vast_vms_conn is defined
+            - _vast_tenant_created | default(false) | bool
           vastdata.vms.tenants:
             vms: "{{ _vast_vms_conn }}"
             name: "{{ tenant_name }}"
@@ -446,24 +481,6 @@
           delay: 10
           until: _vast_rollback_tenant_result is not failed
           register: _vast_rollback_tenant_result
-          ignore_errors: true  # noqa: ignore-errors
-          no_log: true
-          when: _vast_vms_conn is defined
-
-        - name: Rollback - delete local provider
-          when:
-            - _vast_local_provider_id is defined
-            - _vast_local_provider_id | string | length > 0
-            - _vast_setup_auth is defined
-            - _vast_setup_auth is not failed
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/localproviders/{{ _vast_local_provider_id }}/"
-            method: DELETE
-            headers:
-              Authorization: "Bearer {{ _vast_setup_auth.json.access }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200, 204, 404]
           ignore_errors: true  # noqa: ignore-errors
           no_log: true
 
@@ -495,6 +512,9 @@
         _vast_tenant_role_id: ""
         _vast_local_provider_id: ""
         _vast_local_provider_name: ""
+        _vast_local_provider_created: false
+        _vast_tenant_created: false
+        _vast_tenant_check: {}
         _vast_setup_auth: {}
         _vast_lp_check: {}
         _vast_lp_create_result: {}
