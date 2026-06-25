@@ -264,8 +264,7 @@
                           'tenant_name': tenant_name})
                | combine({'csi.storage.k8s.io/node-stage-secret-name': _vast_csi_secret_ref.name})
                | combine({'csi.storage.k8s.io/node-stage-secret-namespace': _vast_csi_secret_ref.namespace})
-               | combine(_vast_sc_block_encryption_params | default({}))
-               | combine(({'qos_policy': item.qos_policy} if item.qos_policy is defined else {})) }}
+               | combine(_vast_sc_block_encryption_params | default({})) }}
           reclaimPolicy: Delete
           volumeBindingMode: WaitForFirstConsumer
       loop: "{{ _vast_block_tiers }}"

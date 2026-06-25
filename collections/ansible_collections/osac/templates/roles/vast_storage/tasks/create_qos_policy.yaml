@@ -1,6 +1,10 @@
 ---
 # Creates per-tier QoS policies on VAST via REST API for tiers that define qos_policy.
 # Uses ansible.builtin.uri because the vendored collection has no QoS module.
+# NOTE: VAST 5.4.x only supports policy_type VIEW and USER — no VOLUME type.
+# Block StorageClasses must NOT reference qos_policy (the CSI driver rejects
+# VIEW-type policies on volumes). QoS for block is deferred until VAST adds
+# VOLUME-type QoS support.
 #
 # Requires in scope:
 #   _vast_vms_conn      — VAST VMS connection dict (admin or tenant manager)
@@ -10,9 +14,9 @@
 # Sets output fact:
 #   _vast_qos_policy_names — list of created QoS policy names
 
-- name: Filter tiers with qos_policy defined
+- name: Filter NFS tiers with qos_policy defined (block QoS not supported on VAST 5.4.x)
   ansible.builtin.set_fact:
-    _vast_qos_tiers: "{{ _provider_tiers | selectattr('qos_policy', 'defined') | list }}"
+    _vast_qos_tiers: "{{ _provider_tiers | selectattr('qos_policy', 'defined') | rejectattr('protocol', 'equalto', 'block') | list }}"
 
 - name: Skip QoS policy creation when no tiers define qos_policy
   when: _vast_qos_tiers | length == 0

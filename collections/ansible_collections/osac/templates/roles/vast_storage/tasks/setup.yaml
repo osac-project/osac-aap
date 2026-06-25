@@ -185,7 +185,7 @@
           register: _vast_cnode_list
           no_log: true
 
-        - name: Assign all active CNodes to the VIP pool
+        - name: Assign active CNodes to VIP pool
           ansible.builtin.uri:
             url: "https://{{ vast_endpoint }}/api/latest/vippools/{{ _vast_vip_pool_result.vippools.id }}/"
             method: PATCH
@@ -199,9 +199,9 @@
             status_code: [200]
           no_log: true
 
-        - name: Log CNode assignment
+        - name: Log VIP pool post-configuration
           ansible.builtin.debug:
-            msg: "Assigned {{ _vast_cnode_list.json | selectattr('state', 'equalto', 'ACTIVE') | list | length }} active CNode(s) to VIP pool"
+            msg: "VIP pool: assigned {{ _vast_cnode_list.json | selectattr('state', 'equalto', 'ACTIVE') | list | length }} active CNode(s)"
 
     - name: Ensure VAST CSI Operator is installed
       ansible.builtin.include_tasks: ensure_csi_operator.yaml
