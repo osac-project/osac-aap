@@ -21,6 +21,7 @@
   block:
     - name: Find all tenant StorageClasses by label
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         api_version: storage.k8s.io/v1
         kind: StorageClass
         label_selectors:
@@ -30,6 +31,7 @@
 
     - name: Delete tenant StorageClasses
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: absent
         api_version: storage.k8s.io/v1
         kind: StorageClass
@@ -41,6 +43,7 @@
 
     - name: Find all tenant VolumeSnapshotClasses by label
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         api_version: snapshot.storage.k8s.io/v1
         kind: VolumeSnapshotClass
         label_selectors:
@@ -52,6 +55,7 @@
     - name: Delete tenant VolumeSnapshotClasses
       when: _vast_cleanup_vsc_list.resources is defined
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: absent
         api_version: snapshot.storage.k8s.io/v1
         kind: VolumeSnapshotClass
@@ -63,6 +67,7 @@
 
     - name: Delete CSI Secret in tenant namespace
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: absent
         api_version: v1
         kind: Secret

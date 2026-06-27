@@ -41,6 +41,7 @@
 # Short-circuit -- check if ALL tiers' StorageClasses already exist (single API call)
 - name: Check existing tenant StorageClasses
   kubernetes.core.k8s_info:
+    kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
     api_version: storage.k8s.io/v1
     kind: StorageClass
     label_selectors:
@@ -147,6 +148,7 @@
 
     - name: Create CSI Secret with per-tenant manager credentials in tenant namespace
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: present
         definition:
           apiVersion: v1
@@ -214,6 +216,7 @@
     - name: Create NFS StorageClass per tier
       when: _vast_nfs_tiers | length > 0
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: present
         definition:
           apiVersion: storage.k8s.io/v1
@@ -240,6 +243,7 @@
     - name: Create block StorageClass per tier
       when: _vast_block_tiers | length > 0
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: present
         definition:
           apiVersion: storage.k8s.io/v1
@@ -269,6 +273,7 @@
     - name: Check if VolumeSnapshot CRD is installed
       when: storage_provider_snapshots_enabled | default(true)
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         api_version: apiextensions.k8s.io/v1
         kind: CustomResourceDefinition
         name: volumesnapshotclasses.snapshot.storage.k8s.io
@@ -279,6 +284,7 @@
         (storage_provider_snapshots_enabled | default(true)) and
         (_vast_vsc_crd_check.resources | default([]) | length > 0)
       kubernetes.core.k8s:
+        kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
         state: present
         definition:
           apiVersion: snapshot.storage.k8s.io/v1
