@@ -127,6 +127,7 @@
           spec:
             driverType: "{{ item }}"
             disableUsageStats: true
+            truncateVolumeName: null
       loop: "{{ _vast_required_protocols }}"
 
     - name: Wait for all required VAST CSI drivers to be registered
