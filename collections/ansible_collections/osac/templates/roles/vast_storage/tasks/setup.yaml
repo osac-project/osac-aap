@@ -159,50 +159,6 @@
           ansible.builtin.debug:
             msg: "Created VIP pool '{{ vast_storage_vip_pool_name }}' (id: {{ _vast_vip_pool_result.vippools.id | default('unknown') }})"
 
-        - name: Authenticate for VIP pool post-configuration
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/token/"
-            method: POST
-            body_format: json
-            body:
-              username: "{{ vast_username }}"
-              password: "{{ vast_password }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200, 201]
-          register: _vast_pool_auth
-          no_log: true
-
-        - name: Query active CNodes for VIP pool assignment
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/latest/cnodes/"
-            method: GET
-            headers:
-              Authorization: "Bearer {{ _vast_pool_auth.json.access }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200]
-          register: _vast_cnode_list
-          no_log: true
-
-        - name: Assign active CNodes to VIP pool
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/latest/vippools/{{ _vast_vip_pool_result.vippools.id }}/"
-            method: PATCH
-            body_format: json
-            body:
-              cnode_ids: "{{ _vast_cnode_list.json | selectattr('state', 'equalto', 'ACTIVE') | map(attribute='id') | list }}"
-            headers:
-              Authorization: "Bearer {{ _vast_pool_auth.json.access }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200]
-          no_log: true
-
-        - name: Log VIP pool post-configuration
-          ansible.builtin.debug:
-            msg: "VIP pool: assigned {{ _vast_cnode_list.json | selectattr('state', 'equalto', 'ACTIVE') | list | length }} active CNode(s)"
-
     - name: Ensure VAST CSI Operator is installed
       ansible.builtin.include_tasks: ensure_csi_operator.yaml
 
@@ -520,8 +476,6 @@
         _vast_lp_create_result: {}
         _vast_client_ip_ranges: []
         _vast_node_list: {}
-        _vast_pool_auth: {}
-        _vast_cnode_list: {}
         _vast_vip_pool_lookup: {}
         _vast_vip_pool_match: {}
       no_log: true

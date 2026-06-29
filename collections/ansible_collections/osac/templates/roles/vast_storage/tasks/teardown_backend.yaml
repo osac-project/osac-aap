@@ -207,7 +207,8 @@
         _vast_teardown_clean: >-
           {{ not (_vast_cleanup_results | default({}) | dict2items | selectattr('value.failed', 'defined') | selectattr('value.failed') | list | length > 0)
              and not (_vast_teardown_tenant_result.failed | default(false))
-             and not (_vast_manager_delete_failed | default(false)) }}
+             and not (_vast_manager_delete_failed | default(false))
+             and not (_vast_teardown_lp_result.failed | default(false)) }}
 
     - name: Delete tenant config Secret from hub cluster (only when cleanup succeeded)
       when: >-
@@ -258,5 +259,6 @@
       Backend teardown for tenant '{{ tenant_name }}' complete.
       VMS: {% for r, v in (_vast_cleanup_results | default({})).items() %}{{ v.queried }} {{ r }}{{ ', ' if not loop.last else '' }}{% endfor %} deleted.
       Tenant: {{ 'ok' if not (_vast_teardown_tenant_result.failed | default(false)) else 'failed' }},
-      Manager: {{ 'ok' if not (_vast_manager_delete_failed | default(false)) else 'failed' }}.
+      Manager: {{ 'ok' if not (_vast_manager_delete_failed | default(false)) else 'failed' }},
+      Local provider: {{ 'ok' if not (_vast_teardown_lp_result.failed | default(false)) else 'failed' }}.
       Hub Secret: {{ 'deleted' if (_vast_teardown_clean | default(false) | bool) else 'preserved' }}.
