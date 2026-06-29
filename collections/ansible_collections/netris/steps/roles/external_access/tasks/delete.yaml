@@ -53,7 +53,7 @@
     name: dns.api.dns
     tasks_from: delete
   vars:
-    dns_zone: "{{ external_access_base_domain }}"
+    dns_zone: "{{ lookup('env', 'DNS_ZONE') | default(external_access_base_domain, true) }}"
     dns_record_name: "{{ item }}"
     dns_record_type: A
   loop:

@@ -142,7 +142,7 @@
     name: dns.api.dns
     tasks_from: create
   vars:
-    dns_zone: "{{ external_access_base_domain }}"
+    dns_zone: "{{ lookup('env', 'DNS_ZONE') | default(external_access_base_domain, true) }}"
     dns_record_name: "{{ item.name }}"
     dns_record_type: A
     dns_record_ttl: "{{ external_access_dns_ttl }}"
