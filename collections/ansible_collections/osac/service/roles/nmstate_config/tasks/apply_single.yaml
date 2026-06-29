@@ -37,6 +37,17 @@
     dest: "/tmp/nmstate-{{ _nmstate_apply_assignment.agent.metadata.name }}.yaml"
     mode: "0644"
 
+- name: "Disable rp_filter on agent {{ _nmstate_apply_assignment.agent.metadata.name }}"
+  ansible.builtin.shell:
+    cmd: |
+      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 \
+        -o 'ProxyCommand=ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -i {{ nmstate_config_ssh_bastion_key }} -W %h:%p {{ nmstate_config_ssh_bastion_user }}@{{ nmstate_config_ssh_bastion_host }}' \
+        -i {{ nmstate_config_ssh_key }} \
+        {{ nmstate_config_ssh_user }}@{{ _nmstate_apply_mgmt_ip }} \
+        'sudo sysctl -qw net.ipv4.conf.all.rp_filter=0 net.ipv4.conf.{{ nmstate_config_mgmt_interface }}.rp_filter=0'
+  changed_when: false
+  no_log: true
+
 - name: "Copy nmstate config to agent {{ _nmstate_apply_assignment.agent.metadata.name }}"
   ansible.builtin.shell:
     cmd: |
@@ -55,7 +66,7 @@
         -o 'ProxyCommand=ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -i {{ nmstate_config_ssh_bastion_key }} -W %h:%p {{ nmstate_config_ssh_bastion_user }}@{{ nmstate_config_ssh_bastion_host }}' \
         -i {{ nmstate_config_ssh_key }} \
         {{ nmstate_config_ssh_user }}@{{ _nmstate_apply_mgmt_ip }} \
-        'sudo nmstatectl apply /tmp/nmstate-config.yaml'
+        'nohup sudo nmstatectl apply /tmp/nmstate-config.yaml > /tmp/nmstate-apply.log 2>&1 &'
   changed_when: true
   no_log: true
 

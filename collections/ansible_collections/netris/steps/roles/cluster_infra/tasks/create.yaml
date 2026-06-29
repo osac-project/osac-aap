@@ -229,7 +229,7 @@
     nmstate_config_state: present
     nmstate_config_cluster_name: "{{ cluster_infra_name }}"
     nmstate_config_agents: "{{ cluster_agents_for_netris.resources }}"
-    nmstate_config_interface_names: "{{ server_cluster_template_server_nics }}"
+    nmstate_config_interface_names: "{{ _server_vpc_interfaces }}"
     nmstate_config_server_interfaces: "{{ _server_vpc_interfaces }}"
     nmstate_config_mgmt_interface: "{{ _server_mgmt_interface }}"
     nmstate_config_apply_live: false
@@ -241,7 +241,7 @@
     nmstate_config_state: present
     nmstate_config_cluster_name: "{{ cluster_infra_name }}"
     nmstate_config_agents: "{{ _newly_added_agents }}"
-    nmstate_config_interface_names: "{{ server_cluster_template_server_nics }}"
+    nmstate_config_interface_names: "{{ _server_vpc_interfaces }}"
     nmstate_config_server_interfaces: "{{ _server_vpc_interfaces }}"
     nmstate_config_mgmt_interface: "{{ _server_mgmt_interface }}"
   when: _newly_added_agents | length > 0
