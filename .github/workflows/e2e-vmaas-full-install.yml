@@ -40,6 +40,8 @@ jobs:
       component-image-key: aap.bootstrap.image
       component-build-type: ansible-builder
       component-containerfile: execution-environment/execution-environment.yaml
+      # Pass author_association for fork PR authorization (empty for non-fork PRs)
+      fork-pr-author-association: ${{ github.event.pull_request.head.repo.fork && github.event.pull_request.author_association || '' }}
       # Checkout osac-test-infra for tests/Containerfile (not the caller repo)
       test-infra-repository: osac-project/osac-test-infra
       test-infra-ref: ${{ inputs.test-infra-ref || 'main' }}
