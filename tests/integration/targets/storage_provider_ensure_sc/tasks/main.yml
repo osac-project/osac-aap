@@ -266,9 +266,10 @@
           - (_csi_secret.resources[0].data.password | b64decode) == "test-csi-password"
           - _csi_secret.resources[0].data.endpoint is defined
           - (_csi_secret.resources[0].data.endpoint | b64decode) == "127.0.0.1:18443"
-          - _csi_secret.resources[0].data.tenant is not defined
+          - _csi_secret.resources[0].data.tenant is defined
+          - (_csi_secret.resources[0].data.tenant | b64decode) == "test-ensuresc"
         fail_msg: "CSI Secret does not contain expected manager credentials"
-        success_msg: "CSI Secret contains tenant manager credentials (tenant field omitted)"
+        success_msg: "CSI Secret contains tenant manager credentials with tenant field"
 
     - name: Assert CSI Secret labels
       ansible.builtin.assert:
