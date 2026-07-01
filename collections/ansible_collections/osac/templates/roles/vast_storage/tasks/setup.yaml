@@ -105,7 +105,7 @@
 
     - name: Look up existing VIP pools to find one matching the configured IP ranges
       ansible.builtin.uri:
-        url: "https://{{ vast_endpoint }}/api/latest/vippools/"
+        url: "https://{{ vast_endpoint }}/api/vippools/"
         method: GET
         url_username: "{{ vast_username }}"
         url_password: "{{ vast_password }}"
@@ -232,13 +232,20 @@
         # ── Tenant creation with explicit local provider ──
 
         - name: Check if VAST tenant already exists
-          vastdata.vms.tenants:
-            vms: "{{ _vast_vms_conn }}"
-            name: "{{ tenant_name }}"
-            state: present
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/tenants/?name={{ tenant_name }}"
+            method: GET
+            headers:
+              Authorization: "Bearer {{ _vast_setup_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200]
           register: _vast_tenant_check
-          ignore_errors: true
           no_log: true
+
+        - name: Track whether tenant needs to be created
+          ansible.builtin.set_fact:
+            _vast_tenant_created: "{{ _vast_tenant_check.json | length == 0 }}"
 
         - name: Create VAST tenant with explicit local provider
           vastdata.vms.tenants:
@@ -248,10 +255,6 @@
             state: present
           register: _vast_tenant_result
           no_log: true
-
-        - name: Track whether tenant was created by this run
-          ansible.builtin.set_fact:
-            _vast_tenant_created: "{{ _vast_tenant_check is failed or _vast_tenant_check.tenants.id is not defined }}"
 
         - name: Fail if VAST tenant creation did not return an ID
           ansible.builtin.fail:
@@ -307,7 +310,7 @@
             - name: Set client_ip_ranges on VAST tenant
               when: _vast_client_ip_ranges | default([]) | length > 0
               ansible.builtin.uri:
-                url: "https://{{ vast_endpoint }}/api/latest/tenants/{{ _vast_tenant_id }}/"
+                url: "https://{{ vast_endpoint }}/api/tenants/{{ _vast_tenant_id }}/"
                 method: PATCH
                 body_format: json
                 body:
