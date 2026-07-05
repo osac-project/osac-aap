@@ -16,15 +16,17 @@
       delegate_to: "{{ groups['net_nodes'][0] }}"
       register: cluster_infra_ipam_state_raw
 
-    - name: Parse VLAN ID and allocated hosts for this cluster
+    - name: Parse cluster state from state file
       ansible.builtin.set_fact:
         cluster_infra_vlan_id: "{{ (cluster_infra_ipam_state_raw.content | b64decode | from_json).vlans[cluster_infra_state_key] | default('') }}"
         cluster_infra_allocated_host_ids: "{{ (cluster_infra_ipam_state_raw.content | b64decode | from_json).host_allocations[cluster_infra_state_key] | default([]) }}"
+        cluster_infra_external_peer_ip: "{{ (cluster_infra_ipam_state_raw.content | b64decode | from_json).veth_state[cluster_infra_state_key].host_ip | default('') }}"
   rescue:
-    - name: Default to empty VLAN ID and host IDs on missing or corrupt state
+    - name: Default to empty state on missing or corrupt file
       ansible.builtin.set_fact:
         cluster_infra_vlan_id: ""
         cluster_infra_allocated_host_ids: []
+        cluster_infra_external_peer_ip: ""
 
 - name: Skip network cleanup if no VLAN allocated
   ansible.builtin.debug:
@@ -36,18 +38,6 @@
 - name: Compute veth namespace-side interface name
   ansible.builtin.set_fact:
     cluster_infra_snat_veth_ns: "v{{ cluster_infra_name | hash('md5') | truncate(11, True, '') }}i"
-  when: cluster_infra_vlan_id | string | length > 0
-
-- name: Compute veth addresses for SNAT cleanup
-  ansible.builtin.set_fact:
-    cluster_infra_veth_index: "{{ (cluster_infra_vlan_id | int - agentless_net_vlan_pool_start | int) * 4 }}"
-    cluster_infra_veth_octet3: "{{ ((cluster_infra_vlan_id | int - agentless_net_vlan_pool_start | int) * 4) // 256 }}"
-    cluster_infra_veth_octet4: "{{ ((cluster_infra_vlan_id | int - agentless_net_vlan_pool_start | int) * 4) % 256 }}"
-  when: cluster_infra_vlan_id | string | length > 0
-
-- name: Set external subnet for SNAT cleanup
-  ansible.builtin.set_fact:
-    cluster_infra_external_peer_ip: "10.254.{{ cluster_infra_veth_octet3 }}.{{ cluster_infra_veth_octet4 | int + 1 }}/30"
   when: cluster_infra_vlan_id | string | length > 0
 
 - name: Delete SNAT rules  # noqa: no-changed-when
@@ -150,9 +140,9 @@
       {{ role_path }}/playbooks/ipam_release_vlan.yaml
   when: cluster_infra_vlan_id | string | length > 0
 
-# --- Clean up host allocation state ---
+# --- Clean up cluster state ---
 
-- name: Remove host allocation from network state  # noqa: no-changed-when
+- name: Remove cluster state from network state  # noqa: no-changed-when
   ansible.builtin.raw: |
     python3 - '{{ agentless_net_net_node_ipam_state_file }}' \
               '{{ cluster_infra_state_key }}' <<'STATE_PY'
@@ -162,6 +152,7 @@
         fcntl.flock(f, fcntl.LOCK_EX)
         state = json.load(f)
         state.get('host_allocations', {}).pop(cluster_name, None)
+        state.get('veth_state', {}).pop(cluster_name, None)
         f.seek(0)
         f.write(json.dumps(state, indent=2))
         f.truncate()
@@ -169,4 +160,4 @@
         os.fsync(f.fileno())
     STATE_PY
   delegate_to: "{{ groups['net_nodes'][0] }}"
-  when: cluster_infra_allocated_host_ids | length > 0
+  when: cluster_infra_vlan_id | string | length > 0

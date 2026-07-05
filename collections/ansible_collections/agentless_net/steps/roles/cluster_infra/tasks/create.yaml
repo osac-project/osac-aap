@@ -210,6 +210,29 @@
       - "Subnet: {{ agentless_net_subnet_cidr }}, Gateway: {{ cluster_infra_subnet_gateway }}"
       - "External link: {{ cluster_infra_external_router_ip }} <-> {{ cluster_infra_external_peer_ip }}"
 
+- name: Store veth IPs in network state  # noqa: no-changed-when
+  ansible.builtin.raw: |
+    python3 - '{{ agentless_net_net_node_ipam_state_file }}' \
+              '{{ cluster_infra_state_key }}' \
+              '{{ cluster_infra_external_peer_ip }}' \
+              '{{ cluster_infra_external_router_ip }}' <<'STATE_PY'
+    import fcntl, json, os, sys
+    state_file, cluster_name, host_ip, ns_ip = sys.argv[1:5]
+    with open(state_file, 'r+') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        state = json.load(f)
+        state.setdefault('veth_state', {})[cluster_name] = {
+            'host_ip': host_ip,
+            'ns_ip': ns_ip
+        }
+        f.seek(0)
+        f.write(json.dumps(state, indent=2))
+        f.truncate()
+        f.flush()
+        os.fsync(f.fileno())
+    STATE_PY
+  delegate_to: "{{ groups['net_nodes'][0] }}"
+
 - name: Create L3 router namespace  # noqa: no-changed-when
   environment:
     ANSIBLE_COLLECTIONS_PATH: "{{ agentless_net_collections_path }}"
