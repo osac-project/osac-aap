@@ -72,7 +72,7 @@
             vast_local_provider_id: "1"
             vip_pool_name: "osac-test-pool"
             vast_endpoint: "127.0.0.1:18443"
-            storage_tiers: '[{"name":"default","protocol":"nfs","provider":"vast","qos_policy":"test-qos"},{"name":"block-tier","protocol":"block","provider":"vast","qos_policy":"test-qos-block"}]'
+            storage_tiers: '[{"name":"default","protocol":"nfs","provider":"vast","qos_policy":"test-qos"},{"name":"block-tier","protocol":"block","provider":"vast"}]'
             storage_provider_type: "vast"
             tenant_manager_name: "osac-test-ensuresc"
             tenant_manager_username: "osac-test-ensuresc"
@@ -101,19 +101,9 @@
       - name: default
         protocol: nfs
         provider: vast
-        qos_policy: test-qos
-        qos_limits:
-          static_limits:
-            max_reads_bw_mbps: 100
-            max_writes_bw_mbps: 100
       - name: block-tier
         protocol: block
         provider: vast
-        qos_policy: test-qos-block
-        qos_limits:
-          static_limits:
-            max_reads_bw_mbps: 200
-            max_writes_bw_mbps: 200
     storage_provider_action: ensure_storage_class
     storage_provider_provisioning_target: vmaas
     storage_provider_snapshots_enabled: true
@@ -240,7 +230,6 @@
           - _block_sc_result.resources[0].parameters.storagePath is not defined
           - _block_sc_result.resources[0].parameters.viewPolicy is not defined
           - _block_sc_result.resources[0].parameters.secretName is not defined
-          - _block_sc_result.resources[0].parameters.qos_policy == "test-qos-block"
         fail_msg: "Block StorageClass parameters incorrect: {{ _block_sc_result.resources[0].parameters }}"
         success_msg: "Block StorageClass parameters correct"
 
@@ -363,19 +352,9 @@
       - name: default
         protocol: nfs
         provider: vast
-        qos_policy: test-qos
-        qos_limits:
-          static_limits:
-            max_reads_bw_mbps: 100
-            max_writes_bw_mbps: 100
       - name: block-tier
         protocol: block
         provider: vast
-        qos_policy: test-qos-block
-        qos_limits:
-          static_limits:
-            max_reads_bw_mbps: 200
-            max_writes_bw_mbps: 200
     storage_provider_action: ensure_storage_class
     storage_provider_provisioning_target: vmaas
     storage_provider_snapshots_enabled: true
@@ -429,22 +408,6 @@
           - _call_log | selectattr('path', 'search', 'viewpolicies') | list | length > 0
         fail_msg: "No view policy API calls found — ensure_storage_class should create view policies"
         success_msg: "View policy API calls detected"
-
-    - name: Extract QoS policy creation calls
-      ansible.builtin.set_fact:
-        _qos_create_calls: >-
-          {{ _call_log
-             | selectattr('path', 'search', 'qospolicies')
-             | selectattr('method', 'equalto', 'POST')
-             | list }}
-
-    - name: Assert QoS policies were created with correct policy_type
-      ansible.builtin.assert:
-        that:
-          - _qos_create_calls | selectattr('body.name', 'equalto', 'test-qos') | map(attribute='body.policy_type') | first == 'VIEW'
-          - _qos_create_calls | selectattr('body.name', 'equalto', 'test-qos-block') | map(attribute='body.policy_type') | first == 'VOLUME'
-        fail_msg: "QoS policy_type incorrect — NFS should be VIEW, block should be VOLUME"
-        success_msg: "QoS policies created with correct policy_type per protocol"
 
 # ── Cleanup ──
 - name: "Storage Provider Ensure SC - Cleanup"

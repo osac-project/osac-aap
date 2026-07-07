@@ -173,7 +173,7 @@ export VAST_VIP_POOL_NAME="osac-test-pool"
 export VAST_VIP_POOL_IP_RANGES='[["10.0.0.10","10.0.0.50"]]'
 export VAST_VIP_POOL_SUBNET_CIDR="24"
 export VAST_VALIDATE_CERTS="false"
-export STORAGE_TIERS='[{"name":"default","protocol":"nfs","provider":"vast","qos_policy":"test-qos","qos_limits":{"static_limits":{"max_reads_bw_mbps":100,"max_writes_bw_mbps":100}}},{"name":"block-perf","protocol":"block","provider":"vast","qos_policy":"test-qos-block","qos_limits":{"static_limits":{"max_reads_bw_mbps":200,"max_writes_bw_mbps":200}}}]'
+export STORAGE_TIERS='[{"name":"default","protocol":"nfs","provider":"vast","qos_policy":"test-qos","qos_limits":{"static_limits":{"max_reads_bw_mbps":100,"max_writes_bw_mbps":100}}}]'
 ENVEOF
 fi
 

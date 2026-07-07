@@ -37,7 +37,7 @@ CANNED_DEFAULTS = {
     "views": {"name": "", "path": "/", "policy_id": 1, "tenant_id": 1},
     "viewpolicies": {"name": "", "flavor": "NFS", "protocols": ["NFS"], "tenant_id": 1},
     "quotas": {"name": "", "hard_limit": 0, "soft_limit": 0, "tenant_id": 1},
-    "qospolicies": {"name": "", "tenant_id": 1, "mode": "STATIC", "policy_type": "VIEW"},
+    "qospolicies": {"name": "", "tenant_id": 1, "mode": "STATIC"},
     "users": {"name": "", "local_provider_id": 1},
     "roles": {"name": "", "tenant_id": 1, "tenant_ids": [], "permissions_list": []},
     "managers": {"username": "", "user_type": "TENANT_ADMIN", "tenant_id": 1, "roles": []},
