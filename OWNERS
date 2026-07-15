@@ -14,6 +14,7 @@ filters:
     - eliorerz
     - ygalblum
     - ybettan
+    - vladikr
     reviewers:
     - jhernand
     - adriengentil
@@ -28,3 +29,4 @@ filters:
     - eliorerz
     - ygalblum
     - ybettan
+    - vladikr
