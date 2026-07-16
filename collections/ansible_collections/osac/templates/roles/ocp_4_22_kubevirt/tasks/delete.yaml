@@ -1,0 +1,16 @@
+---
+# Delete a KubeVirt-backed cluster.
+# Delegates to ocp_4_17_small delete with cluster_infra and external_access
+# steps replaced by noops (KubeVirt has no bare-metal infra to tear down).
+
+- name: Delete cluster with KubeVirt overrides
+  ansible.builtin.include_role:
+    name: osac.templates.ocp_4_17_small
+    tasks_from: delete
+  vars:
+    delete_step_cluster_infra_override:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: noop.yaml
+    delete_step_external_access_override:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: noop.yaml

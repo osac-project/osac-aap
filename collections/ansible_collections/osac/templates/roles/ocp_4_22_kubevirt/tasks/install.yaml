@@ -1,0 +1,35 @@
+---
+# Entry point: creates an OpenShift cluster with KubeVirt VM workers.
+# Delegates cluster creation to ocp_4_17_small and overrides:
+# - hosted_cluster_modify_definition_hook: sets platform.type to KubeVirt
+# - nodepool_modify_definitions_hook: sets KubeVirt compute/rootVolume
+# - cluster_infra step: noop (no bare-metal provisioning)
+# - external_access step: noop (KubeVirt uses baseDomainPassthrough)
+
+- name: Bridge templateParameters to role variables
+  ansible.builtin.set_fact:
+    ocp_4_22_kubevirt_worker_cores: "{{ template_parameters.worker_cores | default(ocp_4_22_kubevirt_worker_cores) | int }}"
+    ocp_4_22_kubevirt_worker_memory: "{{ template_parameters.worker_memory | default(ocp_4_22_kubevirt_worker_memory) }}"
+    ocp_4_22_kubevirt_root_volume_size: "{{ template_parameters.root_volume_size | default(ocp_4_22_kubevirt_root_volume_size) }}"
+    ocp_4_22_kubevirt_root_volume_storage_class: "{{ template_parameters.root_volume_storage_class | default(ocp_4_22_kubevirt_root_volume_storage_class) }}"
+    ocp_4_22_kubevirt_base_domain_passthrough: "{{ template_parameters.base_domain_passthrough | default(ocp_4_22_kubevirt_base_domain_passthrough) | bool }}"
+  when: template_parameters is defined
+
+- name: Create cluster with KubeVirt VM workers
+  ansible.builtin.include_role:
+    name: osac.templates.ocp_4_17_small
+    tasks_from: install
+  vars:
+    ocp_release_image: "{{ ocp_release_image }}"
+    hosted_cluster_modify_definition_hook:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: modify_hosted_cluster.yaml
+    nodepool_modify_definitions_hook:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: modify_nodepools.yaml
+    install_step_cluster_infra_override:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: noop.yaml
+    install_step_external_access_override:
+      name: osac.templates.ocp_4_22_kubevirt
+      tasks_from: noop.yaml

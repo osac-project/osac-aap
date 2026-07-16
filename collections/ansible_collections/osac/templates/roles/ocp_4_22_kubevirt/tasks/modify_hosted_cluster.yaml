@@ -1,0 +1,74 @@
+---
+# Hook task: replace Agent platform with KubeVirt in the HostedCluster definition.
+# Called via hosted_cluster_modify_definition_hook after the base definition is built.
+# Mutates the hosted_cluster_definition fact in place.
+
+- name: Look up management cluster apps domain
+  kubernetes.core.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: Ingress
+    name: cluster
+  register: kubevirt_ingress_config
+
+- name: Set management cluster apps domain
+  ansible.builtin.set_fact:
+    kubevirt_mgmt_apps_domain: "{{ kubevirt_ingress_config.resources[0].spec.domain }}"
+
+- name: Build KubeVirt service publishing strategies
+  ansible.builtin.set_fact:
+    kubevirt_services:
+      - service: APIServer
+        servicePublishingStrategy:
+          type: Route
+          route:
+            hostname: "api-{{ hosted_cluster_definition.metadata.name }}.{{ kubevirt_mgmt_apps_domain }}"
+      - service: OAuthServer
+        servicePublishingStrategy:
+          type: Route
+      - service: OIDC
+        servicePublishingStrategy:
+          type: Route
+      - service: Konnectivity
+        servicePublishingStrategy:
+          type: Route
+      - service: Ignition
+        servicePublishingStrategy:
+          type: Route
+
+- name: Set KubeVirt platform on HostedCluster
+  ansible.builtin.set_fact:
+    hosted_cluster_definition: >-
+      {{ hosted_cluster_definition | combine({
+        'spec': hosted_cluster_definition.spec | combine({
+          'platform': {
+            'type': 'KubeVirt',
+            'kubevirt': {
+              'baseDomainPassthrough': ocp_4_22_kubevirt_base_domain_passthrough | bool
+            }
+          },
+          'services': kubevirt_services,
+          'etcd': {
+            'managementType': 'Managed',
+            'managed': {
+              'storage': {
+                'type': 'PersistentVolume',
+                'persistentVolume': {
+                  'size': '4Gi'
+                }
+              }
+            }
+          }
+        })
+      }, recursive=true) }}
+
+- name: Remove dns section when using baseDomainPassthrough
+  ansible.builtin.set_fact:
+    hosted_cluster_definition: >-
+      {{ hosted_cluster_definition | combine({
+        'spec': hosted_cluster_definition.spec
+          | dict2items
+          | rejectattr('key', 'equalto', 'dns')
+          | list
+          | items2dict
+      }, recursive=true) }}
+  when: ocp_4_22_kubevirt_base_domain_passthrough | bool

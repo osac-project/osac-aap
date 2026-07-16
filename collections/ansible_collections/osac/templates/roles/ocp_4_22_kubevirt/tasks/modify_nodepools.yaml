@@ -1,0 +1,32 @@
+---
+# Hook task: replace Agent platform with KubeVirt in NodePool definitions.
+# Called via nodepool_modify_definitions_hook after base definitions are built.
+# Mutates the nodepool_definitions fact in place.
+
+- name: Build KubeVirt platform spec for NodePools
+  ansible.builtin.set_fact:
+    kubevirt_nodepool_platform:
+      type: KubeVirt
+      kubevirt:
+        compute:
+          cores: "{{ ocp_4_22_kubevirt_worker_cores | int }}"
+          memory: "{{ ocp_4_22_kubevirt_worker_memory }}"
+        rootVolume:
+          type: Persistent
+          persistent: "{{ kubevirt_persistent_spec }}"
+  vars:
+    kubevirt_persistent_spec: >-
+      {{
+        {'size': ocp_4_22_kubevirt_root_volume_size}
+        | combine(
+            (ocp_4_22_kubevirt_root_volume_storage_class | length > 0)
+            | ternary({'storageClass': ocp_4_22_kubevirt_root_volume_storage_class}, {})
+          )
+      }}
+
+- name: Set KubeVirt platform on NodePool definitions
+  ansible.builtin.set_fact:
+    nodepool_definitions: >-
+      {{ nodepool_definitions | map('combine', {
+        'spec': {'platform': kubevirt_nodepool_platform, 'management': {'autoRepair': false, 'upgradeType': 'Replace'}}
+      }, recursive=true) | list }}

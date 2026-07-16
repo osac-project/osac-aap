@@ -1,0 +1,51 @@
+---
+title: OpenShift 4.22 Cluster (KubeVirt Workers)
+description: >
+  Builds an OpenShift 4.22 cluster with KubeVirt VM-based worker nodes
+  using Hosted Control Planes. Worker nodes run as VMs on the management
+  cluster via OpenShift Virtualization, enabling fast provisioning without
+  dedicated bare metal.
+template_type: cluster
+implementation_strategy: ocp_4_22_kubevirt
+default_node_request:
+  - resourceClass: kubevirt
+    numberOfNodes: 2
+allowed_resource_classes: []
+parameters:
+  - name: worker_cores
+    title: Worker vCPU Cores
+    description: >
+      Number of vCPU cores for each KubeVirt worker VM.
+    type: integer
+    required: false
+    default: 4
+  - name: worker_memory
+    title: Worker Memory
+    description: >
+      Amount of memory for each KubeVirt worker VM (e.g., 8Gi, 16Gi).
+    type: string
+    required: false
+    default: "16Gi"
+  - name: root_volume_size
+    title: Root Volume Size
+    description: >
+      Size of the persistent root volume for each KubeVirt worker VM.
+    type: string
+    required: false
+    default: "50Gi"
+  - name: root_volume_storage_class
+    title: Root Volume Storage Class
+    description: >
+      StorageClass used for the worker VM root volumes. If empty, the
+      cluster default StorageClass is used.
+    type: string
+    required: false
+  - name: base_domain_passthrough
+    title: Base Domain Passthrough
+    description: >
+      When true, the guest cluster base domain is auto-generated as a
+      subdomain of the management cluster's *.apps DNS using wildcard
+      routes. Set to false when configuring a custom base domain.
+    type: boolean
+    required: false
+    default: true
