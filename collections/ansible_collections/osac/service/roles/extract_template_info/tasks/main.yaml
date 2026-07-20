@@ -21,3 +21,14 @@
     node_requests is not defined
   ansible.builtin.set_fact:
     node_requests: "{{ cluster_order.spec.nodeRequests }}"
+
+- name: Bridge networkAttachments into template parameters
+  when:
+    - cluster_order.spec.networkAttachments is defined
+    - cluster_order.spec.networkAttachments | length > 0
+    - template_parameters.subnet_ref is not defined or template_parameters.subnet_ref | length == 0
+  ansible.builtin.set_fact:
+    template_parameters: >-
+      {{ template_parameters | combine({
+        'subnet_ref': cluster_order.spec.networkAttachments[0].subnetRef
+      }) }}
