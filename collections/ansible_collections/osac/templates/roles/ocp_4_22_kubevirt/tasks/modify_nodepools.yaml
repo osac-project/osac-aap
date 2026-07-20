@@ -5,15 +5,30 @@
 
 - name: Build KubeVirt platform spec for NodePools
   ansible.builtin.set_fact:
-    kubevirt_nodepool_platform:
-      type: KubeVirt
-      kubevirt:
-        compute:
-          cores: "{{ ocp_4_22_kubevirt_worker_cores | int }}"
-          memory: "{{ ocp_4_22_kubevirt_worker_memory }}"
-        rootVolume:
-          type: Persistent
-          persistent: "{{ kubevirt_persistent_spec }}"
+    kubevirt_nodepool_platform: >-
+      {{
+        {
+          'type': 'KubeVirt',
+          'kubevirt': {
+            'compute': {
+              'cores': ocp_4_22_kubevirt_worker_cores | int,
+              'memory': ocp_4_22_kubevirt_worker_memory
+            },
+            'rootVolume': {
+              'type': 'Persistent',
+              'persistent': kubevirt_persistent_spec
+            }
+          }
+        }
+        | combine(
+            (kubevirt_additional_network_ref is defined and kubevirt_additional_network_ref | length > 0)
+            | ternary(
+                {'kubevirt': {'additionalNetworks': [{'name': kubevirt_additional_network_ref}]}},
+                {}
+              ),
+            recursive=true
+          )
+      }}
   vars:
     kubevirt_persistent_spec: >-
       {{

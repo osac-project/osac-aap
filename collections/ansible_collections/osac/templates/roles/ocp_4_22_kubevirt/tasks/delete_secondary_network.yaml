@@ -1,0 +1,18 @@
+---
+# Deletes the Secondary Layer2 CUDN created for KubeVirt worker VMs.
+# Skipped when ocp_4_22_kubevirt_subnet_ref is empty.
+
+- name: Skip secondary network deletion when no subnet is configured
+  ansible.builtin.debug:
+    msg: "No subnet_ref configured, nothing to clean up"
+  when: ocp_4_22_kubevirt_subnet_ref | length == 0
+
+- name: Delete secondary network for KubeVirt workers
+  when: ocp_4_22_kubevirt_subnet_ref | length > 0
+  block:
+    - name: Delete Secondary CUDN
+      kubernetes.core.k8s:
+        state: absent
+        api_version: k8s.ovn.org/v1
+        kind: ClusterUserDefinedNetwork
+        name: "{{ ocp_4_22_kubevirt_subnet_ref }}-secondary"

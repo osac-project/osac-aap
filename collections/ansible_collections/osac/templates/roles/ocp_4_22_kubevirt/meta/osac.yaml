@@ -49,3 +49,20 @@ parameters:
     type: boolean
     required: false
     default: true
+  - name: subnet_ref
+    title: Subnet Reference
+    description: >
+      Name of the OSAC Subnet to connect worker VMs to. A Secondary
+      Layer2 CUDN is created and worker VMs get an additional network
+      interface on this subnet. If empty, workers use only the default
+      pod network.
+    type: string
+    required: false
+  - name: subnet_cidr
+    title: Subnet CIDR
+    description: >
+      CIDR for the worker VM subnet when creating a new secondary
+      network. Only used when subnet_ref is set.
+    type: string
+    required: false
+    default: "10.200.0.0/24"

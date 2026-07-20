@@ -1,0 +1,67 @@
+---
+# Creates a Secondary Layer2 CUDN for KubeVirt worker VMs.
+# The CUDN auto-creates a NAD in namespaces matching the selector.
+# We label the HostedCluster's control plane namespace so the NAD is
+# created there — multus namespace isolation blocks cross-namespace
+# NAD references on OCP 4.22.
+# Skipped when ocp_4_22_kubevirt_subnet_ref is empty.
+
+- name: Skip secondary network creation when no subnet is configured
+  ansible.builtin.debug:
+    msg: "No subnet_ref configured, workers will use default pod network only"
+  when: ocp_4_22_kubevirt_subnet_ref | length == 0
+
+- name: Create secondary network for KubeVirt workers
+  when: ocp_4_22_kubevirt_subnet_ref | length > 0
+  block:
+    - name: Set secondary network resource names
+      ansible.builtin.set_fact:
+        kubevirt_cudn_name: "{{ ocp_4_22_kubevirt_subnet_ref }}-secondary"
+        kubevirt_cluster_namespace: "clusters-{{ cluster_order.metadata.name }}"
+
+    - name: Create Secondary Layer2 CUDN for worker VM networking
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: k8s.ovn.org/v1
+          kind: ClusterUserDefinedNetwork
+          metadata:
+            name: "{{ kubevirt_cudn_name }}"
+          spec:
+            namespaceSelector:
+              matchLabels:
+                osac.openshift.io/kubevirt-network: "{{ ocp_4_22_kubevirt_subnet_ref }}"
+            network:
+              topology: Layer2
+              layer2:
+                role: Secondary
+                subnets:
+                  - "{{ ocp_4_22_kubevirt_subnet_cidr }}"
+                ipam:
+                  lifecycle: Persistent
+
+    - name: Label HostedCluster namespace for CUDN NAD placement
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ kubevirt_cluster_namespace }}"
+            labels:
+              osac.openshift.io/kubevirt-network: "{{ ocp_4_22_kubevirt_subnet_ref }}"
+
+    - name: Wait for NAD to be created in HostedCluster namespace
+      kubernetes.core.k8s_info:
+        api_version: k8s.cni.cncf.io/v1
+        kind: NetworkAttachmentDefinition
+        namespace: "{{ kubevirt_cluster_namespace }}"
+        name: "{{ kubevirt_cudn_name }}"
+      register: kubevirt_nad_result
+      until: kubevirt_nad_result.resources | length > 0
+      retries: 12
+      delay: 5
+
+    - name: Set NAD reference for NodePool additionalNetworks
+      ansible.builtin.set_fact:
+        kubevirt_additional_network_ref: "{{ kubevirt_cluster_namespace }}/{{ kubevirt_cudn_name }}"

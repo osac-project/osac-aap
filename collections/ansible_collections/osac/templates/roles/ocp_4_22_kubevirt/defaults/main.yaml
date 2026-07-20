@@ -6,3 +6,5 @@ ocp_4_22_kubevirt_worker_memory: "16Gi"
 ocp_4_22_kubevirt_root_volume_size: "50Gi"
 ocp_4_22_kubevirt_root_volume_storage_class: ""
 ocp_4_22_kubevirt_base_domain_passthrough: true
+ocp_4_22_kubevirt_subnet_ref: ""
+ocp_4_22_kubevirt_subnet_cidr: "10.200.0.0/24"
