@@ -79,7 +79,9 @@ TypeMapping: dict[AnsibleArgumentType | type, ProtobufType] = {
     "str": ProtobufType.STRING,
     str: ProtobufType.STRING,
     "list": ProtobufType.ANY,
+    list: ProtobufType.ANY,
     "dict": ProtobufType.ANY,
+    dict: ProtobufType.ANY,
     "bool": ProtobufType.BOOL,
     bool: ProtobufType.BOOL,
     "int": ProtobufType.INT,
@@ -254,7 +256,7 @@ class TemplateParameterDefinition(Base):
     description: str | None = None
     type: str = "string"
     required: bool = False
-    default: str | int | float | bool | None = None
+    default: str | int | float | bool | list | dict | None = None
     validation: ParameterValidation | None = None
 
 

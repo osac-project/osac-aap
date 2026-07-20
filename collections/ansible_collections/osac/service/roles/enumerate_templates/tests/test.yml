@@ -118,6 +118,61 @@
       when: test_discover_all | default(false) | bool
 
 # ──────────────────────────────────────────────────────────────
+# Test 5: List defaults -- ocp_4_20_ai_maas has parameters with default: []
+# Expected: template is discovered without validation errors, list defaults
+# are serialized as google.protobuf.Value (ProtobufType.ANY)
+# ──────────────────────────────────────────────────────────────
+- name: "Test enumerate_templates -- list defaults (ocp_4_20_ai_maas)"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run enumerate_templates role with default collection
+      ansible.builtin.include_role:
+        name: osac.service.enumerate_templates
+      vars:
+        osac_template_collections:
+          - osac.templates
+      when: test_list_defaults | default(false) | bool
+
+    - name: Verify ocp_4_20_ai_maas is discovered despite list defaults
+      ansible.builtin.assert:
+        that:
+          - osac_cluster_templates | selectattr('id', 'equalto', 'osac.templates.ocp_4_20_ai_maas') | list | length == 1
+        fail_msg: >-
+          ocp_4_20_ai_maas not found — list defaults (default: []) likely caused
+          a pydantic validation error and the template was silently skipped.
+          Found: {{ osac_cluster_templates | map(attribute='id') | list }}
+        success_msg: "ocp_4_20_ai_maas discovered successfully"
+      when: test_list_defaults | default(false) | bool
+
+    - name: Get ocp_4_20_ai_maas template
+      ansible.builtin.set_fact:
+        maas_template: >-
+          {{ osac_cluster_templates | selectattr('id', 'equalto', 'osac.templates.ocp_4_20_ai_maas') | first }}
+      when: test_list_defaults | default(false) | bool
+
+    - name: Verify hardware_profiles parameter has list default serialized as protobuf Any
+      ansible.builtin.assert:
+        that:
+          - maas_template.parameters | selectattr('name', 'equalto', 'hardware_profiles') | list | length == 1
+          - (maas_template.parameters | selectattr('name', 'equalto', 'hardware_profiles') | first).default['@type'] == 'type.googleapis.com/google.protobuf.Value'
+          - (maas_template.parameters | selectattr('name', 'equalto', 'hardware_profiles') | first).default.value == []
+        fail_msg: "hardware_profiles default not serialized correctly"
+        success_msg: "hardware_profiles list default correctly serialized as google.protobuf.Value"
+      when: test_list_defaults | default(false) | bool
+
+    - name: Verify external_models parameter has list default serialized as protobuf Any
+      ansible.builtin.assert:
+        that:
+          - maas_template.parameters | selectattr('name', 'equalto', 'external_models') | list | length == 1
+          - (maas_template.parameters | selectattr('name', 'equalto', 'external_models') | first).default['@type'] == 'type.googleapis.com/google.protobuf.Value'
+          - (maas_template.parameters | selectattr('name', 'equalto', 'external_models') | first).default.value == []
+        fail_msg: "external_models default not serialized correctly"
+        success_msg: "external_models list default correctly serialized as google.protobuf.Value"
+      when: test_list_defaults | default(false) | bool
+
+# ──────────────────────────────────────────────────────────────
 # Test 2: Nonexistent collection -- should return empty lists
 # Expected: role succeeds, all lists are empty
 # ──────────────────────────────────────────────────────────────
