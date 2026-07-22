@@ -3,7 +3,7 @@ ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.22.0-multi
 
 ocp_4_22_kubevirt_worker_cores: 4
 ocp_4_22_kubevirt_worker_memory: "16Gi"
-ocp_4_22_kubevirt_root_volume_size: "50Gi"
+ocp_4_22_kubevirt_root_volume_size: "64Gi"
 ocp_4_22_kubevirt_root_volume_storage_class: ""
 ocp_4_22_kubevirt_base_domain_passthrough: true
 ocp_4_22_kubevirt_subnet_ref: ""

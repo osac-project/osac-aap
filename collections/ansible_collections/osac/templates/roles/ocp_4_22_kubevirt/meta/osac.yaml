@@ -32,7 +32,7 @@ parameters:
       Size of the persistent root volume for each KubeVirt worker VM.
     type: string
     required: false
-    default: "50Gi"
+    default: "64Gi"
   - name: root_volume_storage_class
     title: Root Volume Storage Class
     description: >
