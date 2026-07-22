@@ -22,7 +22,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-development = ["ansible-lint>=25.2.1", "antsibull-changelog>=0.33.0"]
+development = [
+  "ansible-lint>=25.2.1",
+  "antsibull-changelog>=0.33.0",
+  "pytest>=8.0.0",
+  "pytest-cov>=6.0.0",
+]
 
 [tool.uv.sources]
 python-esiclient = { git = "https://github.com/cci-moc/python-esiclient.git", rev = "1.4" }
