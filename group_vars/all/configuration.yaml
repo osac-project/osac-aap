@@ -43,6 +43,12 @@ netris_tenant_name: "{{ lookup('env', 'NETRIS_TENANT_NAME') }}"
 netris_mgmt_vpc_id: "{{ lookup('env', 'NETRIS_MGMT_VPC_ID') | default(0, true) | int }}"
 netris_mgmt_vpc_name: "{{ lookup('env', 'NETRIS_MGMT_VPC_NAME') }}"
 
+# Hybrid control plane: true when the OCP control plane is NOT placed
+# inside Netris's VPC (see netris.steps.external_access, which skips its
+# API-side Netris DNAT/floating-IP allocation in this mode and points DNS
+# directly at the real kube-apiserver LB IP instead).
+netris_hybrid_control_plane: "{{ lookup('env', 'NETRIS_HYBRID_CONTROL_PLANE') | default(false, true) | bool }}"
+
 # Per-resource-class configuration (JSON dict).
 # Each key is a resource class name; the value is an object with:
 #   server_cluster_template_id  – Netris server cluster template ID

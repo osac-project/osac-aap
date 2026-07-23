@@ -15,6 +15,8 @@
     nat_state: absent
     nat_site_id: "{{ netris_site_id }}"
 
+# Nothing to delete in hybrid mode -- create.yaml never creates an
+# API-side Netris DNAT rule there (see netris_hybrid_control_plane).
 - name: Delete DNAT rule for API
   ansible.builtin.include_role:
     name: netris.controller.nat
@@ -22,6 +24,7 @@
     nat_name: "{{ external_access_name }}-api-dnat"
     nat_state: absent
     nat_site_id: "{{ netris_site_id }}"
+  when: not (netris_hybrid_control_plane | default(false))
 
 - name: Delete legacy L4LB rules (if any remain from previous deployments)
   ansible.builtin.include_role:

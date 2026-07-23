@@ -67,9 +67,20 @@
     netris_dnat_ingress_ip: "{{ _existing_ingress_http_dnat.destinationAddress | ansible.utils.ipaddr('address') }}"
   when: _existing_ingress_http_dnat is defined and _existing_ingress_http_dnat is not none
 
+# In hybrid control-plane mode (netris_hybrid_control_plane) the OCP
+# control plane isn't inside Netris's VPC at all -- a joining node has no
+# route to a Netris floating IP, so we never allocate/create an API-side
+# Netris DNAT rule and instead point DNS straight at the real
+# kube-apiserver LB IP (see "Set external_access_api_floating_ip" below).
+# Confirmed live (run 29989468532): the worker's kubelet timed out
+# forever dialing the Netris floating IP for the API server, since it has
+# no route to Netris's fabric in this topology. Ingress is unaffected --
+# the worker's own data-plane NIC (vpc_interfaces) stays on Netris's VPC
+# regardless of hybrid mode, so _missing_ingress_dnat and everything
+# downstream of it (IPAM allocation, ingress DNAT, MetalLB) is untouched.
 - name: Count missing DNAT IPs
   ansible.builtin.set_fact:
-    _missing_api_dnat: "{{ (_existing_api_dnat is not defined or _existing_api_dnat is none) | bool }}"
+    _missing_api_dnat: "{{ ((_existing_api_dnat is not defined or _existing_api_dnat is none) and not (netris_hybrid_control_plane | default(false))) | bool }}"
     _missing_ingress_dnat: "{{ (_existing_ingress_http_dnat is not defined or _existing_ingress_http_dnat is none) | bool }}"
 
 - name: Calculate IPAM allocation count
@@ -129,11 +140,19 @@
     nat_dnat_to_ip: "{{ external_access_api_internal_ip }}/32"
     nat_dnat_to_port: "{{ external_access_kube_apiserver_port }}"
     nat_comment: "OSAC API DNAT for {{ external_access_name }}"
-  when: _existing_api_dnat is not defined or _existing_api_dnat is none
+  when: >-
+    (_existing_api_dnat is not defined or _existing_api_dnat is none)
+    and not (netris_hybrid_control_plane | default(false))
 
-- name: Set external_access_api_floating_ip
+- name: Set external_access_api_floating_ip (hybrid -- no Netris DNAT)
+  ansible.builtin.set_fact:
+    external_access_api_floating_ip: "{{ external_access_api_internal_ip }}"
+  when: netris_hybrid_control_plane | default(false)
+
+- name: Set external_access_api_floating_ip (Netris DNAT)
   ansible.builtin.set_fact:
     external_access_api_floating_ip: "{{ netris_dnat_api_ip }}"
+  when: not (netris_hybrid_control_plane | default(false))
 
 - name: Create dns records
   when: >-
