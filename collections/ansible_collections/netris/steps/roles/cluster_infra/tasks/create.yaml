@@ -225,10 +225,19 @@
 # mgmt_route_metric/vpc_route_metric are optional per-resource-class
 # overrides (netris_resource_class_map[<class>].mgmt_route_metric /
 # .vpc_route_metric). Resource classes that don't set them fall through to
-# osac.service.nmstate_config's own defaults (mgmt=100, vpc=50 -- vpc wins),
-# which is what every existing resource class already relies on implicitly.
-# Needed for hybrid control-plane designs where mgmt must win instead (the
-# vpc/Netris-fabric network isn't the production network there).
+# the literal defaults below (100/50, mirroring osac.service.nmstate_config's
+# own defaults/main.yaml -- vpc wins), which is what every existing resource
+# class already relies on implicitly. Needed for hybrid control-plane
+# designs where mgmt must win instead (the vpc/Netris-fabric network isn't
+# the production network there).
+#
+# These use an explicit literal default, NOT `| default(omit)`: confirmed
+# empirically (ansible-core 2.18) that `default(omit)` does not propagate
+# correctly through include_role's `vars:` when the source value is
+# undefined -- it sets the variable to a literal
+# "__omit_place_holder__..." string instead of leaving it unset, which
+# would have broken NMState application for every resource class that
+# doesn't set these fields (i.e. every one today).
 - name: Create NMStateConfig CRs for all cluster agents
   ansible.builtin.include_role:
     name: osac.service.nmstate_config
@@ -239,8 +248,8 @@
     nmstate_config_interface_names: "{{ _server_vpc_interfaces }}"
     nmstate_config_server_interfaces: "{{ _server_vpc_interfaces }}"
     nmstate_config_mgmt_interface: "{{ _server_mgmt_interface }}"
-    nmstate_config_mgmt_route_metric: "{{ _netris_rc_config.mgmt_route_metric | default(omit) }}"
-    nmstate_config_vpc_route_metric: "{{ _netris_rc_config.vpc_route_metric | default(omit) }}"
+    nmstate_config_mgmt_route_metric: "{{ _netris_rc_config.mgmt_route_metric | default(100) }}"
+    nmstate_config_vpc_route_metric: "{{ _netris_rc_config.vpc_route_metric | default(50) }}"
     nmstate_config_apply_live: false
 
 - name: Apply NMState config on newly added agents
@@ -253,8 +262,8 @@
     nmstate_config_interface_names: "{{ _server_vpc_interfaces }}"
     nmstate_config_server_interfaces: "{{ _server_vpc_interfaces }}"
     nmstate_config_mgmt_interface: "{{ _server_mgmt_interface }}"
-    nmstate_config_mgmt_route_metric: "{{ _netris_rc_config.mgmt_route_metric | default(omit) }}"
-    nmstate_config_vpc_route_metric: "{{ _netris_rc_config.vpc_route_metric | default(omit) }}"
+    nmstate_config_mgmt_route_metric: "{{ _netris_rc_config.mgmt_route_metric | default(100) }}"
+    nmstate_config_vpc_route_metric: "{{ _netris_rc_config.vpc_route_metric | default(50) }}"
   when: _newly_added_agents | length > 0
 
 - name: Add cluster order label to InfraEnv nmStateConfigLabelSelector
