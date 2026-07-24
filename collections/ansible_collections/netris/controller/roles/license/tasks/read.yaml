@@ -14,6 +14,7 @@
     timeout: "{{ netris_timeout }}"
     status_code: [200, 400, 404]
   register: _license_resp
+  no_log: true
 
 - name: Set license facts
   ansible.builtin.set_fact:

@@ -14,12 +14,14 @@
     timeout: "{{ netris_timeout }}"
     status_code: [200, 400, 404]
   register: _license_check
+  no_log: true
 
 - name: Read license key file
   when: not (_license_check.json.isSuccess | default(false))
   ansible.builtin.slurp:
     src: "{{ license_key_file }}"
   register: _license_key_raw
+  no_log: true
 
 - name: Apply license key
   when: not (_license_check.json.isSuccess | default(false))
@@ -36,6 +38,7 @@
     timeout: "{{ netris_timeout }}"
     status_code: [200, 400]
   register: _license_apply_resp
+  no_log: true
 
 - name: Set license facts
   ansible.builtin.set_fact:

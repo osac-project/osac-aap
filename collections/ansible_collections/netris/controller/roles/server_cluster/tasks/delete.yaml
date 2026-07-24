@@ -30,6 +30,7 @@
       Cookie: "connect.sid={{ netris_session_cookie }}"
     status_code: [200, 204]
     validate_certs: "{{ netris_validate_certs | default(true) }}"
+  no_log: true
 
 - name: Set server_cluster_id (deleted)
   ansible.builtin.set_fact:

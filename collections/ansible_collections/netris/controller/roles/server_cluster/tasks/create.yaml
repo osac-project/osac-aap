@@ -43,6 +43,7 @@
     timeout: "{{ netris_timeout | default(30) }}"
     validate_certs: "{{ netris_validate_certs | default(true) }}"
   register: _inv_resp
+  no_log: true
 
 - name: Build servers list from inventory
   ansible.builtin.set_fact:
@@ -130,6 +131,7 @@
     timeout: "{{ netris_timeout | default(30) }}"
     validate_certs: "{{ netris_validate_certs | default(true) }}"
   register: _create_resp
+  no_log: true
   when: _existing_server_cluster is not defined or _existing_server_cluster is none
 
 - name: Set server_cluster_id from response
@@ -153,6 +155,7 @@
     timeout: "{{ netris_timeout | default(30) }}"
     validate_certs: "{{ netris_validate_certs | default(true) }}"
   register: _state_resp
+  no_log: true
   until: _state_resp.json is mapping and ((_state_resp.json.data | default({}))['status'] | default({}))['label'] | default('') == 'Active'
   retries: 30
   delay: 10
