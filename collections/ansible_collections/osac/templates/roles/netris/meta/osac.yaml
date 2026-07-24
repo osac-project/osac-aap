@@ -3,7 +3,7 @@ title: Netris Network Implementation
 description: >
   Provisions networking resources using Netris Controller API.
   Maps VirtualNetwork to VPC, Subnet to V-Net (L2VPN),
-  SecurityGroup to ACL.
+  SecurityGroup to ACL, ServerCluster to Server Cluster (L3VPN east-west).
 
 template_type: network
 
@@ -14,3 +14,4 @@ capabilities:
   supports_ipv4: true
   supports_ipv6: false
   supports_dual_stack: false
+  supports_east_west: true

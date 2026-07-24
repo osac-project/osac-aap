@@ -1,0 +1,24 @@
+---
+# ServerCluster deletion — removes Server Cluster from Netris controller.
+# Netris automatically cleans up auto-created VNets when the cluster is deleted.
+
+- name: Extract ServerCluster configuration
+  ansible.builtin.set_fact:
+    sc_name: "{{ server_cluster.metadata.name }}"
+    sc_site_id: "{{ server_cluster.spec.siteId | default(netris_site_id) }}"
+
+- name: Display ServerCluster deletion info
+  ansible.builtin.debug:
+    msg: "Deleting Netris Server Cluster '{{ sc_name }}' (Site ID: {{ sc_site_id }})"
+
+- name: Delete server cluster from Netris controller
+  ansible.builtin.include_role:
+    name: netris.controller.server_cluster
+    tasks_from: delete
+  vars:
+    server_cluster_name: "{{ sc_name }}"
+    server_cluster_site_id: "{{ sc_site_id | int }}"
+
+- name: Display deletion result
+  ansible.builtin.debug:
+    msg: "Server Cluster '{{ sc_name }}' deletion completed"
