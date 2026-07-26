@@ -1,22 +1,8 @@
-import sys
 from pathlib import Path
 
 import pydantic
 import pytest
 import yaml
-
-sys.path.insert(
-    0,
-    str(
-        Path(__file__).resolve().parents[4]
-        / "collections"
-        / "ansible_collections"
-        / "osac"
-        / "service"
-        / "plugins"
-        / "filter"
-    ),
-)
 
 from find_template_roles import (
     Metadata,
@@ -179,10 +165,6 @@ class TestRealTemplateMetadata:
     def test_at_least_one_osac_yaml_found(self, roles_dir):
         yamls = _discover_osac_yamls(roles_dir)
         assert len(yamls) > 0, "No osac.yaml files found in template roles"
-
-    @pytest.fixture(params=None)
-    def osac_yaml_path(self, roles_dir, request):
-        return request.param
 
     @staticmethod
     def _load_yaml(path: Path) -> dict:
