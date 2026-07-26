@@ -32,6 +32,15 @@ def _discover_osac_yamls(roles_dir: Path) -> list[Path]:
     return sorted(yamls)
 
 
+def _load_metadata(roles_dir: Path, role_name: str) -> Metadata:
+    for ext in ("yaml", "yml"):
+        candidate = roles_dir / role_name / "meta" / f"osac.{ext}"
+        if candidate.exists():
+            with candidate.open("r", encoding="utf-8") as f:
+                return Metadata.model_validate(yaml.safe_load(f))
+    pytest.fail(f"osac.yaml not found for role {role_name}")
+
+
 # ---------------------------------------------------------------------------
 # TestTemplateParameterDefinitionDefaults
 # ---------------------------------------------------------------------------
@@ -70,10 +79,6 @@ class TestTemplateParameterDefinitionDefaults:
 
     def test_none_default(self):
         defn = _make_definition()
-        assert defn.default is None
-
-    def test_explicit_none_default(self):
-        defn = _make_definition(default=None)
         assert defn.default is None
 
 
@@ -157,6 +162,28 @@ class TestProtobufAnyValueSerialization:
 # TestRealTemplateMetadata
 # ---------------------------------------------------------------------------
 
+def _roles_dir_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[4]
+        / "collections"
+        / "ansible_collections"
+        / "osac"
+        / "templates"
+        / "roles"
+    )
+
+
+def pytest_generate_tests(metafunc):
+    if "osac_yaml_path" in metafunc.fixturenames:
+        roles_dir = _roles_dir_path()
+        paths = _discover_osac_yamls(roles_dir)
+        metafunc.parametrize(
+            "osac_yaml_path",
+            paths,
+            ids=[p.parent.parent.name for p in paths],
+        )
+
+
 class TestRealTemplateMetadata:
 
     def test_roles_dir_exists(self, roles_dir):
@@ -166,59 +193,28 @@ class TestRealTemplateMetadata:
         yamls = _discover_osac_yamls(roles_dir)
         assert len(yamls) > 0, "No osac.yaml files found in template roles"
 
-    @staticmethod
-    def _load_yaml(path: Path) -> dict:
-        with path.open("r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+    def test_osac_yaml_parses(self, osac_yaml_path):
+        with osac_yaml_path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        Metadata.model_validate(data)
 
-    def test_all_osac_yamls_parse(self, roles_dir):
-        yamls = _discover_osac_yamls(roles_dir)
-        failures = []
-        for path in yamls:
-            try:
-                data = self._load_yaml(path)
-                Metadata.model_validate(data)
-            except Exception as e:
-                failures.append(f"{path.parent.parent.name}: {e}")
-        assert not failures, "Metadata parsing failures:\n" + "\n".join(failures)
+    def test_parameters_produce_valid_template_parameters(self, osac_yaml_path):
+        with osac_yaml_path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        metadata = Metadata.model_validate(data)
+        for param_def in metadata.parameters:
+            TemplateParameter.from_definition(param_def)
 
-    def test_all_parameters_produce_valid_template_parameters(self, roles_dir):
-        yamls = _discover_osac_yamls(roles_dir)
-        failures = []
-        for path in yamls:
-            data = self._load_yaml(path)
-            metadata = Metadata.model_validate(data)
-            for param_def in metadata.parameters:
-                try:
-                    TemplateParameter.from_definition(param_def)
-                except Exception as e:
-                    failures.append(
-                        f"{path.parent.parent.name}/{param_def.name}: {e}"
-                    )
-        assert not failures, (
-            "TemplateParameter conversion failures:\n" + "\n".join(failures)
-        )
-
-    def test_all_defaults_produce_valid_protobuf_serialization(self, roles_dir):
-        yamls = _discover_osac_yamls(roles_dir)
-        failures = []
-        for path in yamls:
-            data = self._load_yaml(path)
-            metadata = Metadata.model_validate(data)
-            for param_def in metadata.parameters:
-                param = TemplateParameter.from_definition(param_def)
-                if param.default is not None:
-                    try:
-                        dumped = param.default.model_dump(by_alias=True)
-                        assert "@type" in dumped
-                        assert "value" in dumped
-                    except Exception as e:
-                        failures.append(
-                            f"{path.parent.parent.name}/{param_def.name}: {e}"
-                        )
-        assert not failures, (
-            "ProtobufAnyValue serialization failures:\n" + "\n".join(failures)
-        )
+    def test_defaults_produce_valid_protobuf_serialization(self, osac_yaml_path):
+        with osac_yaml_path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        metadata = Metadata.model_validate(data)
+        for param_def in metadata.parameters:
+            param = TemplateParameter.from_definition(param_def)
+            if param.default is not None:
+                dumped = param.default.model_dump(by_alias=True)
+                assert "@type" in dumped
+                assert "value" in dumped
 
 
 # ---------------------------------------------------------------------------
@@ -261,42 +257,22 @@ class TestMetadataTemplateTypes:
     def test_template_type_parsed_correctly(
         self, roles_dir, role_name, expected_type
     ):
-        meta_path = None
-        for ext in ("yaml", "yml"):
-            candidate = roles_dir / role_name / "meta" / f"osac.{ext}"
-            if candidate.exists():
-                meta_path = candidate
-                break
-        assert meta_path is not None, f"osac.yaml not found for role {role_name}"
-
-        with meta_path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-
-        metadata = Metadata.model_validate(data)
+        metadata = _load_metadata(roles_dir, role_name)
         assert metadata.template_type == expected_type
 
     def test_compute_instance_has_spec_defaults(self, roles_dir):
-        meta_path = roles_dir / "ocp_virt_vm" / "meta" / "osac.yaml"
-        with meta_path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        metadata = Metadata.model_validate(data)
+        metadata = _load_metadata(roles_dir, "ocp_virt_vm")
         assert metadata.spec_defaults is not None
         assert metadata.spec_defaults.boot_disk is not None
         assert metadata.spec_defaults.image is not None
 
     def test_network_has_capabilities(self, roles_dir):
-        meta_path = roles_dir / "cudn_net" / "meta" / "osac.yaml"
-        with meta_path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        metadata = Metadata.model_validate(data)
+        metadata = _load_metadata(roles_dir, "cudn_net")
         assert metadata.capabilities is not None
         assert metadata.capabilities.supports_ipv4 is True
 
     def test_cluster_with_parameters(self, roles_dir):
-        meta_path = roles_dir / "ocp_4_20_ai_maas" / "meta" / "osac.yaml"
-        with meta_path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        metadata = Metadata.model_validate(data)
+        metadata = _load_metadata(roles_dir, "ocp_4_20_ai_maas")
         assert len(metadata.parameters) > 0
         param_names = [p.name for p in metadata.parameters]
         assert "hardware_profiles" in param_names
