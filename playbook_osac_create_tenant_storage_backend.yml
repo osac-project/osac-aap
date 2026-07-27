@@ -7,6 +7,9 @@
     tenant_name: "{{ ansible_eda.event.payload.metadata.name }}"
     tenant_namespace: "{{ ansible_eda.event.payload.metadata.namespace }}"
     tenant_uid: "{{ ansible_eda.event.payload.metadata.uid }}"
+    # Prefer operator-resolved tier definitions from the event (OSAC-1992); fall back
+    # to the static STORAGE_TIERS env var for deployments without a gRPC connection.
+    _event_tier_definitions: "{{ ansible_eda.event.storage_tier_definitions | default([]) }}"
     _storage_tiers_raw: "{{ lookup('env', 'STORAGE_TIERS') }}"
 
   pre_tasks:
@@ -26,31 +29,22 @@
         ansible_eda.event.payload.metadata.uid is not defined or
         ansible_eda.event.payload.metadata.uid | length == 0
 
-    - name: Validate STORAGE_TIERS env var is configured
+    - name: Resolve storage tier definitions
+      ansible.builtin.set_fact:
+        _storage_tiers: >-
+          {{ _event_tier_definitions
+             if (_event_tier_definitions | length > 0)
+             else (_storage_tiers_raw | from_json
+                   if (_storage_tiers_raw | length > 0)
+                   else []) }}
+
+    - name: Fail when no storage tier definitions available
       ansible.builtin.fail:
         msg: >-
-          STORAGE_TIERS env var must be set at deployment time as a JSON array.
-          Example: [{"name":"default","protocol":"nfs","provider":"vast"}]
-      when: _storage_tiers_raw | length == 0
-
-    - name: Parse STORAGE_TIERS JSON
-      block:
-        - name: Parse tier list from env var
-          ansible.builtin.set_fact:
-            _storage_tiers: "{{ _storage_tiers_raw | from_json }}"
-        - name: Validate STORAGE_TIERS is a JSON array
-          ansible.builtin.assert:
-            that:
-              - _storage_tiers | type_debug == 'list'
-            fail_msg: >-
-              STORAGE_TIERS must be a JSON array of tier objects.
-      rescue:
-        - name: Fail on malformed STORAGE_TIERS JSON
-          ansible.builtin.fail:
-            msg: >-
-              STORAGE_TIERS env var contains invalid JSON.
-              Value: '{{ _storage_tiers_raw }}'.
-              Expected a JSON array of tier objects with name, protocol, and provider fields.
+          No storage tier definitions available. Either storage_tier_definitions must be
+          present in the operator event (ansible_eda.event.storage_tier_definitions) or
+          STORAGE_TIERS must be set as a deployment-time env var on the instance group.
+      when: _storage_tiers | length == 0
 
   tasks:
     - name: Configure tenant storage backend
