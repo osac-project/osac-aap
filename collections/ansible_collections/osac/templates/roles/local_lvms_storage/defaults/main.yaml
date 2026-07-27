@@ -1,0 +1,13 @@
+---
+# Hub Secret prefix for per-tenant lifecycle markers.
+local_lvms_storage_tenant_config_secret_prefix: "local-lvms-tenant-config-"
+
+# Namespace for hub-cluster config Secrets — matches OSAC_STORAGE_CONFIG_NAMESPACE
+# set in the storage-operations-ig pod spec (downward API metadata.namespace).
+local_lvms_storage_config_namespace: "{{ lookup('env', 'OSAC_STORAGE_CONFIG_NAMESPACE') | default('osac-system', true) }}"
+
+# topolvm StorageClass provisioner name.
+local_lvms_storage_provisioner: "topolvm.io"
+
+# LVMCluster device class name created by osac-installer's configure-lvms.sh hook.
+local_lvms_storage_device_class: "vg1"
