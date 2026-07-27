@@ -19,7 +19,7 @@ from find_template_roles import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_definition(**overrides) -> TemplateParameterDefinition:
+def _make_definition(**overrides: object) -> TemplateParameterDefinition:
     defaults = {"name": "test_param", "title": "Test", "description": "A test param"}
     defaults.update(overrides)
     return TemplateParameterDefinition(**defaults)
@@ -48,7 +48,7 @@ def _load_metadata(roles_dir: Path, role_name: str) -> Metadata:
 class TestTemplateParameterDefinitionDefaults:
 
     @pytest.mark.parametrize(
-        "value, expected_type",
+        ("value", "expected_type"),
         [
             ("hello", str),
             (42, int),
@@ -63,7 +63,7 @@ class TestTemplateParameterDefinitionDefaults:
         assert isinstance(defn.default, expected_type)
 
     @pytest.mark.parametrize(
-        "value, expected_type",
+        ("value", "expected_type"),
         [
             ([], list),
             (["a", "b"], list),
@@ -89,7 +89,7 @@ class TestTemplateParameterDefinitionDefaults:
 class TestTemplateParameterFromDefinition:
 
     @pytest.mark.parametrize(
-        "default_value, ansible_type, expected_proto_type",
+        ("default_value", "ansible_type", "expected_proto_type"),
         [
             ("hello", "string", ProtobufType.STRING),
             (42, "int", ProtobufType.INT),
@@ -129,7 +129,7 @@ class TestTemplateParameterFromDefinition:
 class TestProtobufAnyValueSerialization:
 
     @pytest.mark.parametrize(
-        "default_value, expected_type_url",
+        ("default_value", "expected_type_url"),
         [
             ("hello", ProtobufType.STRING),
             (42, ProtobufType.INT),
@@ -245,7 +245,7 @@ class TestTypeMappingCompleteness:
 class TestMetadataTemplateTypes:
 
     @pytest.mark.parametrize(
-        "role_name, expected_type",
+        ("role_name", "expected_type"),
         [
             ("ocp_small", TemplateTypeEnum.cluster),
             ("ocp_virt_vm", TemplateTypeEnum.compute_instance),
