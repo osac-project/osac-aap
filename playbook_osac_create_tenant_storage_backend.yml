@@ -7,7 +7,6 @@
     tenant_name: "{{ ansible_eda.event.payload.metadata.name }}"
     tenant_namespace: "{{ ansible_eda.event.payload.metadata.namespace }}"
     tenant_uid: "{{ ansible_eda.event.payload.metadata.uid }}"
-    _storage_tiers_raw: "{{ lookup('env', 'STORAGE_TIERS') }}"
 
   pre_tasks:
     - name: Show EDA Event
@@ -26,31 +25,22 @@
         ansible_eda.event.payload.metadata.uid is not defined or
         ansible_eda.event.payload.metadata.uid | length == 0
 
-    - name: Validate STORAGE_TIERS env var is configured
+    - name: Validate storage_tier_definitions is present in the EDA event
       ansible.builtin.fail:
         msg: >-
-          STORAGE_TIERS env var must be set at deployment time as a JSON array.
-          Example: [{"name":"default","protocol":"nfs","provider":"vast"}]
-      when: _storage_tiers_raw | length == 0
+          ansible_eda.event.storage_tier_definitions must be a non-empty array, populated
+          by osac-operator from the Tenant's resolved storage tiers.
+          Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota":500}]
+      when: (ansible_eda.event.storage_tier_definitions | default([])) | length == 0
 
-    - name: Parse STORAGE_TIERS JSON
-      block:
-        - name: Parse tier list from env var
-          ansible.builtin.set_fact:
-            _storage_tiers: "{{ _storage_tiers_raw | from_json }}"
-        - name: Validate STORAGE_TIERS is a JSON array
-          ansible.builtin.assert:
-            that:
-              - _storage_tiers | type_debug == 'list'
-            fail_msg: >-
-              STORAGE_TIERS must be a JSON array of tier objects.
-      rescue:
-        - name: Fail on malformed STORAGE_TIERS JSON
-          ansible.builtin.fail:
-            msg: >-
-              STORAGE_TIERS env var contains invalid JSON.
-              Value: '{{ _storage_tiers_raw }}'.
-              Expected a JSON array of tier objects with name, protocol, and provider fields.
+    - name: Derive qos_policy per storage tier
+      ansible.builtin.set_fact:
+        _storage_tiers: >-
+          {% set _tiers = [] -%}
+          {% for _tier in ansible_eda.event.storage_tier_definitions -%}
+          {% set _ = _tiers.append(_tier | combine({'qos_policy': _tier.name + '-qos'})) -%}
+          {% endfor -%}
+          {{ _tiers }}
 
   tasks:
     - name: Configure tenant storage backend
