@@ -286,3 +286,31 @@ class TestMetadataTemplateTypes:
                 description="Bad param",
                 default=object(),
             )
+
+
+# ---------------------------------------------------------------------------
+# Regression Tests
+# ---------------------------------------------------------------------------
+
+class TestRegressions:
+    """Regression tests for specific bugs caught in production."""
+
+    def test_list_default_accepted_osac_2816(self):
+        """OSAC-2816: list defaults were silently dropped."""
+        defn = TemplateParameterDefinition(
+            name="tags", title="Tags", description="Tags",
+            type="list", required=False, default=["a", "b"],
+        )
+        param = TemplateParameter.from_definition(defn)
+        assert param.default is not None
+        assert param.default.value == ["a", "b"]
+
+    def test_dict_default_accepted_osac_2816(self):
+        """OSAC-2816: dict defaults were silently dropped."""
+        defn = TemplateParameterDefinition(
+            name="config", title="Config", description="Config",
+            type="dict", required=False, default={"key": "val"},
+        )
+        param = TemplateParameter.from_definition(defn)
+        assert param.default is not None
+        assert param.default.value == {"key": "val"}

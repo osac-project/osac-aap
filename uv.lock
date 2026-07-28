@@ -1063,8 +1063,8 @@ requires-dist = [
 development = [
     { name = "ansible-lint", specifier = ">=25.2.1" },
     { name = "antsibull-changelog", specifier = ">=0.33.0" },
-    { name = "pytest", specifier = "==9.1.1" },
-    { name = "pytest-cov", specifier = "==7.1.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
 ]
 
 [[package]]
