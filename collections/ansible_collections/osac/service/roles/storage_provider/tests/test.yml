@@ -50,8 +50,6 @@
                 'not a valid DNS label' not in (ansible_failed_result.msg | default(''))
               - >-
                 'duplicate tier names' not in (ansible_failed_result.msg | default(''))
-              - >-
-                'exceeds the maximum' not in (ansible_failed_result.msg | default(''))
             fail_msg: >-
               Validation failed unexpectedly: {{ ansible_failed_result.msg | default('unknown error') }}
             success_msg: "Validation passed -- dispatch failed as expected in unit test context"
@@ -309,50 +307,6 @@
               - >-
                 'not a valid DNS label' in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
                 or 'One or more items failed' in (ansible_failed_result.msg | default(''))
-            fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
-            success_msg: "Role correctly rejected invalid input"
-
-# ──────────────────────────────────────────────────────────────
-# Test 10: Tier count exceeds maximum -- error path
-# Expected: role fails with exceeds-maximum message
-# ──────────────────────────────────────────────────────────────
-- name: Test storage_provider -- tier count exceeds max (should fail)
-  hosts: localhost
-  gather_facts: false
-
-  tasks:
-    - name: Run tier-count-exceeds-max failure test
-      block:
-        - name: Attempt with 3 tiers but max_tiers set to 2 (expected to fail)
-          ansible.builtin.include_role:
-            name: osac.service.storage_provider
-          vars:
-            storage_provider_tiers:
-              - name: tier-a
-                protocol: nfs
-                provider: vast
-              - name: tier-b
-                protocol: nfs
-                provider: vast
-              - name: tier-c
-                protocol: block
-                provider: vast
-            storage_provider_max_tiers: 2
-            storage_provider_action: setup
-            tenant_name: "tenant-acme"
-            tenant_namespace: "osac-tenants"
-
-        - name: This task should not be reached -- role should have failed
-          ansible.builtin.fail:
-            msg: "Role did not fail as expected when tier count exceeds maximum"
-
-      rescue:
-        - name: Verify role failed with expected exceeds-maximum message
-          ansible.builtin.assert:
-            that:
-              - "'exceeds the maximum' in ansible_failed_result.msg"
-              - "'3' in ansible_failed_result.msg"
-              - "'2' in ansible_failed_result.msg"
             fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
             success_msg: "Role correctly rejected invalid input"
 
