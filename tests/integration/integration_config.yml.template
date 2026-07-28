@@ -7,9 +7,9 @@
 # storage_provider_backend_connections extra_var the storage_provider role reads.
 storage_backend_connections:
   ${VAST_BACKEND_ID:-be-test}:
-    endpoint: "${VAST_ENDPOINT}"
-    username: "${VAST_USERNAME}"
-    password: "${VAST_PASSWORD}"
+    endpoint: "${VAST_BACKEND_ENDPOINT}"
+    username: "${VAST_BACKEND_USERNAME}"
+    password: "${VAST_BACKEND_PASSWORD}"
 vast_tenant_prefix: "osac-test-"
 # TLS validation — set to false for mock server or self-signed cert testing
 vast_validate_certs: ${VAST_VALIDATE_CERTS:-true}
@@ -22,4 +22,4 @@ vast_vip_pool_subnet_cidr: ${VAST_VIP_POOL_SUBNET_CIDR:-24}
 # Storage tier definitions — JSON array with per-tier provider selection and backend_id,
 # matching the storage_provider_tiers/ansible_eda.event.storage_tier_definitions shape.
 # Used by test playbooks to exercise the multi-tier storage provider interface.
-storage_tiers: '${STORAGE_TIERS:-[{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-test"}]}'
+storage_tiers: '${VAST_STORAGE_TIERS:-[{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-test"}]}'
