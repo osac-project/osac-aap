@@ -61,6 +61,7 @@
       vars:
         storage_provider_action: ensure_storage_class
         storage_provider_tiers: "{{ _jit_storage_tiers }}"
+        storage_provider_backend_connections: "{{ ansible_eda.event.storage_backend_connections | default({}) }}"
         storage_provider_provisioning_target: vmaas
         storage_provider_block_encryption_passphrase: "{{ ansible_eda.event.payload.spec.blockEncryptionPassphrase | default('') }}"
         storage_provider_snapshots_enabled: "{{ lookup('env', 'STORAGE_SNAPSHOTS_ENABLED') | default('true', true) | bool }}"

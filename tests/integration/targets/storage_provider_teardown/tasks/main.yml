@@ -211,9 +211,6 @@
   gather_facts: false
 
   environment:
-    VAST_ENDPOINT: "127.0.0.1:18443"
-    VAST_USERNAME: "admin"
-    VAST_PASSWORD: "admin"
     OSAC_STORAGE_CONFIG_NAMESPACE: "osac-system"
 
   vars:
@@ -223,6 +220,12 @@
       - name: default
         protocol: nfs
         provider: vast
+        backend_id: be-test
+    storage_provider_backend_connections:
+      be-test:
+        endpoint: "127.0.0.1:18443"
+        username: "admin"
+        password: "admin"
     storage_provider_provisioning_target: vmaas
     vast_storage_validate_certs: false
 

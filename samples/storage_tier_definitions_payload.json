@@ -22,7 +22,14 @@
           },
           "quota": 500
         }
-      ]
+      ],
+      "storage_backend_connections": {
+        "be-001": {
+          "endpoint": "vast.example.com:443",
+          "username": "admin",
+          "password": "changeme"
+        }
+      }
     }
   }
 }

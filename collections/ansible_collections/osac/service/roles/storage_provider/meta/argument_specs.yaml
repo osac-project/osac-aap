@@ -48,3 +48,15 @@ argument_specs:
         description: >
           Create a VolumeSnapshotClass alongside the StorageClass for K8s-native
           snapshot support. Skipped if the VolumeSnapshot CRD is not installed.
+      storage_provider_backend_connections:
+        type: dict
+        required: false
+        default: {}
+        no_log: true
+        description: >
+          Backend connection details (endpoint, username, password), keyed by backend_id,
+          as resolved by osac-operator from the Tier API. Each provider's own
+          credential-sourcing logic looks up the entry for the backend_id(s) present in
+          its dispatched tier subset. Optional because teardown_cluster_storage never
+          needs backend connection details (it only touches cluster-side K8s resources).
+          Example: {be-001: {endpoint: vast.example.com:443, username: admin, password: "***"}}

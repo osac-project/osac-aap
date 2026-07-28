@@ -88,9 +88,6 @@
   gather_facts: false
 
   environment:
-    VAST_ENDPOINT: "127.0.0.1:18443"
-    VAST_USERNAME: "admin"
-    VAST_PASSWORD: "admin"
     OSAC_STORAGE_CONFIG_NAMESPACE: "osac-system"
 
   vars:
@@ -102,9 +99,16 @@
       - name: default
         protocol: nfs
         provider: vast
+        backend_id: be-test
       - name: block-tier
         protocol: block
         provider: vast
+        backend_id: be-test
+    storage_provider_backend_connections:
+      be-test:
+        endpoint: "127.0.0.1:18443"
+        username: "admin"
+        password: "admin"
     storage_provider_action: ensure_storage_class
     storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"
@@ -343,9 +347,6 @@
   gather_facts: false
 
   environment:
-    VAST_ENDPOINT: "127.0.0.1:18443"
-    VAST_USERNAME: "admin"
-    VAST_PASSWORD: "admin"
     OSAC_STORAGE_CONFIG_NAMESPACE: "osac-system"
 
   vars:
@@ -356,9 +357,16 @@
       - name: default
         protocol: nfs
         provider: vast
+        backend_id: be-test
       - name: block-tier
         protocol: block
         provider: vast
+        backend_id: be-test
+    storage_provider_backend_connections:
+      be-test:
+        endpoint: "127.0.0.1:18443"
+        username: "admin"
+        password: "admin"
     storage_provider_action: ensure_storage_class
     storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"

@@ -37,3 +37,4 @@
       vars:
         storage_provider_action: teardown_backend
         storage_provider_tiers: "{{ ansible_eda.event.storage_tier_definitions }}"
+        storage_provider_backend_connections: "{{ ansible_eda.event.storage_backend_connections | default({}) }}"
