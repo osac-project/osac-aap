@@ -9,7 +9,6 @@
     template_id: "{{ ansible_eda.event.payload.spec.templateID }}"
     template_parameters: {}
     tenant_storage_classes: "{{ ansible_eda.event.tenant_storage_classes | default([]) }}"
-    _storage_tiers_raw: "{{ lookup('env', 'STORAGE_TIERS') }}"
     _requested_storage_tier: "{{ lookup('env', 'STORAGE_REQUESTED_TIER') | default('default', true) }}"
 
   pre_tasks:
@@ -38,31 +37,22 @@
             else (compute_instance.metadata.annotations | default({})).get('osac.openshift.io/tenant', 'unknown')
           }}
 
-    - name: Parse STORAGE_TIERS for JIT storage
-      when: _storage_tiers_raw | length > 0
+    - name: Filter storage tier definitions to the requested tier for JIT storage
+      when: (ansible_eda.event.storage_tier_definitions | default([])) | length > 0
       block:
-        - name: Parse tier list from STORAGE_TIERS env var
-          ansible.builtin.set_fact:
-            _jit_all_tiers: "{{ _storage_tiers_raw | from_json }}"
-
         - name: Filter to only the requested tier
           ansible.builtin.set_fact:
-            _jit_storage_tiers: "{{ _jit_all_tiers | selectattr('name', 'equalto', _requested_storage_tier) | list }}"
+            _jit_storage_tiers: >-
+              {{ ansible_eda.event.storage_tier_definitions
+                 | selectattr('name', 'equalto', _requested_storage_tier) | list }}
 
-        - name: Warn if requested tier not found in STORAGE_TIERS
+        - name: Warn if requested tier not found in storage_tier_definitions
           ansible.builtin.debug:
             msg: >-
-              Requested storage tier '{{ _requested_storage_tier }}' not found in STORAGE_TIERS.
-              Available tiers: {{ _jit_all_tiers | map(attribute='name') | list | to_json }}.
+              Requested storage tier '{{ _requested_storage_tier }}' not found in storage_tier_definitions.
+              Available tiers: {{ ansible_eda.event.storage_tier_definitions | map(attribute='name') | list | to_json }}.
               JIT storage provisioning will be skipped.
           when: _jit_storage_tiers | length == 0
-      rescue:
-        - name: Fail on malformed STORAGE_TIERS JSON
-          ansible.builtin.fail:
-            msg: >-
-              STORAGE_TIERS env var contains invalid JSON.
-              Value: '{{ _storage_tiers_raw }}'.
-              Expected a JSON array of tier objects with name, protocol, and provider fields.
 
     - name: Ensure storage is provisioned for tenant (JIT)
       when: _jit_storage_tiers is defined and _jit_storage_tiers | length > 0
@@ -89,7 +79,7 @@
           ComputeInstance '{{ compute_instance_name }}' has no tenant_storage_classes
           available. Either the osac-operator CI controller should inject the resolved
           storageClasses list before triggering provisioning, or JIT storage provisioning
-          via STORAGE_TIERS must succeed.
+          via storage_tier_definitions must succeed.
       when:
         - tenant_storage_class_storage_classes | length == 0
         - _jit_storage_tiers is not defined or _jit_storage_tiers | length == 0
