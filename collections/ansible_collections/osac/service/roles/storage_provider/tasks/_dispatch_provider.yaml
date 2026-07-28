@@ -34,7 +34,7 @@
   ansible.builtin.fail:
     msg: >-
       None of the requested tiers ({{ _requested_tiers | join(', ') }}) match
-      provider '{{ _current_provider }}' tiers. Check STORAGE_TIERS configuration.
+      provider '{{ _current_provider }}' tiers. Check storage_tier_definitions configuration.
 
 - name: "Dispatch provider storage action with remote kubeconfig routing"
   module_defaults:

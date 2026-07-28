@@ -63,7 +63,7 @@
 
 - name: Provision VAST resources for tenant
   block:
-    - name: Resolve VAST admin credentials from env vars
+    - name: Resolve VAST admin credentials from storage_backend_connections
       ansible.builtin.include_tasks: read_credentials.yaml
 
     - name: Build VAST VMS connection dict

@@ -103,7 +103,7 @@
     # These are created here (not just in setup) so JIT tiers get their backing
     # VMS resources. Uses admin creds for VMS API access.
 
-    - name: Resolve VAST admin credentials from env vars
+    - name: Resolve VAST admin credentials from storage_backend_connections
       ansible.builtin.include_tasks: read_credentials.yaml
 
     - name: Build VMS connection from admin credentials

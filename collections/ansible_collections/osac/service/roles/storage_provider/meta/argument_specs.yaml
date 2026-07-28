@@ -12,12 +12,14 @@ argument_specs:
         required: true
         description: >
           List of storage tier definitions. Each tier declares its name, protocol,
-          provider, and optional QoS/quota settings. The dispatcher groups tiers
-          by provider and dispatches to each provider's template role with the
-          filtered tier subset.
+          provider, backend_id, and optional QoS/quota settings. qos_policy is
+          defaulted by this role when a tier doesn't specify one. The dispatcher
+          groups tiers by provider and dispatches to each provider's template
+          role with the filtered tier subset.
           Example: [{name: default, protocol: nfs, provider: vast,
-          qos_policy: default-qos,
-          qos_limits: {static_limits: {max_reads_bw_mbps: 100, max_writes_bw_mbps: 100}}}]
+          backend_id: be-001,
+          qos_limits: {static_limits: {max_reads_bw_mbps: 100, max_writes_bw_mbps: 100}},
+          quota: 500}]
       storage_provider_action:
         type: str
         required: true
