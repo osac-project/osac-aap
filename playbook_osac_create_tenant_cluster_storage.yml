@@ -46,7 +46,7 @@
         msg: >-
           ansible_eda.event.storage_tier_definitions must be a non-empty array, populated
           by osac-operator from the Tenant's resolved storage tiers.
-          Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota":500}]
+          Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota_bytes":500}]
       when: (ansible_eda.event.storage_tier_definitions | default([])) | length == 0
 
     - name: Write admin_kubeconfig to temporary file when provided

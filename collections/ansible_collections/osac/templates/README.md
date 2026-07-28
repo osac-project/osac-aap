@@ -168,8 +168,9 @@ See roles/ocp_virt_vm for more examples
 
 ### Creating a New Storage Provider Role
 
-Storage provider roles use a tier-based dispatch model: deployments define storage tiers
-via `STORAGE_TIERS` JSON, each tier declares its provider, and the service-layer dispatcher
+Storage provider roles use a tier-based dispatch model: osac-operator resolves storage tiers
+from the Tier API and passes them via the `ansible_eda.event.storage_tier_definitions`
+extra_var, each tier declares its provider, and the service-layer dispatcher
 (`osac.service.storage_provider`) groups tiers by provider and dispatches to each provider's
 template role with the filtered tier subset.
 
@@ -223,16 +224,18 @@ When implemented, `hcp_data_plane` will support provisioning multiple StorageCla
 into the guest HCP cluster (e.g., separate tiers for databases and general workloads).
 Currently, all CaaS targets return an explicit "not yet implemented" error.
 
-**Configuration:** Storage tiers are configured via the `STORAGE_TIERS` env var in the
-`storage-operations-ig` ConfigMap:
+**Configuration:** Storage tiers arrive via the `ansible_eda.event.storage_tier_definitions`
+extra_var, populated by osac-operator from the Tier API:
 ```json
 [
-  {"name": "default", "protocol": "nfs", "provider": "vast", "qos_policy": "default-qos",
+  {"name": "default", "protocol": "nfs", "provider": "vast", "backend_id": "be-001",
    "qos_limits": {"static_limits": {"max_reads_bw_mbps": 100, "max_writes_bw_mbps": 100}}},
-  {"name": "high-performance", "protocol": "block", "provider": "vast", "qos_policy": "perf-qos",
-   "qos_limits": {"static_limits": {"max_reads_bw_mbps": 500, "max_writes_bw_mbps": 500}}}
+  {"name": "high-performance", "protocol": "block", "provider": "vast", "backend_id": "be-001",
+   "qos_limits": {"static_limits": {"max_reads_bw_mbps": 500, "max_writes_bw_mbps": 500}}, "quota_bytes": 500}
 ]
 ```
+Backend connection details (endpoint, username, password) are resolved separately and
+passed via the `storage_provider_backend_connections` extra_var, keyed by `backend_id`.
 
 **Tier fields:**
 
@@ -241,9 +244,10 @@ Currently, all CaaS targets return an explicit "not yet implemented" error.
 | `name` | yes | DNS-label tier name (used in StorageClass naming) |
 | `protocol` | yes | `nfs` or `block` |
 | `provider` | yes | Provider name (e.g., `vast`) |
-| `qos_policy` | no | QoS policy name (creates STATIC mode policy on VMS) |
-| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`) |
-| `quota` | no | Hard quota in bytes for the tier's view |
+| `backend_id` | provider-dependent | Key into `storage_provider_backend_connections` for this tier's backend credentials (required by providers that resolve credentials this way, e.g. VAST) |
+| `qos_policy` | no | QoS policy name (creates STATIC mode policy on VMS). If omitted and `qos_limits` is set, the dispatcher derives one from the tier name |
+| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`). A tier with no `qos_limits` opts out of `qos_policy` defaulting |
+| `quota_bytes` | no | Hard quota in bytes for the tier's view |
 
 **QoS limits:** When `qos_policy` is specified, the role creates a QoS policy via REST API
 (`POST /api/qospolicies/`). The `qos_limits` dict is merged directly into the POST body, so

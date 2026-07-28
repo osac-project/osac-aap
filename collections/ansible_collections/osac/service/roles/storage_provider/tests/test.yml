@@ -1,6 +1,6 @@
 ---
 # Unit tests for osac.service.storage_provider dispatcher validation logic.
-# All 12 scenarios run in a single invocation -- no flags needed.
+# All scenarios run in a single invocation -- no flags needed.
 # Tests verify validation ONLY; they do not dispatch to actual provider roles.
 
 # ──────────────────────────────────────────────────────────────
