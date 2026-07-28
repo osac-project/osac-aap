@@ -20,7 +20,6 @@
       {%- else -%}
       {{ ansible_eda.event.payload.metadata.namespace }}
       {%- endif -%}
-    _storage_tiers_raw: "{{ lookup('env', 'STORAGE_TIERS') }}"
 
   pre_tasks:
     - name: Show EDA Event
@@ -37,25 +36,22 @@
         ansible_eda.event.payload.metadata.namespace is not defined or
         ansible_eda.event.payload.metadata.namespace | length == 0
 
-    - name: Parse STORAGE_TIERS JSON
-      when: _storage_tiers_raw | length > 0
-      block:
-        - name: Parse tier list from env var
-          ansible.builtin.set_fact:
-            _storage_tiers: "{{ _storage_tiers_raw | from_json }}"
-        - name: Validate STORAGE_TIERS is a JSON array
-          ansible.builtin.assert:
-            that:
-              - _storage_tiers | type_debug == 'list'
-            fail_msg: >-
-              STORAGE_TIERS must be a JSON array of tier objects.
-      rescue:
-        - name: Fail on malformed STORAGE_TIERS JSON
-          ansible.builtin.fail:
-            msg: >-
-              STORAGE_TIERS env var contains invalid JSON.
-              Value: '{{ _storage_tiers_raw }}'.
-              Expected a JSON array of tier objects with name, protocol, and provider fields.
+    - name: Validate storage_tier_definitions is present in the EDA event
+      ansible.builtin.fail:
+        msg: >-
+          ansible_eda.event.storage_tier_definitions must be a non-empty array, populated
+          by osac-operator from the Tenant's resolved storage tiers.
+          Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota":500}]
+      when: (ansible_eda.event.storage_tier_definitions | default([])) | length == 0
+
+    - name: Derive qos_policy per storage tier
+      ansible.builtin.set_fact:
+        _storage_tiers: >-
+          {% set _tiers = [] -%}
+          {% for _tier in ansible_eda.event.storage_tier_definitions -%}
+          {% set _ = _tiers.append(_tier | combine({'qos_policy': _tier.name + '-qos'})) -%}
+          {% endfor -%}
+          {{ _tiers }}
 
     - name: Write admin_kubeconfig to temporary file when provided
       when: >-
@@ -78,13 +74,7 @@
         (_remote_kubeconfig is not defined or _remote_kubeconfig | length == 0)
 
   tasks:
-    - name: Skip cleanup when STORAGE_TIERS is not configured
-      when: _storage_tiers_raw | length == 0
-      ansible.builtin.debug:
-        msg: "STORAGE_TIERS env var is not set — nothing to clean up."
-
     - name: Clean up cluster-side tenant storage resources
-      when: _storage_tiers_raw | length > 0
       ansible.builtin.include_role:
         name: osac.service.storage_provider
       vars:
