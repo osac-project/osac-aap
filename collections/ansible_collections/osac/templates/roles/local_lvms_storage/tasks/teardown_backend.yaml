@@ -14,8 +14,14 @@
     kind: Secret
     name: "{{ local_lvms_storage_tenant_config_secret_prefix }}{{ tenant_name }}"
     namespace: "{{ local_lvms_storage_config_namespace }}"
-  ignore_errors: true  # noqa: ignore-errors
+  register: _teardown_secret_result
+  failed_when: false
+
+- name: Warn if Secret deletion was unsuccessful
+  ansible.builtin.debug:
+    msg: "Warning: Secret deletion for tenant '{{ tenant_name }}' unsuccessful: {{ _teardown_secret_result.msg | default('unknown') }}"
+  when: _teardown_secret_result.failed | default(false)
 
 - name: Report teardown_backend summary
   ansible.builtin.debug:
-    msg: "Backend teardown for tenant '{{ tenant_name }}' complete. Hub Secret removed."
+    msg: "Backend teardown for tenant '{{ tenant_name }}' complete."
