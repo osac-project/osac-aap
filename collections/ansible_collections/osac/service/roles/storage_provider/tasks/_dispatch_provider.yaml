@@ -7,7 +7,7 @@
 #   _dispatch_action   — task file to invoke (setup, ensure_storage_class, teardown_cluster_storage, teardown_backend)
 #
 # Uses from play scope:
-#   storage_provider_tiers              — full tier list (filtered here per provider)
+#   _storage_provider_tiers              — full tier list, qos_policy-defaulted (filtered here per provider)
 #   _cluster_name                        — optional target cluster name override (for volume
 #                                          naming); ensure_storage_class self-discovers it from
 #                                          the target cluster's Infrastructure object when unset
@@ -19,10 +19,10 @@
 - name: "Compute filtered tiers for current provider"
   ansible.builtin.set_fact:
     _computed_provider_tiers: >-
-      {{ (storage_provider_tiers | selectattr('provider', 'equalto', _current_provider) | list)
+      {{ (_storage_provider_tiers | selectattr('provider', 'equalto', _current_provider) | list)
          | selectattr('name', 'in', _requested_tiers) | list
          if (_requested_tiers is defined and _requested_tiers | length > 0)
-         else (storage_provider_tiers | selectattr('provider', 'equalto', _current_provider) | list) }}
+         else (_storage_provider_tiers | selectattr('provider', 'equalto', _current_provider) | list) }}
 
 - name: "Fail if requested tier filter produced no matches"
   when: >-

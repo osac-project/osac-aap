@@ -61,12 +61,27 @@
   loop: "{{ storage_provider_tiers }}"
   when: item.protocol | length == 0
 
+# Defaulted here (not by each calling playbook) so every caller gets the same
+# qos_policy naming without duplicating the derivation logic per playbook.
+# Written to a role-internal fact, not storage_provider_tiers itself: role/include_role
+# params outrank set_fact for the lifetime of the role invocation, so reassigning
+# storage_provider_tiers here would silently keep the caller-supplied, un-defaulted value.
+- name: Default qos_policy for tiers that do not specify one
+  ansible.builtin.set_fact:
+    _storage_provider_tiers: >-
+      {% set _tiers = [] -%}
+      {% for _tier in storage_provider_tiers -%}
+      {% set _ = _tiers.append(_tier if _tier.qos_policy is defined
+                                else (_tier | combine({'qos_policy': _tier.name + '-qos'}))) -%}
+      {% endfor -%}
+      {{ _tiers }}
+
 - name: Validate qos_policy is a valid DNS label when specified
   ansible.builtin.fail:
     msg: >-
       Tier '{{ item.name }}' has an invalid qos_policy: '{{ item.qos_policy }}'.
       Must be a non-empty string matching DNS label rules (1-63 chars, lowercase alphanumeric and hyphens).
-  loop: "{{ storage_provider_tiers }}"
+  loop: "{{ _storage_provider_tiers }}"
   loop_control:
     label: "{{ item.name }}"
   when:
@@ -92,7 +107,7 @@
 
 - name: Extract unique providers from tier list
   ansible.builtin.set_fact:
-    _unique_providers: "{{ storage_provider_tiers | map(attribute='provider') | unique | sort | list }}"
+    _unique_providers: "{{ _storage_provider_tiers | map(attribute='provider') | unique | sort | list }}"
 
 - name: Set dispatch action
   ansible.builtin.set_fact:

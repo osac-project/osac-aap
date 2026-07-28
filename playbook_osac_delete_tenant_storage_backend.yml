@@ -30,19 +30,10 @@
           Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota":500}]
       when: (ansible_eda.event.storage_tier_definitions | default([])) | length == 0
 
-    - name: Derive qos_policy per storage tier
-      ansible.builtin.set_fact:
-        _storage_tiers: >-
-          {% set _tiers = [] -%}
-          {% for _tier in ansible_eda.event.storage_tier_definitions -%}
-          {% set _ = _tiers.append(_tier | combine({'qos_policy': _tier.name + '-qos'})) -%}
-          {% endfor -%}
-          {{ _tiers }}
-
   tasks:
     - name: Delete tenant storage backend
       ansible.builtin.include_role:
         name: osac.service.storage_provider
       vars:
         storage_provider_action: teardown_backend
-        storage_provider_tiers: "{{ _storage_tiers }}"
+        storage_provider_tiers: "{{ ansible_eda.event.storage_tier_definitions }}"
