@@ -448,6 +448,10 @@
               - name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                 protocol: nfs
                 provider: vast
+                qos_limits:
+                  static_limits:
+                    max_reads_bw_mbps: 100
+                    max_writes_bw_mbps: 100
             storage_provider_action: setup
             tenant_name: "tenant-acme"
             tenant_namespace: "osac-tenants"
@@ -506,3 +510,46 @@
                 or 'One or more items failed' in (ansible_failed_result.msg | default(''))
             fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
             success_msg: "Role correctly rejected the caller's explicit qos_policy rather than silently deriving a replacement"
+
+# ──────────────────────────────────────────────────────────────
+# Test 15: Tier without configured qos_limits opts out of qos_policy defaulting
+# Expected: role does NOT fail on qos_policy validation, proving no qos_policy was
+# derived for a tier with no read/write bandwidth limits configured. Uses a 60-char
+# tier name that WOULD fail DNS-label validation if a qos_policy were derived (same
+# construction as Test 13) -- if this test ever starts failing with an "invalid
+# qos_policy" message, the opt-out has regressed.
+# ──────────────────────────────────────────────────────────────
+- name: Test storage_provider -- tier without qos_limits opts out of qos_policy defaulting
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run qos-limits-opt-out test
+      block:
+        - name: Attempt with a 60-char tier name and no qos_limits (expected to fail at dispatch, not qos_policy validation)
+          ansible.builtin.include_role:
+            name: osac.service.storage_provider
+          vars:
+            storage_provider_tiers:
+              - name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                protocol: nfs
+                provider: vast
+            storage_provider_action: setup
+            tenant_name: "tenant-acme"
+            tenant_namespace: "osac-tenants"
+
+        - name: Validation passed (dispatch outcome is not under test)
+          ansible.builtin.debug:
+            msg: "Validation passed -- dispatch was attempted"
+
+      rescue:
+        - name: Verify failure is from dispatch, not qos_policy validation
+          ansible.builtin.assert:
+            that:
+              - >-
+                'invalid qos_policy' not in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
+                and 'invalid qos_policy' not in (ansible_failed_result.msg | default(''))
+            fail_msg: >-
+              Expected no qos_policy validation failure for a tier with no qos_limits.
+              Got: {{ ansible_failed_result.msg | default('unknown error') }}
+            success_msg: "Tier without qos_limits correctly opted out of qos_policy defaulting"

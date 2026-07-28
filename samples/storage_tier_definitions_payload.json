@@ -20,7 +20,7 @@
               "max_writes_bw_mbps": 100
             }
           },
-          "quota": 500
+          "quota_bytes": 536870912000
         }
       ],
       "storage_backend_connections": {

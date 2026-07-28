@@ -19,7 +19,7 @@ argument_specs:
           Example: [{name: default, protocol: nfs, provider: vast,
           backend_id: be-001,
           qos_limits: {static_limits: {max_reads_bw_mbps: 100, max_writes_bw_mbps: 100}},
-          quota: 500}]
+          quota_bytes: 536870912000}]
       storage_provider_action:
         type: str
         required: true
