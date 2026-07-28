@@ -425,3 +425,84 @@
               - "'non-empty string' in ansible_failed_result.msg"
             fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
             success_msg: "Role correctly rejected invalid input"
+
+# ──────────────────────────────────────────────────────────────
+# Test 13: Tier with no qos_policy gets a derived one that exceeds DNS label length -- error path
+# Expected: role fails with the qos_policy DNS label validation message, proving the
+# "Default qos_policy for tiers that do not specify one" step actually ran and that its
+# output feeds the existing qos_policy validation (OSAC-1992: tiers from
+# ansible_eda.event.storage_tier_definitions never carry qos_policy -- the role derives it).
+# ──────────────────────────────────────────────────────────────
+- name: Test storage_provider -- derived qos_policy exceeds DNS label length (should fail)
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run derived-qos_policy-too-long failure test
+      block:
+        - name: Attempt with a 60-char tier name (no explicit qos_policy) whose derived name-qos exceeds 63 chars
+          ansible.builtin.include_role:
+            name: osac.service.storage_provider
+          vars:
+            storage_provider_tiers:
+              - name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                protocol: nfs
+                provider: vast
+            storage_provider_action: setup
+            tenant_name: "tenant-acme"
+            tenant_namespace: "osac-tenants"
+
+        - name: This task should not be reached -- role should have failed
+          ansible.builtin.fail:
+            msg: "Role did not fail as expected when the derived qos_policy exceeds the DNS label length limit"
+
+      rescue:
+        - name: Verify role failed with expected qos_policy DNS label message
+          ansible.builtin.assert:
+            that:
+              - >-
+                'invalid qos_policy' in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
+                and '-qos' in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
+                or 'One or more items failed' in (ansible_failed_result.msg | default(''))
+            fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
+            success_msg: "Role correctly derived and rejected an over-length qos_policy"
+
+# ──────────────────────────────────────────────────────────────
+# Test 14: Explicit qos_policy is validated as-is, not silently replaced by a derived one -- error path
+# Expected: role fails referencing the caller's own invalid value, proving the defaulting
+# step's `is defined` check preserves an explicit qos_policy instead of overwriting it.
+# ──────────────────────────────────────────────────────────────
+- name: Test storage_provider -- explicit invalid qos_policy is not overwritten by defaulting (should fail)
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run explicit-invalid-qos_policy failure test
+      block:
+        - name: Attempt with an explicit, invalid qos_policy (expected to fail on the caller's own value)
+          ansible.builtin.include_role:
+            name: osac.service.storage_provider
+          vars:
+            storage_provider_tiers:
+              - name: default
+                protocol: nfs
+                provider: vast
+                qos_policy: "Invalid Policy!"
+            storage_provider_action: setup
+            tenant_name: "tenant-acme"
+            tenant_namespace: "osac-tenants"
+
+        - name: This task should not be reached -- role should have failed
+          ansible.builtin.fail:
+            msg: "Role did not fail as expected when an explicit qos_policy is invalid"
+
+      rescue:
+        - name: Verify role failed referencing the caller's own qos_policy value
+          ansible.builtin.assert:
+            that:
+              - >-
+                'invalid qos_policy' in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
+                and 'Invalid Policy!' in (ansible_failed_result.results | default([]) | map(attribute='msg') | join(' '))
+                or 'One or more items failed' in (ansible_failed_result.msg | default(''))
+            fail_msg: "Role failed but with unexpected message: {{ ansible_failed_result.msg | default('unknown') }}"
+            success_msg: "Role correctly rejected the caller's explicit qos_policy rather than silently deriving a replacement"

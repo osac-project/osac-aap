@@ -1,0 +1,28 @@
+{
+  "ansible_eda": {
+    "event": {
+      "payload": {
+        "metadata": {
+          "name": "acme",
+          "namespace": "tenant-acme",
+          "uid": "11111111-1111-1111-1111-111111111111"
+        }
+      },
+      "storage_tier_definitions": [
+        {
+          "name": "default",
+          "protocol": "nfs",
+          "provider": "vast",
+          "backend_id": "be-001",
+          "qos_limits": {
+            "static_limits": {
+              "max_reads_bw_mbps": 100,
+              "max_writes_bw_mbps": 100
+            }
+          },
+          "quota": 500
+        }
+      ]
+    }
+  }
+}
