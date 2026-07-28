@@ -246,7 +246,7 @@ passed via the `storage_provider_backend_connections` extra_var, keyed by `backe
 | `provider` | yes | Provider name (e.g., `vast`) |
 | `backend_id` | provider-dependent | Key into `storage_provider_backend_connections` for this tier's backend credentials (required by providers that resolve credentials this way, e.g. VAST) |
 | `qos_policy` | no | QoS policy name (creates STATIC mode policy on VMS). If omitted and `qos_limits` is set, the dispatcher derives one from the tier name |
-| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`). A tier with no `qos_limits` opts out of `qos_policy` defaulting |
+| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`). A tier opts out of `qos_policy` defaulting unless `qos_limits.static_limits` sets a positive `max_reads_bw_mbps` or `max_writes_bw_mbps` |
 | `quota_bytes` | no | Hard quota in bytes for the tier's view |
 
 **QoS limits:** When `qos_policy` is specified, the role creates a QoS policy via REST API
