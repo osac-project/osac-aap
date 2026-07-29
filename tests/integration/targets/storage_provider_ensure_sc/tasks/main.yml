@@ -110,7 +110,6 @@
         username: "admin"
         password: "admin"
     storage_provider_action: ensure_storage_class
-    storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"
     vast_storage_validate_certs: false
 
@@ -368,7 +367,6 @@
         username: "admin"
         password: "admin"
     storage_provider_action: ensure_storage_class
-    storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"
     vast_storage_validate_certs: false
 

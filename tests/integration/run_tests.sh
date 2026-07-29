@@ -151,6 +151,37 @@ done
 # Clean up lease test pod
 kubectl delete pod lease-test-pod -n osac-system --ignore-not-found 2>/dev/null || true
 
+echo "=== Running Storage Provider Dispatcher Unit Tests ==="
+echo ""
+
+# Validation-only tests for the storage_provider role's dispatcher logic -- no kind cluster
+# or mock VMS server required, so these run unconditionally (not gated behind
+# STORAGE_TESTS_ENABLED). Requires two separate invocations: ansible-core raises a
+# runner-level ERROR! when include_role targets a genuinely-missing role name (the "invalid
+# provider" scenario), which aborts the whole process even though that scenario's own rescue
+# block already passed. The second invocation resumes at the next scenario to cover
+# everything after it.
+STORAGE_PROVIDER_UNIT_TEST="../../collections/ansible_collections/osac/service/roles/storage_provider/tests/test.yml"
+
+if ansible-playbook "${STORAGE_PROVIDER_UNIT_TEST}" -v; then
+  echo "  ✓ storage_provider unit tests (part 1) passed"
+  PASSED+=("storage_provider_unit_tests:part1")
+else
+  echo "  ✗ storage_provider unit tests (part 1) failed"
+  FAILED+=("storage_provider_unit_tests:part1")
+fi
+
+if ansible-playbook --start-at-task "Attempt with invalid action 'destroy' (expected to fail)" \
+  "${STORAGE_PROVIDER_UNIT_TEST}" -v; then
+  echo "  ✓ storage_provider unit tests (part 2) passed"
+  PASSED+=("storage_provider_unit_tests:part2")
+else
+  echo "  ✗ storage_provider unit tests (part 2) failed"
+  FAILED+=("storage_provider_unit_tests:part2")
+fi
+
+echo ""
+
 # Storage provider tests (conditional)
 if [ "${STORAGE_TESTS_ENABLED:-}" = "true" ]; then
   # Source env vars written by setup_test_env.sh (Make runs each recipe line in a separate shell)

@@ -13,7 +13,8 @@ argument_specs:
         description: >
           List of storage tier definitions. Each tier declares its name, protocol,
           provider, backend_id, and optional QoS/quota settings. qos_policy is
-          defaulted by this role when a tier doesn't specify one. The dispatcher
+          always derived by this role from the tier name — any caller-supplied
+          qos_policy value is ignored and discarded, never used. The dispatcher
           groups tiers by provider and dispatches to each provider's template
           role with the filtered tier subset.
           Example: [{name: default, protocol: nfs, provider: vast,
@@ -43,13 +44,6 @@ argument_specs:
         description: >
           Passphrase for block encryption. Passed from the Tenant CR event payload.
           When empty, block StorageClasses are created without host encryption.
-      storage_provider_snapshots_enabled:
-        type: bool
-        required: false
-        default: true
-        description: >
-          Create a VolumeSnapshotClass alongside the StorageClass for K8s-native
-          snapshot support. Skipped if the VolumeSnapshot CRD is not installed.
       storage_provider_backend_connections:
         type: dict
         required: false

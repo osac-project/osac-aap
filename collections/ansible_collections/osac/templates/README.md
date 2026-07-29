@@ -245,14 +245,15 @@ passed via the `storage_provider_backend_connections` extra_var, keyed by `backe
 | `protocol` | yes | `nfs` or `block` |
 | `provider` | yes | Provider name (e.g., `vast`) |
 | `backend_id` | provider-dependent | Key into `storage_provider_backend_connections` for this tier's backend credentials (required by providers that resolve credentials this way, e.g. VAST) |
-| `qos_policy` | no | QoS policy name (creates STATIC mode policy on VMS). If omitted and `qos_limits` is set, the dispatcher derives one from the tier name |
-| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`). A tier opts out of `qos_policy` defaulting unless `qos_limits.static_limits` sets a positive `max_reads_bw_mbps` or `max_writes_bw_mbps` |
+| `qos_policy` | n/a — derived, ignored if set by the caller | QoS policy name (creates STATIC mode policy on VMS), always derived from the tier name (`<name>-qos`). Any caller-supplied value is discarded, never used |
+| `qos_limits` | no | Dict merged into QoS POST body (e.g., `static_limits`, `static_total_limits`). A tier opts out of `qos_policy` derivation unless `qos_limits.static_limits` sets a positive `max_reads_bw_mbps` or `max_writes_bw_mbps` |
 | `quota_bytes` | no | Hard quota in bytes for the tier's view |
 
-**QoS limits:** When `qos_policy` is specified, the role creates a QoS policy via REST API
-(`POST /api/qospolicies/`). The `qos_limits` dict is merged directly into the POST body, so
-its keys must match VMS API fields. Real VMS rejects STATIC mode without at least one limit —
-always include `qos_limits.static_limits` when specifying `qos_policy`.
+**QoS limits:** When a tier has a derived `qos_policy` (see above), the role creates a QoS
+policy via REST API (`POST /api/qospolicies/`). The `qos_limits` dict is merged directly into
+the POST body, so its keys must match VMS API fields. Real VMS rejects STATIC mode without at
+least one limit — always include `qos_limits.static_limits` for a tier that should get QoS
+enforcement.
 
 **Dispatcher pattern:** `osac.service.storage_provider` validates inputs (tier list,
 provider allowlist, protocol allowlist, provisioning target enum, max tier count) then
