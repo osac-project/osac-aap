@@ -1,0 +1,39 @@
+---
+name: "Ansible Lint"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'OWNERS'
+      - 'LICENSE'
+      - '*.md'
+      - 'docs/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --group development
+
+      - name: Run ansible-lint
+        run: uv run ansible-lint

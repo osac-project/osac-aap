@@ -10,14 +10,3 @@
   vars:
     manage_agents_cluster_order_name: "{{ cluster_infra_name }}"
     manage_agents_idle_agents_network: "unused-in-ci"
-
-- name: Delete CAPI provider RBAC
-  kubernetes.core.k8s:
-    state: absent
-    api_version: rbac.authorization.k8s.io/v1
-    kind: "{{ item }}"
-    name: "capi-provider-{{ cluster_infra_name }}"
-    namespace: "{{ hosted_cluster_default_agent_namespace | default('hardware-inventory') }}"
-  loop:
-    - RoleBinding
-    - Role

@@ -10,11 +10,12 @@ Host Inventory Operator, and Host Management Operator.
 The `playbook_osac_import_agents.yml` playbook reconciles a file-based server
 inventory against BareMetalHost and Agent CRs on the cluster. It:
 
-1. Creates an InfraEnv if one does not exist
-2. Creates a BareMetalHost CR for each server in the inventory
-3. Deletes BareMetalHost and Agent CRs for servers removed from the inventory
-4. Waits for each server to boot the discovery ISO and register as an Agent
-5. Labels agents with resource class and Netris server name metadata
+1. Creates a BMC Secret for each server from the inventory credentials
+2. Creates an InfraEnv if one does not exist
+3. Creates a BareMetalHost CR for each server in the inventory
+4. Deletes BareMetalHost, Agent, and BMC Secret CRs for servers removed from the inventory
+5. Waits for each server to boot the discovery ISO and register as an Agent
+6. Labels agents with resource class and Netris server name metadata
 
 The playbook is idempotent and designed to run periodically via an AAP schedule.
 
@@ -51,6 +52,9 @@ coordination between BareMetalHost and Agent CRs:
   an Agent CR
 - BMAC links the Agent to the BMH via the `agent-install.openshift.io/bmh` label
 - The playbook then labels the Agent with resource class and Netris metadata
+
+For the full list of required and optional Agent CR labels, see
+[CaaS Agent Binding Labels](agent-labels.md).
 
 ## Prerequisites
 
@@ -90,21 +94,9 @@ kubectl create secret docker-registry pull-secret \
 
 ### BMC Secrets
 
-Each server needs a Kubernetes Secret with its BMC credentials in the agent
-namespace. The secret name must match the `bmc_secret` field in the server
-inventory.
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: <server-name>-bmc-secret
-  namespace: hardware-inventory
-type: Opaque
-data:
-  username: <base64-encoded>
-  password: <base64-encoded>
-```
+The playbook automatically creates a Kubernetes Secret named
+`<server-name>-bmc-secret` for each server using the `bmc_username` and
+`bmc_password` fields from the inventory. No manual Secret creation is required.
 
 ### BMC Network Access
 
@@ -130,13 +122,15 @@ kubectl create configmap import-agents-inventory \
 servers:
   - name: node001
     bmc_url: "redfish-virtualmedia+https://192.168.1.21:8000/redfish/v1/Systems/<uuid>"
-    bmc_secret: "node001-bmc-secret"
+    bmc_username: "admin"
+    bmc_password: "password"
     boot_mac: "AA:BB:CC:DD:EE:01"
     netris_server_name: "server-01"
     resource_class: "fc430"
   - name: node002
     bmc_url: "redfish-virtualmedia+https://192.168.1.22:8000/redfish/v1/Systems/<uuid>"
-    bmc_secret: "node002-bmc-secret"
+    bmc_username: "admin"
+    bmc_password: "password"
     boot_mac: "AA:BB:CC:DD:EE:02"
     netris_server_name: "server-02"
     resource_class: "fc430"
@@ -146,7 +140,8 @@ servers:
 |-------|-------------|
 | `name` | Server name, used as the BMH CR name and Agent hostname |
 | `bmc_url` | Redfish BMC address for virtual media boot |
-| `bmc_secret` | Name of the K8s Secret with BMC credentials (in agent namespace) |
+| `bmc_username` | BMC username (playbook creates a Secret named `<name>-bmc-secret`) |
+| `bmc_password` | BMC password |
 | `boot_mac` | Boot NIC MAC address, used to match Agent to server |
 | `netris_server_name` | Netris server name label for the Agent |
 | `resource_class` | Resource class label for the Agent (e.g., hardware type) |
@@ -160,8 +155,7 @@ ansible-playbook playbook_osac_import_agents.yml \
 ```
 
 Sample files are provided in `samples/`:
-- `import_agents_extra_vars.yml` - server inventory
-- `import_agents_bmc_secrets.yml` - BMC secrets (apply with `kubectl apply -f`)
+- `import_agents_extra_vars.yml` - server inventory with BMC credentials
 
 ## AAP Scheduled Runs
 
@@ -173,8 +167,7 @@ disabled.
 To enable:
 1. Set `OSAC_IMPORT_AGENTS_ENABLED=true` in the config-as-code-ig Secret
 2. Create the `import-agents-inventory` ConfigMap in the AAP namespace
-3. Create BMC secrets in the agent namespace
-4. Run config-as-code to apply the schedule
+3. Run config-as-code to apply the schedule
 
 The playbook runs in the `cluster-fulfillment-ig` instance group, which
 mounts the `import-agents-inventory` ConfigMap at `/var/config/import-agents/`.
@@ -197,6 +190,7 @@ and run the playbook. The playbook will:
 1. Find the Agent CR linked to the stale BMH (via `agent-install.openshift.io/bmh` label)
 2. Delete the Agent CR
 3. Delete the BareMetalHost CR
+4. Delete the BMC Secret
 
 The agent must be deleted before the BMH because assisted-service removes the
 BMH-to-Agent link label when the BMH is deleted.

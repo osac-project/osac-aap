@@ -20,8 +20,9 @@ New Roles
 Cluster Templates
 ~~~~~~~~~~~~~~~~~
 
-- osac.templates.ocp_4_17_small - Deploy minimal OpenShift 4.17 cluster (2 nodes, fc430 resource class)
-- osac.templates.ocp_4_17_small_github - Deploy OpenShift 4.17 cluster with GitHub OAuth authentication
+- osac.templates.ocp_small - Deploy minimal OpenShift cluster (2 nodes, fc430 resource class)
+- osac.templates.ocp_4_17_small - (removed, replaced by ocp_small)
+- osac.templates.ocp_4_17_small_github - (removed, replaced by ocp_small)
 
 VM Templates
 ~~~~~~~~~~~~

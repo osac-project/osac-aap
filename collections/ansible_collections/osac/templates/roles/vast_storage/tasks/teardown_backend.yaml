@@ -5,13 +5,6 @@
 # Does NOT touch cluster-side K8s resources (StorageClasses, VolumeSnapshotClasses,
 # CSI Secret) — use cleanup action for those.
 
-- name: Fail if provisioning target is not yet supported
-  when: _provisioning_target != 'vmaas'
-  ansible.builtin.fail:
-    msg: >-
-      VAST storage teardown_backend for target '{{ _provisioning_target }}' is not yet
-      implemented. Only 'vmaas' is currently supported.
-
 - name: Validate tenant_name is a valid DNS label
   ansible.builtin.fail:
     msg: "tenant_name '{{ tenant_name }}' is not a valid DNS label."
@@ -27,12 +20,14 @@
   no_log: true
   failed_when: false
 
-- name: Extract tenant ID from hub Secret (if available)
+- name: Extract tenant ID and local provider ID from hub Secret (if available)
   when:
     - _vast_teardown_config.resources | length > 0
     - _vast_teardown_config.resources[0].data.vast_tenant_id is defined
   ansible.builtin.set_fact:
     _vast_teardown_tenant_id: "{{ _vast_teardown_config.resources[0].data.vast_tenant_id | b64decode }}"
+    _vast_teardown_local_provider_id: >-
+      {{ _vast_teardown_config.resources[0].data.vast_local_provider_id | default('') | b64decode }}
   no_log: true
 
 - name: Cleanup VAST backend resources
@@ -117,12 +112,82 @@
     - name: Delete per-tenant VMS manager
       ansible.builtin.include_tasks: delete_tenant_manager.yaml
 
+    # ── Local provider: delete before tenant for clean lifecycle ──
+    # The LP must be deleted after the manager (which uses it) but before
+    # the tenant (which references it). This avoids needing force_remove
+    # on tenant deletion.
+
+    - name: Delete local provider
+      when:
+        - _vast_teardown_auth is defined
+        - _vast_teardown_auth is not failed
+      block:
+        - name: Resolve local provider ID (from hub Secret or by name lookup)
+          when: _vast_teardown_local_provider_id | default('') | length == 0
+          block:
+            - name: Look up local provider by naming convention
+              ansible.builtin.uri:
+                url: "https://{{ vast_endpoint }}/api/localproviders/?name={{ vast_storage_local_provider_prefix }}{{ tenant_name }}"
+                method: GET
+                headers:
+                  Authorization: "Bearer {{ _vast_teardown_auth.json.access }}"
+                validate_certs: "{{ vast_storage_validate_certs }}"
+                timeout: "{{ vast_storage_api_timeout | int }}"
+                status_code: [200]
+              register: _vast_teardown_lp_lookup
+              ignore_errors: true
+              no_log: true
+
+            - name: Also check legacy auto-created naming convention
+              when: _vast_teardown_lp_lookup.json | default([]) | length == 0
+              ansible.builtin.uri:
+                url: "https://{{ vast_endpoint }}/api/localproviders/?name=provider-{{ tenant_name }}"
+                method: GET
+                headers:
+                  Authorization: "Bearer {{ _vast_teardown_auth.json.access }}"
+                validate_certs: "{{ vast_storage_validate_certs }}"
+                timeout: "{{ vast_storage_api_timeout | int }}"
+                status_code: [200]
+              register: _vast_teardown_lp_legacy
+              ignore_errors: true
+              no_log: true
+
+            - name: Set local provider ID from lookup
+              ansible.builtin.set_fact:
+                _vast_teardown_local_provider_id: >-
+                  {{ (_vast_teardown_lp_lookup.json[0].id | default(''))
+                     if (_vast_teardown_lp_lookup.json | default([]) | length > 0)
+                     else ((_vast_teardown_lp_legacy.json[0].id | default(''))
+                           if (_vast_teardown_lp_legacy is defined and _vast_teardown_lp_legacy.json | default([]) | length > 0)
+                           else '') }}
+
+        - name: Delete local provider by ID
+          when: _vast_teardown_local_provider_id | default('') | string | length > 0
+          ansible.builtin.uri:
+            url: "https://{{ vast_endpoint }}/api/localproviders/{{ _vast_teardown_local_provider_id }}/"
+            method: DELETE
+            headers:
+              Authorization: "Bearer {{ _vast_teardown_auth.json.access }}"
+            validate_certs: "{{ vast_storage_validate_certs }}"
+            timeout: "{{ vast_storage_api_timeout | int }}"
+            status_code: [200, 204, 404]
+          register: _vast_teardown_lp_result
+          ignore_errors: true  # noqa: ignore-errors
+          no_log: true
+
+        - name: Log local provider deletion result
+          ansible.builtin.debug:
+            msg: >-
+              Local provider deletion:
+              {{ 'deleted (id: ' ~ _vast_teardown_local_provider_id ~ ')'
+                 if (_vast_teardown_lp_result is defined and _vast_teardown_lp_result is not failed)
+                 else ('not found — skipping' if (_vast_teardown_local_provider_id | default('') | length == 0) else 'failed (ignored)') }}
+
     - name: Delete VAST tenant (retry for async view cleanup)
       vastdata.vms.tenants:
         vms: "{{ _vast_vms_conn }}"
         name: "{{ tenant_name }}"
         state: absent
-        force_remove: true
       register: _vast_teardown_tenant_result
       retries: 3
       delay: 10
@@ -130,45 +195,13 @@
       ignore_errors: true  # noqa: ignore-errors
       no_log: true
 
-    - name: Clean up orphaned local provider after tenant deletion
-      when:
-        - _vast_teardown_auth is defined
-        - _vast_teardown_auth is not failed
-      block:
-        - name: Query local provider by tenant name
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/localproviders/?name=provider-{{ tenant_name }}"
-            method: GET
-            headers:
-              Authorization: "Bearer {{ _vast_teardown_auth.json.access }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200]
-          register: _vast_teardown_lp
-          ignore_errors: true
-          no_log: true
-
-        - name: Delete orphaned local provider
-          when:
-            - _vast_teardown_lp is not failed
-            - _vast_teardown_lp.json | default([]) | length > 0
-          ansible.builtin.uri:
-            url: "https://{{ vast_endpoint }}/api/localproviders/{{ _vast_teardown_lp.json[0].id }}/"
-            method: DELETE
-            headers:
-              Authorization: "Bearer {{ _vast_teardown_auth.json.access }}"
-            validate_certs: "{{ vast_storage_validate_certs }}"
-            timeout: "{{ vast_storage_api_timeout | int }}"
-            status_code: [200, 204, 404]
-          ignore_errors: true  # noqa: ignore-errors
-          no_log: true
-
     - name: Set VAST cleanup success flag
       ansible.builtin.set_fact:
         _vast_teardown_clean: >-
           {{ not (_vast_cleanup_results | default({}) | dict2items | selectattr('value.failed', 'defined') | selectattr('value.failed') | list | length > 0)
              and not (_vast_teardown_tenant_result.failed | default(false))
-             and not (_vast_manager_delete_failed | default(false)) }}
+             and not (_vast_manager_delete_failed | default(false))
+             and not (_vast_teardown_lp_result.failed | default(false)) }}
 
     - name: Delete tenant config Secret from hub cluster (only when cleanup succeeded)
       when: >-
@@ -207,6 +240,10 @@
         _vast_teardown_config: {}
         _vast_teardown_auth: {}
         _vast_teardown_tenant_id: ""
+        _vast_teardown_local_provider_id: ""
+        _vast_teardown_lp_lookup: {}
+        _vast_teardown_lp_legacy: {}
+        _vast_teardown_lp_result: {}
       no_log: true
 
 - name: Report backend teardown summary
@@ -215,5 +252,6 @@
       Backend teardown for tenant '{{ tenant_name }}' complete.
       VMS: {% for r, v in (_vast_cleanup_results | default({})).items() %}{{ v.queried }} {{ r }}{{ ', ' if not loop.last else '' }}{% endfor %} deleted.
       Tenant: {{ 'ok' if not (_vast_teardown_tenant_result.failed | default(false)) else 'failed' }},
-      Manager: {{ 'ok' if not (_vast_manager_delete_failed | default(false)) else 'failed' }}.
+      Manager: {{ 'ok' if not (_vast_manager_delete_failed | default(false)) else 'failed' }},
+      Local provider: {{ 'ok' if not (_vast_teardown_lp_result.failed | default(false)) else 'failed' }}.
       Hub Secret: {{ 'deleted' if (_vast_teardown_clean | default(false) | bool) else 'preserved' }}.

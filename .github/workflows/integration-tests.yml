@@ -1,0 +1,50 @@
+---
+name: "Integration Tests"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'OWNERS'
+      - 'LICENSE'
+      - '*.md'
+      - 'docs/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --group development
+
+      - name: Install Python dependencies for tests
+        run: pip install kubernetes openstacksdk
+
+      - name: Install kind
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: osac-test
+          install_only: true
+
+      - name: Run integration tests
+        run: uv run make test
+        env:
+          STORAGE_TESTS_ENABLED: "true"

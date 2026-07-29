@@ -37,6 +37,27 @@
       ansible.builtin.debug:
         var: import_agents_servers
 
+    - name: Create or update BMC secrets for each server
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ server.name }}-bmc-secret"
+            namespace: "{{ import_agents_namespace }}"
+            labels:
+              osac.openshift.io/managed-by: import-agents
+          type: Opaque
+          stringData:
+            username: "{{ server.bmc_username }}"
+            password: "{{ server.bmc_password }}"
+      loop: "{{ import_agents_servers }}"
+      loop_control:
+        loop_var: server
+        label: "{{ server.name }}"
+      no_log: true
+
     - name: Ensure InfraEnv exists
       kubernetes.core.k8s:
         state: present
@@ -87,7 +108,7 @@
             automatedCleaningMode: disabled
             bmc:
               address: "{{ server.bmc_url }}"
-              credentialsName: "{{ server.bmc_secret }}"
+              credentialsName: "{{ server.name }}-bmc-secret"
               disableCertificateVerification: >-
                 {{ server.disable_bmc_cert_verification
                    | default(import_agents_disable_bmc_cert_verification) }}
@@ -147,6 +168,18 @@
         kind: BareMetalHost
         namespace: "{{ import_agents_namespace }}"
         name: "{{ bmh_name }}"
+      loop: "{{ import_agents_stale_bmh_names }}"
+      loop_control:
+        loop_var: bmh_name
+        label: "{{ bmh_name }}"
+
+    - name: Delete stale BMC secrets
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Secret
+        namespace: "{{ import_agents_namespace }}"
+        name: "{{ bmh_name }}-bmc-secret"
       loop: "{{ import_agents_stale_bmh_names }}"
       loop_control:
         loop_var: bmh_name

@@ -6,5 +6,7 @@ metadata:
   namespace: osac-system
 spec:
   templateID: osac.templates.ocp_virt_vm
+  cores: 2
+  memoryGiB: 2
 status:
   desiredConfigVersion: "1"

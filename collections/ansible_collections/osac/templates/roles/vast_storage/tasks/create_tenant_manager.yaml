@@ -1,16 +1,13 @@
 ---
-# Creates a per-tenant VMS Manager with a CSI role for storage operations.
-# The manager is NOT created as TENANT_ADMIN — it defaults to SUPER_ADMIN.
-# TENANT_ADMIN users are blocked from /api/v1/versions/ (hard VMS restriction,
-# not a permission issue), which the CSI driver's @requisite(semver="5.3.0")
-# decorator requires before any storage operation. The tenant scoping comes
-# from the role's tenant_id and the tenant_name StorageClass parameter instead.
-# The CSI Secret intentionally omits the 'tenant' field — including it causes
-# the CSI driver to set X-Tenant-Name on the /api/v1/token/ login call, which
-# tenant-scopes the JWT and blocks /api/v1/versions/ even for SUPER_ADMIN users.
+# Creates a per-tenant VMS Manager as TENANT_ADMIN with logical CRUD permissions.
+#
+# TENANT_ADMIN auth requires the X-Tenant-Name header on /api/token/.
+# The CSI Secret MUST include the 'tenant' field so the CSI driver sets
+# this header automatically.
 #
 # Flow: auth as admin → create role → create manager.
-# Uses ansible.builtin.uri because vastdata.vms has no modules for managers/roles.
+# Uses ansible.builtin.uri because vastdata.vms has no modules for
+# roles/managers.
 #
 # Requires in scope (set by setup.yaml before calling this file):
 #   vast_endpoint                            — VMS API hostname
@@ -100,7 +97,8 @@
       register: _vast_admin_auth
       no_log: true
 
-    # Idempotency for partial failures: check if role already exists in VMS
+    # --- Role with logical CRUD permissions ---
+
     - name: Check if tenant CSI role already exists
       ansible.builtin.uri:
         url: "https://{{ vast_endpoint }}/api/roles/?name=osac-csi-{{ tenant_name }}"
@@ -113,7 +111,7 @@
       register: _vast_role_check
       no_log: true
 
-    - name: Create CSI role for per-tenant manager
+    - name: Create CSI role with logical CRUD permissions
       when: _vast_role_check.json | length == 0
       ansible.builtin.uri:
         url: "https://{{ vast_endpoint }}/api/roles/"
@@ -121,7 +119,7 @@
         body_format: json
         body:
           name: "osac-csi-{{ tenant_name }}"
-          # tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
+          tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
           permissions_list:
             - create_logical
             - view_logical
@@ -151,7 +149,8 @@
       ansible.builtin.debug:
         msg: "CSI role 'osac-csi-{{ tenant_name }}' {{ 'created' if (_vast_role_check.json | length == 0) else 'already exists' }} (id: {{ _vast_tenant_role_id }})"
 
-    # Idempotency for partial failures: check if manager already exists in VMS
+    # --- Manager as TENANT_ADMIN ---
+
     - name: Check if tenant manager already exists in VMS
       ansible.builtin.uri:
         url: "https://{{ vast_endpoint }}/api/managers/?username=osac-{{ tenant_name }}"
@@ -164,7 +163,7 @@
       register: _vast_manager_check
       no_log: true
 
-    - name: Create per-tenant manager (SUPER_ADMIN default, NOT TENANT_ADMIN)
+    - name: Create per-tenant manager as TENANT_ADMIN
       when: _vast_manager_check.json | length == 0
       ansible.builtin.uri:
         url: "https://{{ vast_endpoint }}/api/managers/"
@@ -173,8 +172,8 @@
         body:
           username: "osac-{{ tenant_name }}"
           password: "{{ _vast_tenant_manager_password }}"
-          # user_type: TENANT_ADMIN
-          # tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
+          user_type: TENANT_ADMIN
+          tenant_id: "{{ _vast_tenant_result.tenants.id | int }}"
           roles:
             - "{{ _vast_tenant_role_id | int }}"
           password_expiration_disabled: true
@@ -219,5 +218,5 @@
 
 - name: Log tenant manager creation outcome
   ansible.builtin.debug:
-    msg: "VMS manager 'osac-{{ tenant_name }}' created with role 'osac-csi-{{ tenant_name }}'"
+    msg: "VMS manager 'osac-{{ tenant_name }}' created as TENANT_ADMIN with logical CRUD permissions"
   when: not (_vast_tenant_manager_already_exists | default(false))

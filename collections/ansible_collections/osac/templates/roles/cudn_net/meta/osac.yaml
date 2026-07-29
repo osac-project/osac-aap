@@ -8,6 +8,8 @@ template_type: network
 
 # NetworkClass registration fields
 implementation_strategy: cudn_net
+fabric_manager: cudn_net
+k8s_manager: cudn_localnet
 is_default: true
 capabilities:
   supports_ipv4: true

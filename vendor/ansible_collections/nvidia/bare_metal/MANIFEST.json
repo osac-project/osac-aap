@@ -2,7 +2,7 @@
  "collection_info": {
   "namespace": "nvidia",
   "name": "bare_metal",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "authors": [
    "NVIDIA Bare Metal Manager Dev Team"
   ],
@@ -27,7 +27,7 @@
   "name": "FILES.json",
   "ftype": "file",
   "chksum_type": "sha256",
-  "chksum_sha256": "60b060d69a6e0655b2aa2317797c69fbe80436a8d29764d92da79b49627fa2d2",
+  "chksum_sha256": "67665f57704218b1158aad131294f091554bf868696da854ee87b51f65a07dcf",
   "format": 1
  },
  "format": 1

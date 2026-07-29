@@ -59,7 +59,7 @@ osac.service.external_access
 The Netris network class is not tied to a specific template. It plugs into any
 template that uses the `osac.service.cluster_infra` and
 `osac.service.external_access` roles. The standard hosted cluster template is
-`ocp_4_17_small` (`collections/ansible_collections/osac/templates/roles/ocp_4_17_small/`),
+`ocp_small` (`collections/ansible_collections/osac/templates/roles/ocp_small/`),
 which orchestrates the following steps — each overridable via
 `install_step_*_override` variables:
 
@@ -80,7 +80,7 @@ playbook_osac_create_hosted_cluster.yml
   |
   +-- pre-tasks: cluster_settings, extract_template_info, working namespace
   |
-  +-- template install tasks (ocp_4_17_small):
+  +-- template install tasks (ocp_small):
       |
       +-- 1. Create HostedCluster + NodePool CRs
       |
@@ -152,6 +152,9 @@ You need `KUBECONFIG` pointing to the hub OpenShift cluster where:
   cluster). Each Agent CR must be labeled with:
   - `osac.openshift.io/resource_class` — the server's resource class
   - `netris.server/name` — the corresponding Netris server name
+
+  See [CaaS Agent Binding Labels](agent-labels.md) for the full label
+  reference, including common mistakes to avoid.
 
 ### Netris Infrastructure
 
@@ -319,8 +322,8 @@ primitives:
 | VirtualNetwork | VPC + V-Net | `POST /api/v2/vpc`, `POST /api/v2/vnet` |
 | Subnet | IPAM allocation + subnet | `POST /api/v2/ipam/allocation`, `POST /api/v2/ipam/subnet` |
 | SecurityGroup | ACL rules | `POST /api/acl` (v1 API) |
-| PublicIPPool | IPAM allocation + subnet (purpose=nat) | `POST /api/v2/ipam/allocation`, `POST /api/v2/ipam/subnet` |
-| PublicIP | IPAM IP allocation | Read from existing IPAM pool |
+| ExternalIPPool | IPAM allocation + subnet (purpose=nat) | `POST /api/v2/ipam/allocation`, `POST /api/v2/ipam/subnet` |
+| ExternalIP | IPAM IP allocation | Read from existing IPAM pool |
 
 The template role is at `collections/ansible_collections/osac/templates/roles/netris/`.
 It is auto-discovered by the `publish_templates` playbook via `meta/osac.yaml`

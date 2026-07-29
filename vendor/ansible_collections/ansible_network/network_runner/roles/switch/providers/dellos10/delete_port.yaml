@@ -1,9 +1,8 @@
 ---
-- name: "dellos10: remove port configuration"
+- name: "dellos10: remove port VLAN configuration"
   dellos10_config:
-    lines: "default interface {{ port_name }}"
-
-- name: "dellos10: administratively disable the port"
-  dellos10_config:
-    lines: "shutdown"
+    lines:
+      - "no switchport mode"
+      - "no switchport access vlan"
+      - "no switchport trunk allowed vlan"
     parents: ["interface {{ port_name }}"]

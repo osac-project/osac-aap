@@ -5,13 +5,6 @@
 # Used when a cluster is deleted but the tenant stays (resources may be
 # needed on other clusters).
 
-- name: Fail if provisioning target is not yet supported
-  when: _provisioning_target != 'vmaas'
-  ansible.builtin.fail:
-    msg: >-
-      VAST storage teardown_cluster_storage for target '{{ _provisioning_target }}' is not yet
-      implemented. Only 'vmaas' is currently supported.
-
 - name: Validate tenant_name is a valid DNS label
   ansible.builtin.fail:
     msg: "tenant_name '{{ tenant_name }}' is not a valid DNS label."

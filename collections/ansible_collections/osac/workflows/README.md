@@ -133,7 +133,7 @@ Templates may define their own override points:
     cluster_order: "{{ ansible_eda.event.payload }}"
 
     # Use MOC template collection
-    template_id_override: osac.templates.ocp_4_17_small
+    template_id_override: osac.templates.ocp_small
 
     # Override infrastructure to use ESI
     template_step_create_infra_override:

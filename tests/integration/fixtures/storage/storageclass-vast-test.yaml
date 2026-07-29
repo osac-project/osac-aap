@@ -11,7 +11,7 @@ metadata:
 provisioner: csi.vastdata.com
 parameters:
   vip_pool_name: vippool-test-tenant
-  root_export: /osac/test-tenant/default
+  root_export: /osac-test-tenant-abcd1234/default
   csi.storage.k8s.io/provisioner-secret-name: vast-csi-test-tenant
   csi.storage.k8s.io/provisioner-secret-namespace: test-tenant-ns
   csi.storage.k8s.io/controller-publish-secret-name: vast-csi-test-tenant

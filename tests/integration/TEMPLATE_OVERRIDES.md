@@ -39,7 +39,7 @@ Tasks performed:
 
 ---
 
-## Cluster Template: osac.templates.ocp_4_17_small
+## Cluster Template: osac.templates.ocp_small
 
 ### Install Flow (tasks/install.yaml)
 
@@ -100,7 +100,7 @@ create_step_wait_annotate_override:
 
 **Cluster Create**:
 ```yaml
-# Use real template from fixture: osac.templates.ocp_4_17_small
+# Use real template from fixture: osac.templates.ocp_small
 install_step_hosted_cluster_override:
   name: osac.workflows.workflow_helpers
   tasks_from: noop.yml
@@ -117,7 +117,7 @@ install_step_retrieve_kubeconfig_override:
 
 **Cluster Delete**:
 ```yaml
-# Use real template from fixture: osac.templates.ocp_4_17_small
+# Use real template from fixture: osac.templates.ocp_small
 delete_step_hosted_cluster_override:
   name: osac.workflows.workflow_helpers
   tasks_from: noop.yml

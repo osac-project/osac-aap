@@ -397,34 +397,12 @@
         fail_msg: "No role API call found in mock call log"
         success_msg: "Role API call detected"
 
-    - name: Assert local provider cleanup was attempted
-      ansible.builtin.assert:
-        that:
-          - _call_log | selectattr('path', 'search', 'localproviders') | selectattr('method', 'equalto', 'GET') | list | length > 0
-        fail_msg: "No local provider lookup found in mock call log — orphaned providers would persist"
-        success_msg: "Local provider cleanup attempted"
-
-    - name: Assert local provider was deleted
+    - name: Assert local provider was deleted by ID (from hub Secret)
       ansible.builtin.assert:
         that:
           - _call_log | selectattr('path', 'search', 'localproviders/') | selectattr('method', 'equalto', 'DELETE') | list | length > 0
         fail_msg: "No local provider DELETE call found — orphaned provider not cleaned up"
-        success_msg: "Local provider deleted"
-
-    - name: Verify mock VMS has no remaining local providers for this tenant
-      ansible.builtin.uri:
-        url: "https://127.0.0.1:18443/api/localproviders/?name=provider-test-teardown"
-        validate_certs: false
-        method: GET
-        return_content: true
-      register: _td_lp_check
-
-    - name: Assert no orphaned local providers remain
-      ansible.builtin.assert:
-        that:
-          - _td_lp_check.json | length == 0
-        fail_msg: "Orphaned local provider 'provider-test-teardown' still exists in VMS"
-        success_msg: "No orphaned local providers"
+        success_msg: "Local provider deleted by ID from hub Secret"
 
 # ── Cleanup: Best-effort removal of any remaining resources ──
 - name: "Storage Provider Teardown - Final cleanup"

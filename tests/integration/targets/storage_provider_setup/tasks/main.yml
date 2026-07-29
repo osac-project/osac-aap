@@ -20,6 +20,7 @@
   vars:
     tenant_name: "test-setup"
     tenant_namespace: "osac-system"
+    tenant_uid: "test-uid-setup"
     storage_provider_tiers:
       - name: default
         protocol: nfs
@@ -101,6 +102,7 @@
           vip_pool_name: "{{ _hub_secret.resources[0].data.vip_pool_name | b64decode }}"
           vast_endpoint: "{{ _hub_secret.resources[0].data.vast_endpoint | b64decode }}"
           storage_provider_type: "{{ _hub_secret.resources[0].data.storage_provider_type | b64decode }}"
+          tenant_uid_hash: "{{ _hub_secret.resources[0].data.tenant_uid_hash | b64decode }}"
 
     - name: Assert hub Secret has tenant manager name
       ansible.builtin.assert:
@@ -145,6 +147,13 @@
           - _secret_data.storage_provider_type == "vast"
         fail_msg: "Expected storage_provider_type 'vast', got '{{ _secret_data.storage_provider_type }}'"
         success_msg: "storage_provider_type correct"
+
+    - name: Assert hub Secret has tenant UID hash
+      ansible.builtin.assert:
+        that:
+          - _secret_data.tenant_uid_hash == "6ee13f1b"
+        fail_msg: "Expected tenant_uid_hash '6ee13f1b', got '{{ _secret_data.tenant_uid_hash }}'"
+        success_msg: "tenant_uid_hash correct"
 
     - name: Assert hub Secret labels
       ansible.builtin.assert:

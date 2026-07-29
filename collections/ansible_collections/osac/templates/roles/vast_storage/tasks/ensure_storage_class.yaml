@@ -4,13 +4,6 @@
 # Admin credentials are loaded (via read_credentials.yaml) for VMS API calls
 # but are NEVER written into the CSI Secret or any tenant-namespace resource.
 
-- name: Fail if provisioning target is not yet supported
-  when: _provisioning_target != 'vmaas'
-  ansible.builtin.fail:
-    msg: >-
-      VAST storage provisioning for target '{{ _provisioning_target }}' is not yet
-      implemented. Only 'vmaas' is currently supported.
-
 - name: Assert _provider_tiers is defined and non-empty
   ansible.builtin.assert:
     that:
@@ -70,6 +63,36 @@
 - name: Provision StorageClasses and CSI resources
   when: not (_vast_all_sc_exist | bool)
   block:
+    - name: Discover cluster name from target cluster infrastructure
+      when: _cluster_name is not defined or _cluster_name | length == 0
+      block:
+        - name: Query OpenShift infrastructure object for cluster name
+          kubernetes.core.k8s_info:
+            kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
+            api_version: config.openshift.io/v1
+            kind: Infrastructure
+            name: cluster
+          register: _infra_result
+
+        - name: Set cluster name from infrastructure object
+          ansible.builtin.set_fact:
+            _cluster_name: "{{ _infra_result.resources[0].status.infrastructureName }}"
+          when: >-
+            _infra_result.resources | length > 0 and
+            _infra_result.resources[0].status.infrastructureName is defined
+
+    - name: Fail if cluster name could not be determined
+      ansible.builtin.fail:
+        msg: >-
+          Could not discover the cluster name from infrastructure.config.openshift.io/cluster
+          on the target cluster. Verify the cluster is reachable and the Infrastructure
+          CRD is available.
+      when: _cluster_name is not defined or _cluster_name | default('') | length == 0
+
+    - name: Sanitize cluster name for volume naming
+      ansible.builtin.set_fact:
+        _cluster_name: "{{ _cluster_name | lower | regex_replace('[^a-z0-9.-]', '') | truncate(63, True, '', 0) }}"
+
     - name: Read per-tenant credentials and config from hub Secret
       ansible.builtin.include_tasks: read_tenant_credentials.yaml
 
@@ -115,6 +138,15 @@
 
     # ── K8s resources: CSI Secret, StorageClasses, VolumeSnapshotClasses ──
 
+    - name: Ensure tenant_namespace exists on target cluster
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ tenant_namespace }}"
+
     - name: Set CSI Secret resource name
       ansible.builtin.set_fact:
         _vast_csi_secret_name: "vast-csi-{{ tenant_name }}"
@@ -125,18 +157,16 @@
       no_log: true
 
     # CSI Secret uses per-tenant Manager username/password — NEVER admin creds.
-    # The 'tenant' field is intentionally OMITTED. Including it causes the CSI
-    # driver to set X-Tenant-Name on the /api/v1/token/ login call, which
-    # tenant-scopes the JWT and blocks GET /api/v1/versions/ — a prerequisite
-    # check the driver makes before every storage operation. Tenant scoping is
-    # handled by the tenant_name StorageClass parameter and the role permissions.
+    # The 'tenant' field is REQUIRED — TENANT_ADMIN users must authenticate
+    # with X-Tenant-Name, and the CSI driver sets this header from the Secret's
+    # tenant field on /api/v1/token/ login calls.
     - name: Build CSI Secret data
       ansible.builtin.set_fact:
         _vast_csi_secret_data:
           username: "{{ _vast_tenant_csi_username }}"
           password: "{{ _vast_tenant_csi_password }}"
           endpoint: "{{ _vast_tenant_endpoint }}"
-          # tenant: "{{ tenant_name }}"
+          tenant: "{{ tenant_name }}"
       no_log: true
 
     - name: Add passphrase to CSI Secret data for block encryption
@@ -167,20 +197,28 @@
           name: "{{ _vast_csi_secret_name }}"
           namespace: "{{ tenant_namespace }}"
 
+    - name: Build VIP pool parameters for StorageClass
+      ansible.builtin.set_fact:
+        _vast_sc_vip_params: >-
+          {{ {'vip_pool_fqdn': _vast_tenant_vip_pool_fqdn, 'vip_pool_fqdn_random_prefix': 'false'}
+             if (_vast_tenant_vip_pool_fqdn | default('') | length > 0)
+             else {'vip_pool_name': _vast_tenant_vip_pool} }}
+
     - name: Build base StorageClass parameters (shared by NFS and block)
       ansible.builtin.set_fact:
-        _vast_sc_base_params:
-          vip_pool_name: "{{ _vast_tenant_vip_pool }}"
-          csi.storage.k8s.io/provisioner-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/provisioner-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/controller-publish-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/controller-publish-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/node-publish-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/node-publish-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/controller-expand-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/controller-expand-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
-          csi.storage.k8s.io/node-expand-secret-name: "{{ _vast_csi_secret_ref.name }}"
-          csi.storage.k8s.io/node-expand-secret-namespace: "{{ _vast_csi_secret_ref.namespace }}"
+        _vast_sc_base_params: >-
+          {{ _vast_sc_vip_params | combine({
+          'csi.storage.k8s.io/provisioner-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/provisioner-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/controller-publish-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/controller-publish-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/node-publish-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/node-publish-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/controller-expand-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/controller-expand-secret-namespace': _vast_csi_secret_ref.namespace,
+          'csi.storage.k8s.io/node-expand-secret-name': _vast_csi_secret_ref.name,
+          'csi.storage.k8s.io/node-expand-secret-namespace': _vast_csi_secret_ref.namespace
+          }) }}
 
     - name: Build block host encryption JSON when passphrase is available
       ansible.builtin.set_fact:
@@ -228,8 +266,10 @@
           provisioner: "{{ vast_storage_csi_provisioner_map[item.protocol] }}"
           parameters: >-
             {{ _vast_sc_base_params
-               | combine({'root_export': '/osac/' ~ tenant_name ~ '/' ~ item.name})
+               | combine({'root_export': '/osac-' ~ tenant_name ~ '-' ~ _vast_tenant_uid_hash ~ '/' ~ item.name})
                | combine({'view_policy': _vast_nfs_view_policy})
+               | combine({'volumeNameFormat': 'csi:{id}:{namespace}:{name}:' ~ _cluster_name})
+               | combine({'ephemeralVolumeNameFormat': 'eph:{id}:{namespace}:{name}:' ~ _cluster_name})
                | combine(({'qos_policy': item.qos_policy} if item.qos_policy is defined else {})) }}
           reclaimPolicy: Delete
           volumeBindingMode: Immediate
@@ -254,12 +294,12 @@
           provisioner: "{{ vast_storage_csi_provisioner_map[item.protocol] }}"
           parameters: >-
             {{ _vast_sc_base_params
-               | combine({'subsystem': 'view-' ~ tenant_name ~ '-' ~ item.name,
+               | combine({'subsystem': 'view-' ~ tenant_name ~ '-' ~ _vast_tenant_uid_hash ~ '-' ~ item.name,
                           'tenant_name': tenant_name})
+               | combine({'volumeGroup': _cluster_name ~ '/{namespace}'})
                | combine({'csi.storage.k8s.io/node-stage-secret-name': _vast_csi_secret_ref.name})
                | combine({'csi.storage.k8s.io/node-stage-secret-namespace': _vast_csi_secret_ref.namespace})
-               | combine(_vast_sc_block_encryption_params | default({}))
-               | combine(({'qos_policy': item.qos_policy} if item.qos_policy is defined else {})) }}
+               | combine(_vast_sc_block_encryption_params | default({})) }}
           reclaimPolicy: Delete
           volumeBindingMode: WaitForFirstConsumer
       loop: "{{ _vast_block_tiers }}"
@@ -310,10 +350,13 @@
         vast_username: ""
         vast_password: ""
         _vast_tenant_id: ""
+        _vast_tenant_uid_hash: ""
         _vast_tenant_csi_username: ""
         _vast_tenant_csi_password: ""
         _vast_tenant_endpoint: ""
         _vast_tenant_vip_pool: ""
+        _vast_tenant_vip_pool_fqdn: ""
+        _vast_sc_vip_params: {}
         _vast_tenant_config_secret: {}
         _vast_vms_conn: {}
         _vast_block_encryption_passphrase: ""

@@ -1,42 +1,8 @@
 ---
-- name: Fail if host class is not openstack
-  ansible.builtin.fail:
-    msg: "bm_host_agent_provisioning requires hostClass 'openstack', got '{{ bare_metal_instance.spec.hostClass | default('') }}'"
-  when: bare_metal_instance.spec.hostClass | default('') != "openstack"
-
-- name: Fail if network class is not openstack
-  ansible.builtin.fail:
-    msg: "bm_host_agent_provisioning requires networkClass 'openstack', got '{{ bare_metal_instance.spec.networkClass | default('') }}'"
-  when: bare_metal_instance.spec.networkClass | default('') != "openstack"
-
-- name: Parse template parameters
-  ansible.builtin.set_fact:
-    template_params: "{{ bare_metal_instance.spec.templateParameters | from_json }}"
-
-- name: Get bare metal node information
-  openstack.cloud.baremetal_node_info:
-    name: "{{ bare_metal_instance.spec.externalHostID }}"
-  register: baremetal_node_result
-
-- name: Fail if node not found
-  ansible.builtin.fail:
-    msg: "Bare metal node '{{ bare_metal_instance.spec.externalHostID }}' not found in OpenStack"
-  when: baremetal_node_result.nodes | length == 0
-
-- name: Extract node info
-  ansible.builtin.set_fact:
-    node_info: "{{ baremetal_node_result.nodes[0] }}"
-
-- name: Display current node state
-  ansible.builtin.debug:
-    msg:
-      - "Node: {{ node_info.name }}"
-      - "Provision State: {{ node_info.provision_state }}"
-
-- name: Fail if image URL is missing
-  ansible.builtin.fail:
-    msg: "templateParameters.imageURL is required for image provisioning"
-  when: template_params.imageURL | default('') | length == 0
+- name: Get bare metal node info
+  ansible.builtin.include_role:
+    name: osac.service.openstack_bm_node
+    tasks_from: preflight
 
 - name: Handle already-active node
   when: node_info.provision_state == "active"
@@ -56,7 +22,8 @@
         - name: Undeploy node to re-provision with new image
           openstack.cloud.baremetal_node_action:
             name: "{{ bare_metal_instance.spec.externalHostID }}"
-            undeploy: true
+            state: absent
+            deploy: false
             wait: true
 
         - name: Refresh node info after undeploy
@@ -68,7 +35,12 @@
           ansible.builtin.set_fact:
             node_info: "{{ baremetal_node_result.nodes[0] }}"
 
-- name: Transition node to available and deploy
+- name: Prepare node for deploy
+  ansible.builtin.include_role:
+    name: osac.service.openstack_bm_node
+    tasks_from: prepare_for_deploy
+
+- name: Deploy node with ramdisk image
   when: not (node_already_has_image | default(false))
   block:
     - name: Move node to manageable state
@@ -87,7 +59,7 @@
 
     - name: Set provisioning network for node
       ansible.builtin.include_role:
-        name: massopencloud.esi.l2
+        name: osac.esi.l2
         tasks_from: set_networks_for_node
       vars:
         node: "{{ bare_metal_instance.spec.externalHostID }}"
@@ -111,9 +83,9 @@
         deploy: true
         wait: true
 
-- name: Ensure node is on agent private network
+- name: Set agent private network
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: set_networks_for_node
   vars:
     node: "{{ bare_metal_instance.spec.externalHostID }}"

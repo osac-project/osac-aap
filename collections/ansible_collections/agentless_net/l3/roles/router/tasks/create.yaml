@@ -34,9 +34,15 @@
   when: router_ns_exists.rc != 0
   changed_when: true
 
-- name: Check if VLAN sub-interface exists
+- name: Check if VLAN sub-interface exists on host
   ansible.builtin.raw: ip link show {{ router_trunk_interface }}.{{ router_vlan_id }} 2>/dev/null
-  register: router_vlan_if_exists
+  register: router_vlan_if_on_host
+  changed_when: false
+  failed_when: false
+
+- name: Check if VLAN sub-interface exists in namespace
+  ansible.builtin.raw: ip netns exec {{ router_name }} ip link show {{ router_trunk_interface }}.{{ router_vlan_id }} 2>/dev/null
+  register: router_vlan_if_in_ns
   changed_when: false
   failed_when: false
 
@@ -45,18 +51,18 @@
     ip link add link {{ router_trunk_interface }}
     name {{ router_trunk_interface }}.{{ router_vlan_id }}
     type vlan id {{ router_vlan_id }}
-  when: router_vlan_if_exists.rc != 0
+  when: router_vlan_if_on_host.rc != 0 and router_vlan_if_in_ns.rc != 0
   changed_when: true
 
 - name: Ensure VLAN sub-interface is up
   ansible.builtin.raw: ip link set {{ router_trunk_interface }}.{{ router_vlan_id }} up
+  when: router_vlan_if_in_ns.rc != 0
   changed_when: false
 
 - name: Move VLAN sub-interface into namespace
   ansible.builtin.raw: ip link set {{ router_trunk_interface }}.{{ router_vlan_id }} netns {{ router_name }}
-  register: router_move_if_result
-  changed_when: router_move_if_result.rc == 0
-  failed_when: router_move_if_result.rc != 0 and 'File exists' not in (router_move_if_result.stderr | default(''))
+  when: router_vlan_if_in_ns.rc != 0
+  changed_when: true
 
 - name: Configure internal interface inside namespace
   ansible.builtin.raw: |

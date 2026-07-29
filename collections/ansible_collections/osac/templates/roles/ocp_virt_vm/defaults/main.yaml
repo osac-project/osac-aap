@@ -28,9 +28,10 @@ default_arg_specs:
   exposed_ports: "22/tcp"
 
 # Defaults for ComputeInstance spec fields (Linux profile).
+# cores/memoryGiB are not defaulted here: they are resolved by osac-operator
+# from spec.instanceType (mandatory) and are always present on the CR by the
+# time this role runs.
 default_spec:
-  cores: 2
-  memoryGiB: 2
   bootDisk:
     sizeGiB: 10
   image:
@@ -42,8 +43,6 @@ _guest_os_windows_default_arg_specs:
   exposed_ports: "3389/tcp"
 
 _guest_os_windows_default_spec:
-  cores: 2
-  memoryGiB: 4
   bootDisk:
     sizeGiB: 40
   image:

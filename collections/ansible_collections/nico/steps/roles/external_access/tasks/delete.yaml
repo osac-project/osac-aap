@@ -27,6 +27,8 @@
       data: "{{ ip_registry_info.resources[0].data | dict2items | rejectattr('value', 'equalto', external_access_name) | items2dict }}"
 
 - name: Delete dns records
+  when: >-
+    external_access_base_domain in external_access_supported_base_domains | default([])
   ansible.builtin.include_role:
     name: dns.api.dns
     tasks_from: delete

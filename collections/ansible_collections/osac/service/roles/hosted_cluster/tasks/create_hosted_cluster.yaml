@@ -87,6 +87,29 @@
     state: present
     definition: "{{ hosted_cluster_definition }}"
 
+# HyperShift's Agent-platform CAPI provider requires a Role named exactly
+# "capi-provider-role" in the Agent namespace (agentNamespace above, e.g.
+# "hardware-inventory") -- hypershift-operator creates the matching
+# RoleBinding itself once this Role exists. No "secrets" access is needed:
+# HyperShift's own auto-created "capi-provider" Role in the
+# hosted-control-plane namespace already covers that. See the PR description
+# for supporting references. Centralized here (rather than per-backend under
+# cluster_infra) since every backend needs this identically, and this step
+# always runs before "Create cluster infrastructure".
+- name: Create CAPI provider Role for agent access
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: capi-provider-role
+        namespace: "{{ hosted_cluster_default_agent_namespace }}"
+      rules:
+        - apiGroups: ["agent-install.openshift.io"]
+          resources: ["agents"]
+          verbs: ["*"]
+
 - name: Set nodepool prefix
   ansible.builtin.set_fact:
     nodepool_prefix: "nodepool-{{ hosted_cluster_name }}"

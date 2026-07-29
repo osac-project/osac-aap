@@ -21,12 +21,6 @@ spec:
               GATEWAY=$?
               echo "GATEWAY exit code: $GATEWAY"
 
-              curl -skf \
-                -u "${AAP_EDA_ADMIN}:${AAP_EDA_PASSWORD}" \
-              http://${AAP_EDA_HOSTNAME}:8000/api/eda/v1/status/ | grep -qi 'good';
-              EDA_GATEWAY=$?
-              echo "EDA_GATEWAY exit code: $EDA_GATEWAY"
-
               curl -skf http://${AAP_CONTROLLER_GATEWAY_HOSTNAME}/api/v2/ping/ \
                 | grep -q 'version';
               CONTROLLER_GATEWAY=$?
@@ -39,7 +33,7 @@ spec:
               AUTH_UPSTREAM=$?
               echo "AUTH_UPSTREAM exit code: $AUTH_UPSTREAM (HTTP $auth_code)"
 
-              if [ $GATEWAY -eq 0 ] && [ $EDA_GATEWAY -eq 0 ] && [ $CONTROLLER_GATEWAY -eq 0 ] && [ $AUTH_UPSTREAM -eq 0 ];
+              if [ $GATEWAY -eq 0 ] && [ $CONTROLLER_GATEWAY -eq 0 ] && [ $AUTH_UPSTREAM -eq 0 ];
               then
                 echo "AAP controller is ready!"
                 exit 0
@@ -52,15 +46,6 @@ spec:
         env:
         - name: AAP_GATEWAY_HOSTNAME
           value: "osac-aap"
-        - name: AAP_EDA_HOSTNAME
-          value: "osac-aap-eda-api"
-        - name: AAP_EDA_ADMIN
-          value: "admin"
-        - name: AAP_EDA_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: osac-aap-eda-admin-password
-              key: password
         - name: AAP_CONTROLLER_GATEWAY_HOSTNAME
           value: "osac-aap-controller-service"
       containers:

@@ -57,40 +57,68 @@ argument_specs:
         required: true
         description: SecurityGroup CR from fulfillment-api via EDA payload
 
-  create_public_ip_pool:
+  create_external_ip:
     options:
-      public_ip_pool:
+      external_ip:
         type: dict
         required: true
-        description: PublicIPPool CR from fulfillment-api via EDA payload
+        description: ExternalIP CR from fulfillment-api via EDA payload
       template_parameters:
         type: dict
         description: Template-specific parameters (reserved for future use)
         options: {}
         default: {}
 
-  delete_public_ip_pool:
+  delete_external_ip:
     options:
-      public_ip_pool:
+      external_ip:
         type: dict
         required: true
-        description: PublicIPPool CR from fulfillment-api via EDA payload
+        description: ExternalIP CR from fulfillment-api via EDA payload
 
-  create_public_ip:
+  create_nat_gateway:
     options:
-      public_ip:
+      nat_gateway:
         type: dict
         required: true
-        description: PublicIP CR from fulfillment-api via EDA payload
+        description: NATGateway CR from fulfillment-api via EDA payload
       template_parameters:
         type: dict
         description: Template-specific parameters (reserved for future use)
         options: {}
         default: {}
 
-  delete_public_ip:
+  delete_nat_gateway:
     options:
-      public_ip:
+      nat_gateway:
         type: dict
         required: true
-        description: PublicIP CR from fulfillment-api via EDA payload
+        description: NATGateway CR from fulfillment-api via EDA payload
+
+  create_network_attachment:
+    options:
+      network_attachment:
+        type: dict
+        required: true
+        description: >-
+          Network attachment parameters from dispatcher. Contains host_name
+          (Netris server name), logical_interface_name (Netris port name),
+          and subnet_ref (OSAC Subnet UUID). If the port is already on
+          another V-Net (e.g. parking network), it is removed first.
+      template_parameters:
+        type: dict
+        description: Template-specific parameters (reserved for future use)
+        options: {}
+        default: {}
+
+  delete_network_attachment:
+    options:
+      network_attachment:
+        type: dict
+        required: true
+        description: >-
+          Network attachment parameters from dispatcher. Contains host_name
+          (Netris server name), logical_interface_name (Netris port name),
+          subnet_ref (OSAC Subnet UUID), and optional parking_vnet_name
+          (V-Net to return port to after removal — used by CaaS; omit for
+          BMaaS to leave port detached).

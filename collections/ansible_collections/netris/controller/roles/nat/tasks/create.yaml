@@ -81,6 +81,7 @@
     timeout: "{{ netris_timeout | default(30) }}"
     validate_certs: "{{ netris_validate_certs | default(true) }}"
   register: _nat_create_resp
+  no_log: true
   when: _existing_nat is not defined or _existing_nat is none
 
 - name: Set nat facts from create response

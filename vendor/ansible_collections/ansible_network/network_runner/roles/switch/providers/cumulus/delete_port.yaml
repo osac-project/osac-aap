@@ -1,6 +1,5 @@
 ---
-- name: "cumulus: remove port configuration using nvue"
+- name: "cumulus: remove port VLAN configuration using nvue"
   raw: |
     nv unset interface {{ port_name }} bridge domain
-    nv set interface {{ port_name }} link state down
     nv config apply -y

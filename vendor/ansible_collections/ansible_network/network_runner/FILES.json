@@ -144,7 +144,7 @@
    "name": "roles/switch/providers/cumulus/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "87f130043558e5422b89cbf1c1943a07ebe1894b7157f2e4500bcced853e3f9e",
+   "chksum_sha256": "66eaf890170ba8003484a36500071de885ad37fd46cb5e14c0f1c7a0b626d814",
    "format": 1
   },
   {
@@ -221,7 +221,7 @@
    "name": "roles/switch/providers/dellemc.os9.os9/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "97f2c40f5fdf3a916195a6d09b76496677b6e93eb13424b19b06b4f83bdf9d62",
+   "chksum_sha256": "5436aecf51f5b30e0c9b69f384bfb6621963a53a6f099b80fa875ea60b528cfe",
    "format": 1
   },
   {
@@ -298,7 +298,7 @@
    "name": "roles/switch/providers/dellos10/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ab330c1b7dc84085ef115c5436e5632584ae7eaec93346841f8813df526ced0e",
+   "chksum_sha256": "8753dc548540f6430c8f76bca5f4510d8fed8d5adcef0c54350923693ca934ae",
    "format": 1
   },
   {
@@ -529,7 +529,7 @@
    "name": "roles/switch/providers/fos/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "fd1a23f36abb99b33b69377b6f096d83b2f8ba0a91e6861d4bae772e65c60fd2",
+   "chksum_sha256": "8406582f61843451c5d52666d0196b52517b147ccb095e4fe6a988fb54e80d3a",
    "format": 1
   },
   {
@@ -606,7 +606,7 @@
    "name": "roles/switch/providers/junos/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "0f51264a2b836d571e8e5a27b2b56c6048dfe1e4840030c029b6ae88afe4dbee",
+   "chksum_sha256": "22766eab2faa2c87f9c2e78fe1f28bcb85d0b55df6da3cbe70d9d021c1df0004",
    "format": 1
   },
   {
@@ -683,7 +683,7 @@
    "name": "roles/switch/providers/nos/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "34101c9229a65d97d879927f6982a3ffaadfa433c7b00f7d7c530c6ab2345177",
+   "chksum_sha256": "7e3b85d065b1ff1df6cc06ba8e59fdb13a93a8cb2f396fc7407b9ec6660e7b4b",
    "format": 1
   },
   {
@@ -760,7 +760,7 @@
    "name": "roles/switch/providers/nxos/delete_port.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "bd21f7e7aea9f63d34edcbdf5053fe114cba038869446390a4fac1d98ecb7775",
+   "chksum_sha256": "3be79b53d3a543a1055cdc0e725a31a70bc9e3b6b5d91000a097bf84e5ab28c2",
    "format": 1
   },
   {
@@ -998,7 +998,7 @@
    "name": "roles/switch/templates/eos/delete_port.j2",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "2bb8a9820b18a12aab56ab29e74909bd53f17f4bab0be6f23164f8e27eea69a1",
+   "chksum_sha256": "38beea0bac84f2b6a4b0a3e7e0e41589ad7fade172892636b0cd0cee720c34d6",
    "format": 1
   },
   {

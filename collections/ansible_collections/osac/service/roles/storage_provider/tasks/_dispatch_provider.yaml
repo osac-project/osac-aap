@@ -8,7 +8,13 @@
 #
 # Uses from play scope:
 #   storage_provider_tiers              — full tier list (filtered here per provider)
-#   storage_provider_provisioning_target — provisioning target enum
+#   _cluster_name                        — optional target cluster name override (for volume
+#                                          naming); ensure_storage_class self-discovers it from
+#                                          the target cluster's Infrastructure object when unset
+#   _remote_kubeconfig_insecure          — set true by the caller when _remote_kubeconfig's
+#                                          serving cert can't be validated against its bundled
+#                                          CA (e.g. HCP guest clusters reached via an external
+#                                          Route); TLS verification stays on otherwise
 
 - name: "Compute filtered tiers for current provider"
   ansible.builtin.set_fact:
@@ -27,14 +33,22 @@
       None of the requested tiers ({{ _requested_tiers | join(', ') }}) match
       provider '{{ _current_provider }}' tiers. Check STORAGE_TIERS configuration.
 
-- name: "Dispatch provider storage action"
-  ansible.builtin.include_role:
-    name: "osac.templates.{{ _current_provider }}_storage"
-    tasks_from: "{{ _dispatch_action }}"
-    public: true
-  vars:
-    _provider_tiers: "{{ _computed_provider_tiers }}"
-    _provisioning_target: "{{ storage_provider_provisioning_target }}"
+- name: "Dispatch provider storage action with remote kubeconfig routing"
+  module_defaults:
+    kubernetes.core.k8s:
+      kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
+      validate_certs: "{{ false if (_remote_kubeconfig_insecure | default(false) | bool) else omit }}"
+    kubernetes.core.k8s_info:
+      kubeconfig: "{{ _remote_kubeconfig | default(omit) }}"
+      validate_certs: "{{ false if (_remote_kubeconfig_insecure | default(false) | bool) else omit }}"
+  block:
+    - name: "Include provider storage role"
+      ansible.builtin.include_role:
+        name: "osac.templates.{{ _current_provider }}_storage"
+        tasks_from: "{{ _dispatch_action }}"
+        public: true
+      vars:
+        _provider_tiers: "{{ _computed_provider_tiers }}"
 
 - name: "Accumulate tenant config after dispatch (setup only)"
   ansible.builtin.set_fact:

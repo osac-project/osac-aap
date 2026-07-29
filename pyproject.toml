@@ -22,7 +22,15 @@ dependencies = [
 ]
 
 [dependency-groups]
-development = ["ansible-lint>=25.2.1", "antsibull-changelog>=0.33.0"]
+development = [
+  "ansible-lint>=25.2.1",
+  "antsibull-changelog>=0.33.0",
+  "pytest>=9.1.1",
+  "pytest-cov>=7.1.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["collections/ansible_collections/osac/service/plugins/filter"]
 
 [tool.uv.sources]
 python-esiclient = { git = "https://github.com/cci-moc/python-esiclient.git", rev = "1.4" }

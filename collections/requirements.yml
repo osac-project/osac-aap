@@ -15,8 +15,6 @@ collections:
     version: "1.0.0"
   - name: ansible.controller
     version: "4.6.11"
-  - name: ansible.eda
-    version: "2.8.2"
   - name: infra.aap_configuration
     version: "4.4.0"
   - name: nvidia.bare_metal
@@ -30,4 +28,4 @@ collections:
   - name: ansible_network.network_runner
     type: git
     source: https://github.com/ybettan/network-runner
-    version: 0.3.6
+    version: 0.3.7

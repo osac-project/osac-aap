@@ -221,7 +221,7 @@ osac-aap-moc/
     cluster_order: "{{ ansible_eda.event.payload }}"
 
     # Use MOC template
-    template_id_override: osac.templates.ocp_4_17_small
+    template_id_override: osac.templates.ocp_small
 
     # Generic hooks for monitoring
     hook_workflow_start:

@@ -42,10 +42,10 @@
       ansible.builtin.assert:
         that:
           - osac_cluster_templates is defined
-          - osac_cluster_templates | length >= 2
-          - osac_cluster_templates | map(attribute='id') | list is superset(['osac.templates.ocp_4_17_small', 'osac.templates.ocp_4_17_small_github'])
+          - osac_cluster_templates | length >= 3
+          - osac_cluster_templates | map(attribute='id') | list is superset(['osac.templates.ocp_small', 'osac.templates.ocp_ci_small', 'osac.templates.ocp_4_20_small_nico'])
         fail_msg: >-
-          Expected at least 2 cluster templates (ocp_4_17_small, ocp_4_17_small_github).
+          Expected at least 3 cluster templates (ocp_small, ocp_ci_small, ocp_4_20_small_nico).
           Got: {{ osac_cluster_templates | default([]) | map(attribute='id') | list }}
         success_msg: "Found {{ osac_cluster_templates | length }} cluster template(s): {{ osac_cluster_templates | map(attribute='id') | list }}"
       when: test_discover_all | default(false) | bool
@@ -71,7 +71,7 @@
           - "'fc430' in item.node_sets"
         fail_msg: "Template '{{ item.id }}' expected to have fc430 node set"
         success_msg: "Template '{{ item.id }}' has fc430 node set"
-      loop: "{{ osac_cluster_templates | selectattr('id', 'in', ['osac.templates.ocp_4_17_small', 'osac.templates.ocp_4_17_small_github']) | list }}"
+      loop: "{{ osac_cluster_templates | selectattr('id', 'in', ['osac.templates.ocp_small']) | list }}"
       loop_control:
         label: "{{ item.id }}"
       when: test_discover_all | default(false) | bool
@@ -107,9 +107,11 @@
           - item.title is defined
           - item.implementation_strategy is defined
           - item.implementation_strategy | length > 0
+          - item.fabric_manager is defined
+          - item.fabric_manager | length > 0
           - item.capabilities is defined
         fail_msg: "Network class '{{ item.id }}' missing required fields"
-        success_msg: "Network class '{{ item.id }}' has correct structure (strategy={{ item.implementation_strategy }})"
+        success_msg: "Network class '{{ item.id }}' has correct structure (strategy={{ item.implementation_strategy }}, fabric_manager={{ item.fabric_manager }})"
       loop: "{{ osac_network_classes }}"
       loop_control:
         label: "{{ item.id }}"

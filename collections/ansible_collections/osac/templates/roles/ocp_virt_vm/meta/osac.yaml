@@ -9,8 +9,6 @@ description: >
 template_type: compute_instance
 
 spec_defaults:
-  cores: 2
-  memory_gib: 2
   boot_disk:
     size_gib: 10
   image:

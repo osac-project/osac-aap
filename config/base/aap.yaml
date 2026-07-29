@@ -6,7 +6,7 @@ spec:
   controller:
     disabled: false
   eda:
-    disabled: false
+    disabled: true
   hub:
     disabled: true
   image_pull_policy: IfNotPresent

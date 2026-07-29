@@ -50,4 +50,3 @@
       vars:
         storage_provider_action: teardown_backend
         storage_provider_tiers: "{{ _storage_tiers }}"
-        storage_provider_provisioning_target: vmaas

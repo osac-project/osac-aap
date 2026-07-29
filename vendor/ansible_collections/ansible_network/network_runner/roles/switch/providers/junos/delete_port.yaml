@@ -1,9 +1,9 @@
 ---
-- name: "junos: delete port"
+- name: "junos: remove port VLAN configuration"
   junos_command:
     commands:
       - config
-      - "delete interfaces {{ port_name }}"
+      - "delete interfaces {{ port_name }} unit 0 family ethernet-switching"
       - commit
   register: result
   retries: "{{ _retries }}"

@@ -5,7 +5,7 @@ metadata:
   name: test-cluster
   namespace: osac-system
 spec:
-  templateID: osac.templates.ocp_4_17_small
+  templateID: osac.templates.ocp_small
   templateParameters: |
     {
       "pull_secret": "test-pull-secret-content",

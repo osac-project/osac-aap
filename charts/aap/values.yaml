@@ -5,7 +5,7 @@ aap:
     controller:
       disabled: false
     eda:
-      disabled: false
+      disabled: true
     hub:
       disabled: true
     lightspeed:
@@ -26,7 +26,41 @@ configAsCode:
   eeImage: ""
   projectGitUri: ""
   projectGitBranch: ""
+  importAgentsEnabled: false
+  importBcmAgentsEnabled: false
+  manifest:
+    create: false
+    data: {}
+
+importAgents:
+  servers: []
+
+importBcmAgents:
+  cert: ""
+  key: ""
 
 serviceAccounts:
   osacSa: "osac-sa"
   templatePublisher: "template-publisher"
+
+apiToken:
+  create: true
+
+instanceGroups:
+  clusterFulfillment:
+    enabled: false
+    config: {}
+    secret: {}
+  networkFulfillment:
+    enabled: false
+    config: {}
+    secret: {}
+  storageFulfillment:
+    enabled: false
+    config: {}
+    secret: {}
+  publishTemplates:
+    enabled: false
+    config:
+      OSAC_TEMPLATE_COLLECTIONS: ""
+      OSAC_FULFILLMENT_SERVICE_URI: ""

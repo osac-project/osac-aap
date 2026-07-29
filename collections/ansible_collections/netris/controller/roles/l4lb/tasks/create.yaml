@@ -33,6 +33,7 @@
     status_code: [200, 201]
     validate_certs: "{{ netris_validate_certs | default(true) }}"
   register: _l4lb_create_resp
+  no_log: true
 
 - name: Set l4lb_id from create response
   ansible.builtin.set_fact:

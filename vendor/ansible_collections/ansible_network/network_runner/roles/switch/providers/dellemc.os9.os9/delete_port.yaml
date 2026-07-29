@@ -1,6 +1,8 @@
 ---
-- name: "dellemc.os9: reset interface to default (no switchport and shutdown)"
+- name: "dellemc.os9: remove port VLAN configuration"
   dellemc.os9.os9_config:
     lines:
-      - "default interface {{ port_name }}"
+      - "no switchport"
+    parents:
+      - "interface {{ port_name }}"
   connection: network_cli

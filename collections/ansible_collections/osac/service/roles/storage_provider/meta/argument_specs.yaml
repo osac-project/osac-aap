@@ -34,19 +34,6 @@ argument_specs:
           without touching backend resources or hub Secret. teardown_backend
           removes backend resources (VAST tenant, views, quotas) and hub
           Secret without touching cluster-side K8s resources.
-      storage_provider_provisioning_target:
-        type: str
-        required: true
-        choices:
-          - vmaas
-          - hcp_control_plane
-          - hcp_worker_root
-          - hcp_data_plane
-        description: >
-          Provisioning context. vmaas is the default VMaaS path.
-          CaaS targets (hcp_control_plane, hcp_worker_root, hcp_data_plane)
-          route to HyperShift integration points (stubbed until HyperShift
-          storage integration is available).
       storage_provider_block_encryption_passphrase:
         type: str
         required: false

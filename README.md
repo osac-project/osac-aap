@@ -42,7 +42,7 @@ pluggable backends:
 | `netris` | Netris Controller API | Netris |
 | `openstack` | OpenStack Neutron | Neutron |
 
-Plus MetalLB-based PublicIPPool / PublicIP management (`metallb_l2`).
+Plus MetalLB-based ExternalIPPool / ExternalIP management (`metallb_l2`).
 
 ### Compute
 
@@ -61,9 +61,9 @@ Plus MetalLB-based PublicIPPool / PublicIP management (`metallb_l2`).
 
 ### Clusters
 
-- **`ocp_4_17_small`**, **`ocp_4_17_small_github`**, **`ocp_4_20_small_nico`**,
-  **`ocp_ci_small`** — OpenShift cluster templates with different sizes,
-  authentication methods, and infrastructure backends (ESI, NICo).
+- **`ocp_small`**, **`ocp_4_20_ai_maas`**, **`ocp_ci_small`** — OpenShift cluster
+  templates with different sizes, authentication methods, and infrastructure
+  backends (ESI, NICo).
 - Multi-step workflow playbooks for hosted cluster create / delete / post-install.
 
 ## Architecture

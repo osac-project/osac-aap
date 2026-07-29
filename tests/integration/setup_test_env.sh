@@ -93,8 +93,13 @@ kubectl create namespace openshift-cnv || true
 
 # 5. Create minimal HyperConverged CR for GPU passthrough tests
 echo "Creating HyperConverged CR for GPU passthrough tests..."
+# Created via v1, matching the version the ocp_virt_vm role's GPU passthrough
+# task prefers (and falls back from) and the version the test itself reads
+# through in baseline.yml. Creating through v1beta1 while reading/patching
+# through v1 lets the CRD's structural defaulting populate the object under
+# one version's schema and validate it under the other's on the next write.
 kubectl apply -f - <<HCEOF
-apiVersion: hco.kubevirt.io/v1beta1
+apiVersion: hco.kubevirt.io/v1
 kind: HyperConverged
 metadata:
   name: kubevirt-hyperconverged

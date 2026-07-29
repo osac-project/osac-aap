@@ -226,7 +226,8 @@ a server's resources.
 
 Waits for each node to boot the discovery ISO and register as an Agent (up to
 15 minutes per node). Then labels agents with `resource_class` and `rack`
-metadata from BCM.
+metadata from BCM. See [CaaS Agent Binding Labels](agent-labels.md) for the
+full label reference.
 
 ## Removing Nodes
 

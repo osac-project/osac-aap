@@ -57,5 +57,5 @@
       ansible.builtin.assert:
         that:
           - template_id is defined
-          - template_id == "osac.templates.ocp_4_17_small"
+          - template_id == "osac.templates.ocp_small"
         fail_msg: "Template ID not extracted correctly"

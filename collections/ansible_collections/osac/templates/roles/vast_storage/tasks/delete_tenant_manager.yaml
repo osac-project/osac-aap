@@ -1,5 +1,5 @@
 ---
-# Deletes the per-tenant VMS Manager and its CSI role during teardown.
+# Deletes the per-tenant VMS Manager and CSI role during teardown.
 # Uses ansible.builtin.uri because vastdata.vms has no modules for managers/roles.
 # ignore_errors throughout — best-effort cleanup, resources may already be deleted.
 #

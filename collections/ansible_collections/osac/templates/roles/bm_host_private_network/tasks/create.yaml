@@ -18,9 +18,17 @@
     msg: "templateParameters.privateNetwork is required"
   when: template_params.privateNetwork | default('') | length == 0
 
+- name: Wait for private network to exist in OpenStack
+  openstack.cloud.networks_info:
+    name: "{{ template_params.privateNetwork }}"
+  register: private_network_check
+  until: private_network_check.networks | length > 0
+  retries: 30
+  delay: 10
+
 - name: Attach node to private network
   ansible.builtin.include_role:
-    name: massopencloud.esi.l2
+    name: osac.esi.l2
     tasks_from: set_networks_for_node
   vars:
     node: "{{ bare_metal_instance.spec.externalHostID }}"

@@ -67,6 +67,7 @@
               osac.openshift.io/tenant: "test-ensuresc"
           type: Opaque
           stringData:
+            tenant_uid_hash: "d0f7f176"
             vast_tenant_id: "999"
             vast_local_provider_id: "1"
             vip_pool_name: "osac-test-pool"
@@ -95,6 +96,8 @@
   vars:
     tenant_name: "test-ensuresc"
     tenant_namespace: "osac-system"
+    _cluster_name: "test-cluster"
+    tenant_uid: "test-uid-12345"
     storage_provider_tiers:
       - name: default
         protocol: nfs
@@ -103,7 +106,6 @@
         protocol: block
         provider: vast
     storage_provider_action: ensure_storage_class
-    storage_provider_provisioning_target: vmaas
     storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"
     vast_storage_validate_certs: false
@@ -149,10 +151,12 @@
       ansible.builtin.assert:
         that:
           - _sc_result.resources[0].parameters.vip_pool_name == "osac-test-pool"
-          - _sc_result.resources[0].parameters.root_export == "/osac/test-ensuresc/default"
+          - _sc_result.resources[0].parameters.root_export == "/osac-test-ensuresc-d0f7f176/default"
           - "_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-name'] == 'vast-csi-test-ensuresc'"
           - "_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-namespace'] == 'osac-system'"
           - _sc_result.resources[0].parameters.view_policy == "osac-test-ensuresc-nfs"
+          - _sc_result.resources[0].parameters.volumeNameFormat == "csi:{id}:{namespace}:{name}:test-cluster"
+          - _sc_result.resources[0].parameters.ephemeralVolumeNameFormat == "eph:{id}:{namespace}:{name}:test-cluster"
         fail_msg: "StorageClass parameters incorrect: {{ _sc_result.resources[0].parameters }}"
         success_msg: "StorageClass parameters correct"
 
@@ -222,9 +226,10 @@
       ansible.builtin.assert:
         that:
           - _block_sc_result.resources[0].parameters.vip_pool_name == "osac-test-pool"
-          - _block_sc_result.resources[0].parameters.subsystem == "view-test-ensuresc-block-tier"
+          - _block_sc_result.resources[0].parameters.subsystem == "view-test-ensuresc-d0f7f176-block-tier"
           - "_block_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-name'] == 'vast-csi-test-ensuresc'"
           - "_block_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-namespace'] == 'osac-system'"
+          - _block_sc_result.resources[0].parameters.volumeGroup == "test-cluster/{namespace}"
           - _block_sc_result.resources[0].parameters.storagePath is not defined
           - _block_sc_result.resources[0].parameters.viewPolicy is not defined
           - _block_sc_result.resources[0].parameters.secretName is not defined
@@ -264,9 +269,10 @@
           - (_csi_secret.resources[0].data.password | b64decode) == "test-csi-password"
           - _csi_secret.resources[0].data.endpoint is defined
           - (_csi_secret.resources[0].data.endpoint | b64decode) == "127.0.0.1:18443"
-          - _csi_secret.resources[0].data.tenant is not defined
+          - _csi_secret.resources[0].data.tenant is defined
+          - (_csi_secret.resources[0].data.tenant | b64decode) == "test-ensuresc"
         fail_msg: "CSI Secret does not contain expected manager credentials"
-        success_msg: "CSI Secret contains tenant manager credentials (tenant field omitted)"
+        success_msg: "CSI Secret contains tenant manager credentials with tenant field"
 
     - name: Assert CSI Secret labels
       ansible.builtin.assert:
@@ -345,6 +351,7 @@
   vars:
     tenant_name: "test-ensuresc"
     tenant_namespace: "osac-system"
+    _cluster_name: "test-cluster"
     storage_provider_tiers:
       - name: default
         protocol: nfs
@@ -353,7 +360,6 @@
         protocol: block
         provider: vast
     storage_provider_action: ensure_storage_class
-    storage_provider_provisioning_target: vmaas
     storage_provider_snapshots_enabled: true
     storage_provider_block_encryption_passphrase: "test-encryption-passphrase"
     vast_storage_validate_certs: false

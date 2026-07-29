@@ -3,10 +3,20 @@
   ansible.builtin.set_fact:
     params: "{{ default_arg_specs | combine(template_parameters | default({})) }}"
 
+- name: Require spec.cores and spec.memoryGiB from resolved instance_type
+  ansible.builtin.assert:
+    that:
+      - compute_instance.spec.cores is defined
+      - compute_instance.spec.memoryGiB is defined
+    fail_msg: >-
+      ComputeInstance must have spec.cores and spec.memoryGiB set.
+      These are resolved by osac-operator from spec.instanceType — ensure the
+      ComputeInstance (or its template) specifies a valid instance_type.
+
 - name: Extract VM configuration from ComputeInstance spec
   ansible.builtin.set_fact:
-    vm_cpu_cores: "{{ (compute_instance.spec.cores | default(default_spec.cores)) | int }}"
-    vm_memory: "{{ (compute_instance.spec.memoryGiB | default(default_spec.memoryGiB)) | string + 'Gi' }}"
+    vm_cpu_cores: "{{ compute_instance.spec.cores | int }}"
+    vm_memory: "{{ compute_instance.spec.memoryGiB | string + 'Gi' }}"
     vm_boot_disk_size: "{{ (compute_instance.spec.bootDisk.sizeGiB | default(default_spec.bootDisk.sizeGiB)) | string + 'Gi' }}"
     vm_image_source: "{{ compute_instance.spec.image.sourceRef | default(default_spec.image.sourceRef) }}"
     vm_run_strategy: "{{ compute_instance.spec.runStrategy | default(default_spec.runStrategy) }}"
@@ -86,9 +96,9 @@
   ansible.builtin.set_fact:
     default_vm_labels: "{{ default_vm_labels | combine(vm_sg_labels) }}"
 
-- name: Extract primary subnet reference for CUDN NAD
+- name: Extract primary subnet reference
   ansible.builtin.set_fact:
-    vm_cudn_nad_name: >-
+    vm_subnet_ref: >-
       {{
         (
           compute_instance.spec.networkAttachments
@@ -102,8 +112,8 @@
 - name: Require networkAttachments with subnetRef
   ansible.builtin.assert:
     that:
-      - vm_cudn_nad_name | length > 0
+      - vm_subnet_ref | length > 0
     fail_msg: >-
       ComputeInstance must have spec.networkAttachments[0].subnetRef set.
-      This is required to determine the CUDN NetworkAttachmentDefinition
-      for VM networking. Ensure the ComputeInstance references a Subnet.
+      This identifies the subnet namespace where the VM will be created.
+      Ensure the ComputeInstance references a Subnet.

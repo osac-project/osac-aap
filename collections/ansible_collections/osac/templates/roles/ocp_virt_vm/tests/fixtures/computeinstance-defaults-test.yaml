@@ -6,6 +6,8 @@ metadata:
   namespace: osac-system
 spec:
   templateID: osac.templates.ocp_virt_vm
+  cores: 2
+  memoryGiB: 2
   networkAttachments:
     - subnetRef: test-subnet
 status:

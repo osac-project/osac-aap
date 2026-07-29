@@ -42,24 +42,16 @@ ansible-galaxy collection install osac-templates-*.tar.gz
 
 ### Cluster Templates
 
-#### `ocp_4_17_small`
-Minimal OpenShift 4.17 cluster configuration.
+#### `ocp_small`
+Minimal OpenShift cluster configuration.
 
 **Default Configuration:**
 - 2 nodes
 - Resource class: fc430
-- OpenShift 4.17 release
 
 **Required Parameters:**
 - `pull_secret`: Red Hat pull secret for OpenShift installation
 - `ssh_public_key`: SSH public key for node access
-
-#### `ocp_4_17_small_github`
-OpenShift 4.17 cluster with GitHub OAuth authentication pre-configured.
-
-**Additional Parameters:**
-- GitHub OAuth client credentials
-- Organization/team membership configuration
 
 ### VM Templates
 
@@ -147,8 +139,10 @@ single file: `meta/osac.yaml`.
    template_type: compute_instance
 
    spec_defaults:
-     cores: 2
-     memory_gib: 2
+     # cores/memory_gib are reserved (removed); instance_type is the sole,
+     # mandatory way to size a ComputeInstance. Set spec_defaults.instance_type
+     # here to give the template a default, or omit it to require callers to
+     # always pass instance_type explicitly.
      boot_disk:
        size_gib: 10
      image:

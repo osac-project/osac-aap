@@ -73,15 +73,6 @@
     - item.qos_policy is defined
     - item.qos_policy is not regex('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$')
 
-- name: Validate storage_provider_provisioning_target is in the allowed enum
-  ansible.builtin.fail:
-    msg: >-
-      Invalid storage_provider_provisioning_target '{{ storage_provider_provisioning_target }}'.
-      Must be one of: vmaas, hcp_control_plane, hcp_worker_root, hcp_data_plane.
-  when: >-
-    storage_provider_provisioning_target not in
-    ['vmaas', 'hcp_control_plane', 'hcp_worker_root', 'hcp_data_plane']
-
 - name: Validate tenant_name is set
   ansible.builtin.fail:
     msg: "tenant_name must be a non-empty string (set at play level from the Tenant CR or ComputeInstance tenant reference)."

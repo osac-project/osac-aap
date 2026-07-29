@@ -98,7 +98,7 @@ metadata:
   annotations:
     osac.openshift.io/tenant: "osac-devel"
 spec:
-  templateName: ocp_4_17_small
+  templateName: ocp_4_20_small_nico
   nodeRequests:
     - resourceClass: my-instance-type
       numberOfNodes: 2
@@ -316,6 +316,9 @@ NICo agents are **ephemeral** — they are created when instances boot and delet
 - **Attachment**: HyperShift NodePool selects agent by label -> sets `clusterdeployment-namespace`
 - **Detachment**: NodePool scaled down -> HyperShift removes `clusterdeployment-namespace`
 - **Deletion**: Agent CR is deleted after detachment to prevent stale agent conflicts
+
+See [CaaS Agent Binding Labels](agent-labels.md) for the full label
+reference and common mistakes to avoid.
 
 ### Scale-Down Protection
 

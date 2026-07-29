@@ -1,7 +1,7 @@
 ---
 - name: Create OpenStack network for BareMetalPool
   ansible.builtin.include_role:
-    name: massopencloud.esi.network
+    name: osac.esi.network
   vars:
     network_state: present
     network_suffix: "{{ bare_metal_pool.metadata.name }}"

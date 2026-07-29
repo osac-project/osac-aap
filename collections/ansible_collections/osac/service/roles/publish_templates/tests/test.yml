@@ -75,6 +75,7 @@
             title: "Test CI"
         osac_network_classes:
           - implementation_strategy: "new-network-class"
+            fabric_manager: "new-network-class"
             title: "Test NC"
       when: test_empty | default(false) | bool
 
@@ -150,8 +151,10 @@
             title: "Updated CI"
         osac_network_classes:
           - implementation_strategy: "cudn_net"
+            fabric_manager: "cudn_net"
             title: "Updated NC"
           - implementation_strategy: "brand-new-nc"
+            fabric_manager: "brand-new-nc"
             title: "New NC"
       when: test_populated | default(false) | bool
 
@@ -228,6 +231,7 @@
             title: "Edge CI"
         osac_network_classes:
           - implementation_strategy: "edge-case-nc"
+            fabric_manager: "edge-case-nc"
             title: "Edge NC"
       when: test_no_items_key | default(false) | bool
 

@@ -31,7 +31,7 @@
       ansible.builtin.set_fact:
         cluster_order:
           spec:
-            templateID: "osac.templates.ocp_4_17_small"
+            templateID: "osac.templates.ocp_small"
             templateParameters: '{"pull_secret": "test-secret", "ssh_public_key": "ssh-rsa AAAA"}'
             nodeRequests:
               - resourceClass: fc430
@@ -47,8 +47,8 @@
       ansible.builtin.assert:
         that:
           - template_id is defined
-          - template_id == "osac.templates.ocp_4_17_small"
-        fail_msg: "template_id should be 'osac.templates.ocp_4_17_small', got '{{ template_id | default('undefined') }}'"
+          - template_id == "osac.templates.ocp_small"
+        fail_msg: "template_id should be 'osac.templates.ocp_small', got '{{ template_id | default('undefined') }}'"
         success_msg: "template_id extracted: {{ template_id }}"
       when: test_qualified_id | default(false) | bool
 
@@ -87,7 +87,7 @@
       ansible.builtin.set_fact:
         cluster_order:
           spec:
-            templateID: "ocp_4_17_small"
+            templateID: "ocp_small"
             templateParameters: '{}'
             nodeRequests: []
       when: test_unqualified_id | default(false) | bool
@@ -101,8 +101,8 @@
       ansible.builtin.assert:
         that:
           - template_id is defined
-          - template_id == "osac.templates.ocp_4_17_small"
-        fail_msg: "Expected 'osac.templates.ocp_4_17_small', got '{{ template_id | default('undefined') }}'"
+          - template_id == "osac.templates.ocp_small"
+        fail_msg: "Expected 'osac.templates.ocp_small', got '{{ template_id | default('undefined') }}'"
         success_msg: "Unqualified ID correctly prefixed: {{ template_id }}"
       when: test_unqualified_id | default(false) | bool
 
@@ -120,7 +120,7 @@
         template_id: "custom.collection.my_template"
         cluster_order:
           spec:
-            templateID: "osac.templates.ocp_4_17_small"
+            templateID: "osac.templates.ocp_small"
             templateParameters: '{}'
             nodeRequests: []
       when: test_predefined_id | default(false) | bool

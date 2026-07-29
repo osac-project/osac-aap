@@ -7,13 +7,14 @@
 #   _vast_tenant_id         — VAST tenant ID
 #   _vast_view_policy_ids   — dict mapping protocol → policy ID
 #   _provider_tiers         — tier list from dispatcher
+#   _vast_tenant_uid_hash   — first 8 hex chars of SHA256(tenant_uid)
 #   tenant_name             — play-level var
 
 - name: Create VAST view per tier
   vastdata.vms.views:
     vms: "{{ _vast_vms_conn }}"
-    name: "view-{{ tenant_name }}-{{ item.name }}"
-    path: "/osac/{{ tenant_name }}/{{ item.name }}"
+    name: "view-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}-{{ item.name }}"
+    path: "/osac-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}/{{ item.name }}"
     create_dir: true
     policy_id: "{{ _vast_view_policy_ids[item.protocol] }}"
     tenant_id: "{{ _vast_tenant_id }}"
@@ -22,12 +23,12 @@
     state: present
   loop: "{{ _provider_tiers }}"
   loop_control:
-    label: "view-{{ tenant_name }}-{{ item.name }}"
+    label: "view-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}-{{ item.name }}"
   no_log: true
 
 - name: Log VAST view creation results
   ansible.builtin.debug:
-    msg: "VAST view 'view-{{ tenant_name }}-{{ item.name }}' ensured at path '/osac/{{ tenant_name }}/{{ item.name }}'"
+    msg: "VAST view 'view-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}-{{ item.name }}' ensured at path '/osac-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}/{{ item.name }}'"
   loop: "{{ _provider_tiers }}"
   loop_control:
-    label: "view-{{ tenant_name }}-{{ item.name }}"
+    label: "view-{{ tenant_name }}-{{ _vast_tenant_uid_hash }}-{{ item.name }}"

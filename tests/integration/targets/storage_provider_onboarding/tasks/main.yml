@@ -63,11 +63,12 @@
   vars:
     tenant_name: "test-onboard"
     tenant_namespace: "osac-system"
+    tenant_uid: "test-uid-12345"
+    _cluster_name: "test-cluster"
     storage_provider_tiers:
       - name: default
         protocol: nfs
         provider: vast
-    storage_provider_provisioning_target: vmaas
     storage_provider_snapshots_enabled: false
     vast_storage_validate_certs: false
 
@@ -131,7 +132,7 @@
       ansible.builtin.assert:
         that:
           - _sc_result.resources[0].parameters.vip_pool_name == "osac-test-pool"
-          - _sc_result.resources[0].parameters.root_export == "/osac/test-onboard/default"
+          - _sc_result.resources[0].parameters.root_export == "/osac-test-onboard-d0f7f176/default"
           - "_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-name'] == 'vast-csi-test-onboard'"
           - "_sc_result.resources[0].parameters['csi.storage.k8s.io/provisioner-secret-namespace'] == 'osac-system'"
         fail_msg: "StorageClass parameters incorrect: {{ _sc_result.resources[0].parameters }}"
