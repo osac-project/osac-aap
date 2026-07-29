@@ -4,7 +4,9 @@
   gather_facts: false
 
   vars:
-    tenant_name: "{{ ansible_eda.event.payload.metadata.annotations['osac.openshift.io/tenant'] }}"
+    tenant_name: >-
+      {{ ansible_eda.event.payload.metadata.annotations['osac.openshift.io/tenant']
+         | default(ansible_eda.event.payload.metadata.name, true) }}
     # This template is triggered from two different call sites in storage_controller.go,
     # sharing the same AAP job template but passing different resource kinds as payload:
     #   - handleClusterStorageDeprovisioning (hub storage) sends a Tenant object, whose own
