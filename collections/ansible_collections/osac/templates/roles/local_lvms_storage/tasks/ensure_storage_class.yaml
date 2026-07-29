@@ -16,6 +16,17 @@
     msg: "tenant_name '{{ tenant_name }}' is not a valid DNS label."
   when: tenant_name is not regex('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$')
 
+- name: Validate tier names are valid Kubernetes label values
+  ansible.builtin.fail:
+    msg: >-
+      tier.name '{{ item.name }}' is not a valid Kubernetes label value.
+      Must be 1-63 chars, lowercase alphanumeric, hyphens, underscores, or dots,
+      starting and ending with an alphanumeric character.
+  when: item.name is not regex('^[a-z0-9A-Z]([a-z0-9A-Z._-]{0,61}[a-z0-9A-Z])?$')
+  loop: "{{ _provider_tiers }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Build expected StorageClass entries
   ansible.builtin.set_fact:
     _local_lvms_expected_sc_entries: >-
