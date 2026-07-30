@@ -269,6 +269,28 @@ class TemplateTypeEnum(StrEnum):
     bare_metal_instance = "bare_metal_instance"
 
 
+class SecurityRule(Base):
+    """A security rule for ingress or egress."""
+
+    protocol: str
+    port_from: int | None = None
+    port_to: int | None = None
+    ipv4_cidr: str | None = None
+    ipv6_cidr: str | None = None
+
+
+class NetworkDefaults(Base):
+    """Default networking configuration for tenant onboarding."""
+
+    virtual_network_ipv4_cidr: str | None = None
+    virtual_network_ipv6_cidr: str | None = None
+    subnet_ipv4_cidr: str | None = None
+    subnet_ipv6_cidr: str | None = None
+    enable_nat_gateway: bool = False
+    ingress_rules: list[SecurityRule] | None = None
+    egress_rules: list[SecurityRule] | None = None
+
+
 class NetworkClassCapabilities(Base):
     """Capabilities supported by a network class"""
 
@@ -293,6 +315,7 @@ class Metadata(Base):
     k8s_manager: str | None = None
     is_default: bool = False
     capabilities: NetworkClassCapabilities | None = None
+    defaults: NetworkDefaults | None = None
     parameters: list[TemplateParameterDefinition] = pydantic.Field(default_factory=list)
 
     # spec_defaults is used to set optional default values for the related spec fields associated
@@ -362,6 +385,12 @@ class BareMetalInstanceTemplate(BaseTemplate):
     parameters: list[TemplateParameter] = pydantic.Field(default_factory=list, exclude=True)
 
 
+class NetworkClassSpec(Base):
+    """Spec for a NetworkClass, containing defaults."""
+
+    defaults: NetworkDefaults | None = None
+
+
 class NetworkClassTemplate(Base):
     """Template for NetworkClass registration.
 
@@ -376,6 +405,7 @@ class NetworkClassTemplate(Base):
     template_type: Literal[TemplateTypeEnum.network] = pydantic.Field(
         default=TemplateTypeEnum.network, exclude=True
     )
+    defaults: NetworkDefaults | None = pydantic.Field(default=None, exclude=True)
     title: str
     description: str | None = None
     implementation_strategy: str
@@ -383,6 +413,17 @@ class NetworkClassTemplate(Base):
     k8s_manager: str | None = None
     is_default: bool = False
     capabilities: NetworkClassCapabilities
+    spec: NetworkClassSpec | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _nest_defaults_in_spec(self) -> "NetworkClassTemplate":
+        if self.defaults is None:
+            return self
+        if self.spec is None:
+            self.spec = NetworkClassSpec(defaults=self.defaults)
+        elif self.spec.defaults is None:
+            self.spec.defaults = self.defaults
+        return self
 
     @pydantic.field_serializer("path")
     def serialize_path(self, value: Path):
@@ -555,6 +596,7 @@ class Collection(Base):
                             k8s_manager=metadata.k8s_manager,
                             is_default=metadata.is_default,
                             capabilities=metadata.capabilities or NetworkClassCapabilities(),
+                            defaults=metadata.defaults,
                         )
                     elif metadata.template_type == TemplateTypeEnum.storage_provider:
                         # Storage provider roles are not yielded as compute instance or

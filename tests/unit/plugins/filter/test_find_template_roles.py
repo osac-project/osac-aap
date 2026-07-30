@@ -6,8 +6,12 @@ import yaml
 
 from find_template_roles import (
     Metadata,
+    NetworkClassCapabilities,
+    NetworkClassTemplate,
+    NetworkDefaults,
     ProtobufAnyValue,
     ProtobufType,
+    SecurityRule,
     TemplateParameter,
     TemplateParameterDefinition,
     TemplateTypeEnum,
@@ -270,6 +274,52 @@ class TestMetadataTemplateTypes:
         metadata = _load_metadata(roles_dir, "cudn_net")
         assert metadata.capabilities is not None
         assert metadata.capabilities.supports_ipv4 is True
+
+    def test_network_has_defaults(self, roles_dir):
+        metadata = _load_metadata(roles_dir, "cudn_net")
+        assert metadata.defaults is not None
+        assert metadata.defaults.virtual_network_ipv4_cidr == "10.200.0.0/16"
+        assert metadata.defaults.subnet_ipv4_cidr == "10.200.0.0/20"
+        assert metadata.defaults.enable_nat_gateway is False
+        assert metadata.defaults.egress_rules is not None
+        assert len(metadata.defaults.egress_rules) == 1
+        assert metadata.defaults.egress_rules[0].protocol == "PROTOCOL_ALL"
+        assert metadata.defaults.egress_rules[0].ipv4_cidr == "0.0.0.0/0"
+
+    def test_network_defaults_serialized_in_spec(self):
+        template = NetworkClassTemplate(
+            collection="test",
+            path=Path("/tmp/test"),
+            name="test_net",
+            title="Test Network",
+            implementation_strategy="test_net",
+            capabilities=NetworkClassCapabilities(supports_ipv4=True),
+            defaults=NetworkDefaults(
+                virtual_network_ipv4_cidr="10.200.0.0/16",
+                subnet_ipv4_cidr="10.200.0.0/20",
+                egress_rules=[SecurityRule(protocol="PROTOCOL_ALL", ipv4_cidr="0.0.0.0/0")],
+            ),
+        )
+        payload = template.model_dump(by_alias=True, exclude_none=True)
+        assert "defaults" not in payload
+        assert "spec" in payload
+        assert payload["spec"]["defaults"]["virtual_network_ipv4_cidr"] == "10.200.0.0/16"
+        assert payload["spec"]["defaults"]["subnet_ipv4_cidr"] == "10.200.0.0/20"
+        assert payload["spec"]["defaults"]["egress_rules"][0]["protocol"] == "PROTOCOL_ALL"
+        assert payload["spec"]["defaults"]["egress_rules"][0]["ipv4_cidr"] == "0.0.0.0/0"
+
+    def test_network_without_defaults_has_no_spec(self):
+        template = NetworkClassTemplate(
+            collection="test",
+            path=Path("/tmp/test"),
+            name="test_net",
+            title="Test Network",
+            implementation_strategy="test_net",
+            capabilities=NetworkClassCapabilities(supports_ipv4=True),
+        )
+        payload = template.model_dump(by_alias=True, exclude_none=True)
+        assert "defaults" not in payload
+        assert "spec" not in payload
 
     def test_cluster_with_parameters(self, roles_dir):
         metadata = _load_metadata(roles_dir, "ocp_4_20_ai_maas")

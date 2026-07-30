@@ -15,3 +15,10 @@ capabilities:
   supports_ipv4: true
   supports_ipv6: true
   supports_dual_stack: true
+defaults:
+  virtual_network_ipv4_cidr: "10.200.0.0/16"
+  subnet_ipv4_cidr: "10.200.0.0/20"
+  enable_nat_gateway: false
+  egress_rules:
+    - protocol: PROTOCOL_ALL
+      ipv4_cidr: "0.0.0.0/0"
