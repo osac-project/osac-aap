@@ -1,0 +1,25 @@
+---
+# Centralized, redacted replacement for `debug: var: ansible_eda.event.payload`.
+# Use this instead of debugging the whole payload object whenever the calling
+# playbook also reads a sensitive field out of payload.spec (e.g.
+# blockEncryptionPassphrase) -- the whole-object debug prints secrets in
+# cleartext to the job log, which the runner then tails on failure.
+#
+# Always logs: payload kind, metadata.name, metadata.namespace, metadata.uid.
+#
+# Optional caller var:
+#   eda_event_extra_fields — dict of additional non-sensitive key/value pairs
+#                            to include (e.g. tenant_annotation, template_id).
+#                            Never source a value from payload.spec here
+#                            without confirming it isn't a secret first.
+- name: Show EDA Event metadata
+  ansible.builtin.debug:
+    msg: >-
+      {{
+        {
+          'kind': ansible_eda.event.payload.kind | default('unknown'),
+          'name': ansible_eda.event.payload.metadata.name | default('unknown'),
+          'namespace': ansible_eda.event.payload.metadata.namespace | default('unknown'),
+          'uid': ansible_eda.event.payload.metadata.uid | default('unknown'),
+        } | combine(eda_event_extra_fields | default({}))
+      }}

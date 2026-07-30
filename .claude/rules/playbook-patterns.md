@@ -47,6 +47,32 @@ AAP job templates: `osac-{action}-{resource}`
 3. Dynamically includes the appropriate role from `osac.templates`
 4. Role performs actual provisioning (creates K8s resources, updates CR)
 
+### Show EDA Event and Sensitive `payload.spec` Fields
+
+The bare `debug: var: ansible_eda.event.payload` shown above is safe as long as
+nothing in `payload.spec` is a secret. Some CR specs are not — e.g.
+`blockEncryptionPassphrase` on Tenant/ClusterOrder/ComputeInstance CRs. Before
+adding this debug task to a new or existing playbook, check whether the
+playbook also reads a sensitive field out of `payload.spec`; if it does, use
+the shared, centralized task instead of debugging the whole object:
+
+```yaml
+  pre_tasks:
+    - name: Show EDA Event metadata
+      ansible.builtin.include_role:
+        name: osac.service.common
+        tasks_from: show_eda_event_metadata
+      vars:
+        eda_event_extra_fields:
+          template_id: "{{ ansible_eda.event.payload.spec.templateID | default('unknown') }}"
+```
+
+This logs `kind`/`metadata.name`/`metadata.namespace`/`metadata.uid` plus any
+additional non-sensitive fields passed via `eda_event_extra_fields` — never
+source an `eda_event_extra_fields` value from `payload.spec` without first
+confirming it isn't a secret. See
+`collections/ansible_collections/osac/service/roles/common/tasks/show_eda_event_metadata.yaml`.
+
 ## Template Roles
 
 Live in `collections/ansible_collections/osac/templates/roles/`. Each must have `meta/osac.yaml`:

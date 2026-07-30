@@ -22,16 +22,16 @@
       {%- endif -%}
 
   pre_tasks:
-    # Log an explicit metadata allowlist rather than the whole payload object, matching
-    # the create-side playbook -- payload.spec is not currently used here, but keeping the
-    # same convention avoids reintroducing a full-payload debug if that ever changes.
+    # Use the shared, centralized redaction task rather than debugging the whole payload
+    # object, matching the create-side playbook -- payload.spec is not currently used
+    # here, but keeping the same convention avoids reintroducing a full-payload debug
+    # if that ever changes.
     - name: Show EDA Event metadata
-      ansible.builtin.debug:
-        msg:
-          kind: "{{ ansible_eda.event.payload.kind | default('unknown') }}"
-          name: "{{ ansible_eda.event.payload.metadata.name | default('unknown') }}"
-          namespace: "{{ ansible_eda.event.payload.metadata.namespace | default('unknown') }}"
-          uid: "{{ ansible_eda.event.payload.metadata.uid | default('unknown') }}"
+      ansible.builtin.include_role:
+        name: osac.service.common
+        tasks_from: show_eda_event_metadata
+      vars:
+        eda_event_extra_fields:
           tenant_annotation: "{{ ansible_eda.event.payload.metadata.annotations['osac.openshift.io/tenant'] | default('unknown') }}"
 
     - name: Validate tenant payload is present

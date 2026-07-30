@@ -10,15 +10,12 @@
 
   pre_tasks:
     # payload.spec.blockEncryptionPassphrase carries a real secret (see
-    # storage_provider_block_encryption_passphrase below) -- log an explicit
-    # metadata allowlist instead of the whole payload object.
+    # storage_provider_block_encryption_passphrase below) -- use the shared,
+    # centralized redaction task instead of debugging the whole payload object.
     - name: Show EDA Event metadata
-      ansible.builtin.debug:
-        msg:
-          kind: "{{ ansible_eda.event.payload.kind | default('unknown') }}"
-          name: "{{ ansible_eda.event.payload.metadata.name | default('unknown') }}"
-          namespace: "{{ ansible_eda.event.payload.metadata.namespace | default('unknown') }}"
-          uid: "{{ ansible_eda.event.payload.metadata.uid | default('unknown') }}"
+      ansible.builtin.include_role:
+        name: osac.service.common
+        tasks_from: show_eda_event_metadata
 
     - name: Validate tenant payload is present
       ansible.builtin.fail:

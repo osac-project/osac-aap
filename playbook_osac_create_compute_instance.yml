@@ -13,15 +13,14 @@
 
   pre_tasks:
     # payload.spec.blockEncryptionPassphrase carries a real secret (see
-    # storage_provider_block_encryption_passphrase below) -- log an explicit
-    # metadata allowlist instead of the whole payload object.
+    # storage_provider_block_encryption_passphrase below) -- use the shared,
+    # centralized redaction task instead of debugging the whole payload object.
     - name: Show EDA Event metadata
-      ansible.builtin.debug:
-        msg:
-          kind: "{{ ansible_eda.event.payload.kind | default('unknown') }}"
-          name: "{{ ansible_eda.event.payload.metadata.name | default('unknown') }}"
-          namespace: "{{ ansible_eda.event.payload.metadata.namespace | default('unknown') }}"
-          uid: "{{ ansible_eda.event.payload.metadata.uid | default('unknown') }}"
+      ansible.builtin.include_role:
+        name: osac.service.common
+        tasks_from: show_eda_event_metadata
+      vars:
+        eda_event_extra_fields:
           template_id: "{{ ansible_eda.event.payload.spec.templateID | default('unknown') }}"
 
     - name: Determine tenant target namespace
@@ -44,6 +43,17 @@
             if compute_instance.status is defined and compute_instance.status.tenantReference is defined
             else (compute_instance.metadata.annotations | default({})).get('osac.openshift.io/tenant', 'unknown')
           }}
+
+    - name: Validate optional storage_tier_definitions type
+      ansible.builtin.fail:
+        msg: >-
+          ansible_eda.event.storage_tier_definitions must be an array when provided.
+          Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001"}]
+      when: >-
+        ansible_eda.event.storage_tier_definitions is defined and
+        (ansible_eda.event.storage_tier_definitions is not sequence or
+         ansible_eda.event.storage_tier_definitions is string or
+         ansible_eda.event.storage_tier_definitions is mapping)
 
     - name: Filter storage tier definitions to the requested tier for JIT storage
       when: (ansible_eda.event.storage_tier_definitions | default([])) | length > 0
