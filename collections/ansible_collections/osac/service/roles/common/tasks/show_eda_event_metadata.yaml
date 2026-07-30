@@ -9,17 +9,41 @@
 #
 # Optional caller var:
 #   eda_event_extra_fields — dict of additional non-sensitive key/value pairs
-#                            to include (e.g. tenant_annotation, template_id).
-#                            Never source a value from payload.spec here
-#                            without confirming it isn't a secret first.
+#                            to include. Keys are restricted to the allowlist
+#                            below, and the fixed kind/name/namespace/uid
+#                            fields always win on conflict -- this task is
+#                            the single redaction boundary for
+#                            ansible_eda.event.payload, so a new field must
+#                            be deliberately added to the allowlist here, not
+#                            silently accepted from any caller. Never add a
+#                            key whose value could be sourced from
+#                            payload.spec without confirming it isn't a
+#                            secret first.
+- name: Validate eda_event_extra_fields keys are on the allowlist
+  ansible.builtin.fail:
+    msg: >-
+      eda_event_extra_fields contains a key not on the allowlist:
+      {{ (eda_event_extra_fields | default({}) | list) | difference(_eda_event_extra_fields_allowlist) }}.
+      Add it to _eda_event_extra_fields_allowlist in show_eda_event_metadata.yaml
+      first -- this task is the single redaction boundary for
+      ansible_eda.event.payload, and new fields must be deliberately approved.
+  vars:
+    _eda_event_extra_fields_allowlist:
+      - tenant_annotation
+      - template_id
+  when: >-
+    (eda_event_extra_fields | default({}) | list)
+    | difference(_eda_event_extra_fields_allowlist) | length > 0
+
 - name: Show EDA Event metadata
   ansible.builtin.debug:
     msg: >-
       {{
-        {
-          'kind': ansible_eda.event.payload.kind | default('unknown'),
-          'name': ansible_eda.event.payload.metadata.name | default('unknown'),
-          'namespace': ansible_eda.event.payload.metadata.namespace | default('unknown'),
-          'uid': ansible_eda.event.payload.metadata.uid | default('unknown'),
-        } | combine(eda_event_extra_fields | default({}))
+        (eda_event_extra_fields | default({}))
+        | combine({
+            'kind': ansible_eda.event.payload.kind | default('unknown'),
+            'name': ansible_eda.event.payload.metadata.name | default('unknown'),
+            'namespace': ansible_eda.event.payload.metadata.namespace | default('unknown'),
+            'uid': ansible_eda.event.payload.metadata.uid | default('unknown'),
+          })
       }}
