@@ -430,14 +430,41 @@
   gather_facts: false
 
   tasks:
-    - name: Delete hub Secret fixture if exists (clean slate)
-      kubernetes.core.k8s:
-        state: absent
-        api_version: v1
-        kind: Secret
-        name: "vast-tenant-config-test-ensuresc-nosnap"
-        namespace: "osac-system"
-      failed_when: false
+    - name: Delete any pre-existing snapshots-disabled test resources (clean slate)
+      block:
+        - name: Delete hub Secret if exists
+          kubernetes.core.k8s:
+            state: absent
+            api_version: v1
+            kind: Secret
+            name: "vast-tenant-config-test-ensuresc-nosnap"
+            namespace: "osac-system"
+          failed_when: false
+
+        - name: Delete CSI Secret if exists
+          kubernetes.core.k8s:
+            state: absent
+            api_version: v1
+            kind: Secret
+            name: "vast-csi-test-ensuresc-nosnap"
+            namespace: "osac-system"
+          failed_when: false
+
+        - name: Delete NFS StorageClass if exists
+          kubernetes.core.k8s:
+            state: absent
+            api_version: storage.k8s.io/v1
+            kind: StorageClass
+            name: "vast-nfs-test-ensuresc-nosnap-default"
+          failed_when: false
+
+        - name: Delete VolumeSnapshotClass if exists
+          kubernetes.core.k8s:
+            state: absent
+            api_version: snapshot.storage.k8s.io/v1
+            kind: VolumeSnapshotClass
+            name: "vast-snapshot-test-ensuresc-nosnap-default"
+          failed_when: false
 
     - name: Create hub Secret fixture for snapshots-disabled tenant
       kubernetes.core.k8s:
@@ -559,6 +586,22 @@
         kind: Secret
         name: "vast-tenant-config-test-ensuresc-nosnap"
         namespace: "osac-system"
+      failed_when: false
+
+    - name: Check if VolumeSnapshotClass CRD exists for cleanup (snapshots-disabled tenant)
+      kubernetes.core.k8s_info:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        name: volumesnapshotclasses.snapshot.storage.k8s.io
+      register: _nosnap_cleanup_vsc_crd
+
+    - name: Delete VolumeSnapshotClass (snapshots-disabled tenant, safety net in case the flag ever regresses)
+      when: _nosnap_cleanup_vsc_crd.resources | length > 0
+      kubernetes.core.k8s:
+        state: absent
+        api_version: snapshot.storage.k8s.io/v1
+        kind: VolumeSnapshotClass
+        name: "vast-snapshot-test-ensuresc-nosnap-default"
       failed_when: false
 
 # ── Cleanup ──
