@@ -25,13 +25,18 @@
         ansible_eda.event.payload.metadata.uid is not defined or
         ansible_eda.event.payload.metadata.uid | length == 0
 
-    - name: Validate storage_tier_definitions is present in the EDA event
+    - name: Validate storage_tier_definitions is a non-empty array in the EDA event
       ansible.builtin.fail:
         msg: >-
           ansible_eda.event.storage_tier_definitions must be a non-empty array, populated
           by osac-operator from the Tenant's resolved storage tiers.
           Example: [{"name":"default","protocol":"nfs","provider":"vast","backend_id":"be-001","quota_bytes":500}]
-      when: (ansible_eda.event.storage_tier_definitions | default([])) | length == 0
+      when: >-
+        ansible_eda.event.storage_tier_definitions is not defined or
+        ansible_eda.event.storage_tier_definitions is not sequence or
+        ansible_eda.event.storage_tier_definitions is string or
+        ansible_eda.event.storage_tier_definitions is mapping or
+        ansible_eda.event.storage_tier_definitions | length == 0
 
   tasks:
     - name: Configure tenant storage backend

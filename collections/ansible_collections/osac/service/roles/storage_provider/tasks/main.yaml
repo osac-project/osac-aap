@@ -35,6 +35,28 @@
   loop: "{{ storage_provider_tiers }}"
   when: item.name is not defined or not (item.name | regex_search('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'))
 
+# A tier name can be a valid 1-63 char DNS label on its own yet still be unusable: tiers
+# with configured qos_limits get a derived qos_policy of '<name>-qos' below, which must
+# ALSO be a valid (<=63 char) DNS label. Caught here, at the same point as the other
+# tier-name checks, rather than surfacing later as a confusing failure on the derived
+# value. Mirrors the has-QoS-limits condition in the derivation step below — must be
+# kept in sync with it.
+- name: Validate QoS-enabled tier names leave room for the derived '-qos' suffix
+  ansible.builtin.fail:
+    msg: >-
+      Tier name '{{ item.name }}' is {{ item.name | length }} characters. Tiers with
+      configured qos_limits get a derived qos_policy of '{{ item.name }}-qos', which must
+      also be a valid DNS label (max 63 characters) — so tier names with QoS limits
+      configured are capped at 59 characters (63 minus the 4-character '-qos' suffix).
+  loop: "{{ storage_provider_tiers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: >-
+    (item.name | length > 59) and
+    (item.qos_limits is defined and item.qos_limits.static_limits is defined and
+     ((item.qos_limits.static_limits.max_reads_bw_mbps | default(0) | int) > 0 or
+      (item.qos_limits.static_limits.max_writes_bw_mbps | default(0) | int) > 0))
+
 - name: Validate tier names are unique across the entire list
   ansible.builtin.fail:
     msg: >-

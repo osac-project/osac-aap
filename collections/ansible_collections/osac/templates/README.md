@@ -211,7 +211,9 @@ template role with the filtered tier subset.
 5. **Credential isolation:** Admin credentials (e.g., VAST VMS admin) must NEVER
    appear in tenant-namespace K8s Secrets. Provider roles must create per-tenant
    data-plane credentials and use only those in CSI Secrets. Admin credentials
-   remain in the AAP-namespace IG Secret, injected via env vars.
+   arrive via the `storage_provider_backend_connections` extra_var (resolved by
+   osac-operator from the Tier API and keyed by `backend_id`) — there is no
+   env-var or K8s Secret fallback for admin credentials.
 
 6. **Provisioning targets:** Each provider handles both VMaaS and CaaS provisioning
    targets via the `_provisioning_target` parameter. Currently supported: `vmaas`.

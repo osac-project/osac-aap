@@ -321,7 +321,9 @@
         _vast_snapshot_crd_available: "{{ _vast_vsc_crd_check.resources | default([]) | length > 0 }}"
 
     - name: Create VolumeSnapshotClass per tier
-      when: _vast_snapshot_crd_available
+      when:
+        - _vast_snapshot_crd_available | bool
+        - storage_provider_snapshots_enabled | default(true) | bool
       kubernetes.core.k8s:
         state: present
         definition:
