@@ -27,7 +27,7 @@
         "be-001": {
           "endpoint": "vast.example.com:443",
           "username": "admin",
-          "password": "changeme"
+          "password": "admin"
         }
       }
     }

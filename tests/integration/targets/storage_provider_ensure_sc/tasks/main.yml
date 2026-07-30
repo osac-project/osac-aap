@@ -53,6 +53,10 @@
             name: "vast-snapshot-test-ensuresc-default"
           failed_when: false
 
+    - name: Set mock tenant manager credentials for this scenario
+      ansible.builtin.set_fact:
+        mock_tenant_manager_password: "test-csi-password"
+
     - name: Create hub Secret fixture (simulates output from setup action)
       kubernetes.core.k8s:
         state: present
@@ -76,7 +80,7 @@
             storage_provider_type: "vast"
             tenant_manager_name: "osac-test-ensuresc"
             tenant_manager_username: "osac-test-ensuresc"
-            tenant_manager_password: "test-csi-password"
+            tenant_manager_password: "{{ mock_tenant_manager_password }}"
             tenant_manager_id: "42"
             tenant_role_id: "7"
             view_policy_name: "osac-test-ensuresc-nfs"
@@ -269,7 +273,7 @@
           - _csi_secret.resources[0].data.username is defined
           - (_csi_secret.resources[0].data.username | b64decode) == "osac-test-ensuresc"
           - _csi_secret.resources[0].data.password is defined
-          - (_csi_secret.resources[0].data.password | b64decode) == "test-csi-password"
+          - (_csi_secret.resources[0].data.password | b64decode) == mock_tenant_manager_password
           - _csi_secret.resources[0].data.endpoint is defined
           - (_csi_secret.resources[0].data.endpoint | b64decode) == "127.0.0.1:18443"
           - _csi_secret.resources[0].data.tenant is defined
@@ -454,7 +458,7 @@
             vip_pool_name: "osac-test-pool"
             vast_endpoint: "127.0.0.1:18443"
             tenant_manager_username: "osac-test-ensuresc-nosnap"
-            tenant_manager_password: "test-csi-password"
+            tenant_manager_password: "{{ mock_tenant_manager_password }}"
 
 - name: "Storage Provider Ensure SC - Run with snapshots disabled"
   hosts: localhost
