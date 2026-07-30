@@ -35,7 +35,7 @@
     fail_msg: "Tier names must be unique."
     quiet: true
 
-- name: Validate tier protocols are supported by VAST provider
+- name: Include shared tier protocol validation
   ansible.builtin.include_tasks: _validate_tier_protocols.yaml
 
 - name: Validate tier quotas (when specified)

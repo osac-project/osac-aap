@@ -23,7 +23,8 @@
         protocol: nfs
         provider: vast
         backend_id: be-test
-        qos_policy: test-qos
+        # qos_policy intentionally omitted: the role always derives it from the tier
+        # name now, discarding any caller-supplied value.
         qos_limits:
           static_limits:
             max_reads_bw_mbps: 100
