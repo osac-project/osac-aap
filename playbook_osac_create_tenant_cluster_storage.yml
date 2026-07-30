@@ -26,7 +26,7 @@
     tenant_uid: "{{ ansible_eda.event.payload.metadata.uid }}"
     # Prefer operator-resolved tier definitions from the event (OSAC-1992); fall back
     # to the static STORAGE_TIERS env var for deployments without a gRPC connection.
-    _event_tier_definitions: "{{ ansible_eda.event.storage_tier_definitions | default([]) }}"
+    _event_tier_definitions: "{{ ansible_eda.event.storage_tier_definitions | default([], true) }}"
     _storage_tiers_raw: "{{ lookup('env', 'STORAGE_TIERS') }}"
     _storage_snapshots: "{{ lookup('env', 'STORAGE_SNAPSHOTS_ENABLED') | default('true', true) | bool }}"
 
