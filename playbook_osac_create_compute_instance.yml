@@ -12,9 +12,17 @@
     _requested_storage_tier: "{{ lookup('env', 'STORAGE_REQUESTED_TIER') | default('default', true) }}"
 
   pre_tasks:
-    - name: Show EDA Event
+    # payload.spec.blockEncryptionPassphrase carries a real secret (see
+    # storage_provider_block_encryption_passphrase below) -- log an explicit
+    # metadata allowlist instead of the whole payload object.
+    - name: Show EDA Event metadata
       ansible.builtin.debug:
-        var: ansible_eda.event.payload
+        msg:
+          kind: "{{ ansible_eda.event.payload.kind | default('unknown') }}"
+          name: "{{ ansible_eda.event.payload.metadata.name | default('unknown') }}"
+          namespace: "{{ ansible_eda.event.payload.metadata.namespace | default('unknown') }}"
+          uid: "{{ ansible_eda.event.payload.metadata.uid | default('unknown') }}"
+          template_id: "{{ ansible_eda.event.payload.spec.templateID | default('unknown') }}"
 
     - name: Determine tenant target namespace
       # Brings in variables:

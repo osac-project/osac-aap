@@ -8,9 +8,16 @@
     tenant_namespace: "{{ ansible_eda.event.payload.metadata.namespace }}"
 
   pre_tasks:
-    - name: Show EDA Event
+    # Log an explicit metadata allowlist rather than the whole payload object, matching
+    # the create-side playbook -- payload.spec is not currently used here, but keeping the
+    # same convention avoids reintroducing a full-payload debug if that ever changes.
+    - name: Show EDA Event metadata
       ansible.builtin.debug:
-        var: ansible_eda.event.payload
+        msg:
+          kind: "{{ ansible_eda.event.payload.kind | default('unknown') }}"
+          name: "{{ ansible_eda.event.payload.metadata.name | default('unknown') }}"
+          namespace: "{{ ansible_eda.event.payload.metadata.namespace | default('unknown') }}"
+          uid: "{{ ansible_eda.event.payload.metadata.uid | default('unknown') }}"
 
     - name: Validate tenant payload is present
       ansible.builtin.fail:
