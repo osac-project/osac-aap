@@ -4,9 +4,25 @@
 # gateway, PostgreSQL). Operators are NOT removed — in the OSAC pipeline, the cluster
 # itself is deleted after this step, which removes everything.
 
+# Initialize kubeconfig tmpfile if not already set (delete runs independently
+# of post_install, so _kubeconfig_tmpfile may not exist yet).
+- name: Create kubeconfig temp file for delete flow
+  ansible.builtin.tempfile:
+    suffix: .kubeconfig
+  register: _kubeconfig_tmpfile
+  when: _kubeconfig_tmpfile is not defined or _kubeconfig_tmpfile.path is not defined
+
+- name: Write kubeconfig to temp file
+  ansible.builtin.copy:
+    content: "{{ admin_kubeconfig | to_yaml if admin_kubeconfig is mapping else admin_kubeconfig }}"
+    dest: "{{ _kubeconfig_tmpfile.path }}"
+    mode: "0600"
+  no_log: true
+  when: _kubeconfig_tmpfile.path is defined
+
 - name: Delete external model subscriptions
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     api_version: maas.opendatahub.io/v1alpha1
     kind: MaaSSubscription
@@ -20,7 +36,7 @@
 
 - name: Delete external model auth policies
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     api_version: maas.opendatahub.io/v1alpha1
     kind: MaaSAuthPolicy
@@ -34,7 +50,7 @@
 
 - name: Delete external model namespaces
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     api_version: v1
     kind: Namespace
@@ -47,7 +63,7 @@
 
 - name: Delete hardware profiles
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     api_version: infrastructure.opendatahub.io/v1
     kind: HardwareProfile
@@ -61,7 +77,7 @@
 
 - name: Remove MaaS subscriptions
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ item }}"
   loop: "{{ lookup('ansible.builtin.template', 'maas-subscriptions.yaml.j2') | from_yaml_all | list }}"
@@ -71,28 +87,28 @@
 
 - name: Remove MaaSAuthPolicy
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ lookup('ansible.builtin.template', 'maas-auth-policy.yaml.j2') | from_yaml }}"
   ignore_errors: true
 
 - name: Remove MaaSModelRef
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ lookup('ansible.builtin.template', 'maas-model-ref.yaml.j2') | from_yaml }}"
   ignore_errors: true
 
 - name: Remove LLMInferenceService
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ lookup('ansible.builtin.template', 'model.yaml.j2') | from_yaml }}"
   ignore_errors: true
 
 - name: Remove model namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: v1
@@ -103,7 +119,7 @@
 
 - name: Remove Tenant CR
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: maas.opendatahub.io/v1alpha1
@@ -115,7 +131,7 @@
 
 - name: Disable MaaS in DSC
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: present
     definition:
       apiVersion: datasciencecluster.opendatahub.io/v1
@@ -132,7 +148,7 @@
 
 - name: Remove maas-db-config secret
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: v1
@@ -144,7 +160,7 @@
 
 - name: Remove PostgreSQL
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ item }}"
   loop: "{{ lookup('ansible.builtin.template', 'postgres-maas.yaml.j2') | from_yaml_all | list }}"
@@ -155,7 +171,7 @@
 
 - name: Remove maas-default-gateway
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: gateway.networking.k8s.io/v1
@@ -167,14 +183,14 @@
 
 - name: Remove gateway resources
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ lookup('ansible.builtin.template', 'gateway-resources.yaml.j2') | from_yaml }}"
   ignore_errors: true
 
 - name: Remove Kuadrant resources
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ item }}"
   loop: "{{ lookup('ansible.builtin.file', role_path + '/files/kuadrant-instance.yaml') | from_yaml_all | list }}"
@@ -184,7 +200,7 @@
 
 - name: Remove monitoring config
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition: "{{ item }}"
   loop: "{{ lookup('ansible.builtin.template', 'user-workload-monitoring.yaml.j2') | from_yaml_all | list }}"
@@ -194,7 +210,7 @@
 
 - name: Remove Keycloak namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: v1
@@ -206,7 +222,7 @@
 
 - name: Remove models-as-a-service namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ admin_kubeconfig }}"
+    kubeconfig: "{{ _kubeconfig_tmpfile.path }}"
     state: absent
     definition:
       apiVersion: v1
